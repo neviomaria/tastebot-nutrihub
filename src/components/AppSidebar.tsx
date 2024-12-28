@@ -51,9 +51,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               <span className="font-medium">John Doe</span>
             </div>
             <SidebarTrigger>
-              {(collapsed) => collapsed ? 
-                <ChevronRight className="h-4 w-4" /> : 
-                <ChevronLeft className="h-4 w-4" />
+              {(collapsed: boolean) => 
+                collapsed ? 
+                  <ChevronRight className="h-4 w-4" /> : 
+                  <ChevronLeft className="h-4 w-4" />
               }
             </SidebarTrigger>
           </SidebarHeader>
