@@ -8,10 +8,10 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import { supabase } from "./integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { AppSidebar } from "./components/AppSidebar";
 
 const queryClient = new QueryClient();
 
-// Create auth context
 const AuthContext = createContext<{
   user: User | null;
   loading: boolean;
@@ -20,13 +20,11 @@ const AuthContext = createContext<{
   loading: true,
 });
 
-// Auth provider component
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active sessions and subscribe to auth changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
@@ -49,7 +47,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useContext(AuthContext);
 
@@ -61,7 +58,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/auth" />;
   }
 
-  return <>{children}</>;
+  return <AppSidebar>{children}</AppSidebar>;
 };
 
 const App = () => (

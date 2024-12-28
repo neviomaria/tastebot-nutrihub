@@ -8,7 +8,6 @@ const AuthPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
     supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         navigate("/");
@@ -19,9 +18,7 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-center mb-6">
-          Welcome Back
-        </h1>
+        <h1 className="text-2xl font-bold text-center mb-6">Welcome Back</h1>
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -29,19 +26,19 @@ const AuthPage = () => {
             variables: {
               default: {
                 colors: {
-                  brand: 'rgb(var(--primary))',
-                  brandAccent: 'rgb(var(--primary))',
-                }
-              }
+                  brand: "rgb(var(--primary))",
+                  brandAccent: "rgb(var(--primary))",
+                },
+              },
             },
             className: {
-              container: 'w-full',
-              button: 'w-full',
-              input: 'rounded-md',
-            }
+              container: "w-full",
+              button: "w-full",
+              input: "rounded-md",
+            },
           }}
           theme="light"
-          providers={[]}
+          providers={["google", "facebook"]}
         />
       </div>
     </div>
