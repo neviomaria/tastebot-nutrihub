@@ -1,4 +1,4 @@
-import { Home, User, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, User, LogOut, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -51,7 +51,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               <span className="font-medium text-gray-700">John Doe</span>
             </div>
             <SidebarTrigger>
-              {() => <ChevronLeft className="h-4 w-4 text-gray-500" />}
+              <ChevronLeft className="h-4 w-4 text-gray-500" />
             </SidebarTrigger>
           </SidebarHeader>
           <SidebarContent>
