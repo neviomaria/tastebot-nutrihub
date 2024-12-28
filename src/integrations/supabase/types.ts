@@ -11,27 +11,45 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          activity_level: string | null
+          allergies: string | null
           avatar_url: string | null
           created_at: string | null
+          dietary_preferences: string | null
+          favorite_cuisines: string | null
           first_name: string | null
+          health_goal: string | null
           id: string
           last_name: string | null
+          planning_preference: string | null
           username: string | null
         }
         Insert: {
+          activity_level?: string | null
+          allergies?: string | null
           avatar_url?: string | null
           created_at?: string | null
+          dietary_preferences?: string | null
+          favorite_cuisines?: string | null
           first_name?: string | null
+          health_goal?: string | null
           id: string
           last_name?: string | null
+          planning_preference?: string | null
           username?: string | null
         }
         Update: {
+          activity_level?: string | null
+          allergies?: string | null
           avatar_url?: string | null
           created_at?: string | null
+          dietary_preferences?: string | null
+          favorite_cuisines?: string | null
           first_name?: string | null
+          health_goal?: string | null
           id?: string
           last_name?: string | null
+          planning_preference?: string | null
           username?: string | null
         }
         Relationships: []
