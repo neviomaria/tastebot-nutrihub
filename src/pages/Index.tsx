@@ -50,12 +50,12 @@ const Index = () => {
   };
 
   return (
-    <div className="h-full">
+    <div className="h-full animate-fade-up">
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-recipe-500 mb-4">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
           Discover Delicious Recipes
         </h1>
-        <p className="text-lg text-muted-foreground mb-8">
+        <p className="text-lg text-gray-600 mb-8">
           Find and cook your favorite meals with our easy-to-follow recipes
         </p>
         <SearchBar onSearch={setSearchQuery} />
