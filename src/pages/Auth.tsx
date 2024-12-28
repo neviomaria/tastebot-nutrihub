@@ -17,10 +17,10 @@ const AuthPage = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-recipe-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-center text-recipe-500 mb-6">
-          Welcome to Recipe AI
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-card rounded-lg shadow-lg p-6">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          Welcome Back
         </h1>
         <Auth
           supabaseClient={supabase}
@@ -29,14 +29,19 @@ const AuthPage = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#2563eb',
-                  brandAccent: '#1d4ed8',
+                  brand: 'rgb(var(--primary))',
+                  brandAccent: 'rgb(var(--primary))',
                 }
               }
+            },
+            className: {
+              container: 'w-full',
+              button: 'w-full',
+              input: 'rounded-md',
             }
           }}
-          providers={["google"]}
-          redirectTo={window.location.origin}
+          theme="light"
+          providers={[]}
         />
       </div>
     </div>
