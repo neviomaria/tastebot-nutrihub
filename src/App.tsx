@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CompleteProfile from "@/pages/CompleteProfile";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
+import Profile from "@/pages/Profile";
 import { AppSidebar } from "@/components/AppSidebar";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/complete-profile" element={<CompleteProfile />} />
+              <Route path="/profile" element={<Profile />} />
             </Routes>
           </AppSidebar>
         </BrowserRouter>
