@@ -99,16 +99,22 @@ export const useProfileForm = () => {
         grocery_budget: values.grocery_budget || null,
       };
 
-      const { error: updateError, data: updateResponse } = await supabase
+      const { error: updateError } = await supabase
         .from("profiles")
         .update(updateData)
         .eq("id", user.id)
         .select();
 
-      console.log("Update response:", { error: updateError, data: updateResponse });
-
       if (updateError) {
         console.error("Supabase update error:", updateError);
+        if (updateError.code === '23505') {
+          toast({
+            variant: "destructive",
+            title: "Username already taken",
+            description: "Please choose a different username",
+          });
+          return;
+        }
         throw updateError;
       }
 
