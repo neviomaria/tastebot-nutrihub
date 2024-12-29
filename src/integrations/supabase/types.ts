@@ -15,6 +15,7 @@ export type Database = {
           allergies: string[] | null
           avatar_url: string | null
           cooking_skill_level: string | null
+          country: string | null
           created_at: string | null
           date_of_birth: string | null
           dietary_preferences: string[] | null
@@ -43,6 +44,7 @@ export type Database = {
           allergies?: string[] | null
           avatar_url?: string | null
           cooking_skill_level?: string | null
+          country?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           dietary_preferences?: string[] | null
@@ -71,6 +73,7 @@ export type Database = {
           allergies?: string[] | null
           avatar_url?: string | null
           cooking_skill_level?: string | null
+          country?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           dietary_preferences?: string[] | null
