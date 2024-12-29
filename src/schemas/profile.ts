@@ -121,6 +121,7 @@ export const profileSchema = z.object({
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
   username: z.string().min(3, "Username must be at least 3 characters"),
   avatar_url: z.string().optional(),
+  country: z.string().min(2, "Country must be at least 2 characters"),
   dietary_preferences: z.array(z.enum(dietaryPreferences)).min(1, "Please select at least one dietary preference"),
   allergies: z.array(z.enum(allergies)),
   health_goal: z.enum(healthGoals),
@@ -130,7 +131,6 @@ export const profileSchema = z.object({
   other_dietary_preferences: z.string().optional(),
   other_allergies: z.string().optional(),
   other_cuisines: z.string().optional(),
-  // New fields
   weight_kg: z.number().min(20).max(300).optional(),
   height_cm: z.number().min(100).max(250).optional(),
   date_of_birth: z.string().optional(),

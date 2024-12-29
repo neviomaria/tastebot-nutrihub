@@ -8,6 +8,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { profileSchema, type ProfileFormValues } from "@/schemas/profile";
 import { BasicInfoFields } from "./BasicInfoFields";
 import { PreferencesFields } from "./PreferencesFields";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DietarySection } from "./sections/DietarySection";
+import { AllergiesSection } from "./sections/AllergiesSection";
+import { CookingPreferencesSection } from "./sections/CookingPreferencesSection";
+import { CuisineSection } from "./sections/CuisineSection";
+import { HealthSection } from "./sections/HealthSection";
+import { ActivitySection } from "./sections/ActivitySection";
+import { MedicalSection } from "./sections/MedicalSection";
+import { PlanningSection } from "./sections/PlanningSection";
+import { ShoppingPreferencesSection } from "./sections/ShoppingPreferencesSection";
+import { ReligiousRestrictionsSection } from "./sections/ReligiousRestrictionsSection";
 
 export const ProfileForm = () => {
   const { toast } = useToast();
@@ -20,6 +31,7 @@ export const ProfileForm = () => {
       last_name: "",
       username: "",
       avatar_url: "",
+      country: "",
       dietary_preferences: [],
       allergies: [],
       health_goal: "General Health",
@@ -29,7 +41,6 @@ export const ProfileForm = () => {
       other_dietary_preferences: "",
       other_allergies: "",
       other_cuisines: "",
-      // New fields
       weight_kg: undefined,
       height_cm: undefined,
       date_of_birth: "",
@@ -103,8 +114,53 @@ export const ProfileForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <BasicInfoFields form={form} />
-        <PreferencesFields form={form} />
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="dietary">Dietary Preferences</TabsTrigger>
+            <TabsTrigger value="cooking">Cooking Preferences</TabsTrigger>
+            <TabsTrigger value="medical">Medical Information</TabsTrigger>
+            <TabsTrigger value="shopping">Shopping Preferences</TabsTrigger>
+            <TabsTrigger value="religious">Religious or Ethical</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="mt-6">
+            <BasicInfoFields form={form} />
+          </TabsContent>
+
+          <TabsContent value="dietary" className="mt-6">
+            <div className="space-y-6">
+              <DietarySection form={form} />
+              <AllergiesSection form={form} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="cooking" className="mt-6">
+            <div className="space-y-6">
+              <CookingPreferencesSection form={form} />
+              <CuisineSection form={form} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="medical" className="mt-6">
+            <div className="space-y-6">
+              <HealthSection form={form} />
+              <ActivitySection form={form} />
+              <MedicalSection form={form} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="shopping" className="mt-6">
+            <div className="space-y-6">
+              <PlanningSection form={form} />
+              <ShoppingPreferencesSection form={form} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="religious" className="mt-6">
+            <ReligiousRestrictionsSection form={form} />
+          </TabsContent>
+        </Tabs>
 
         <Button
           type="submit"
