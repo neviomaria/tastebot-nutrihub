@@ -105,6 +105,8 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
                   type="email"
                   placeholder="john.doe@example.com" 
                   {...field} 
+                  readOnly
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { profileSchema, type ProfileFormValues } from "@/schemas/profile";
+import { useEffect } from "react";
 
 export const useProfileForm = () => {
   const { toast } = useToast();
@@ -39,6 +40,53 @@ export const useProfileForm = () => {
       religious_restrictions: [],
     },
   });
+
+  // Fetch and set initial form data
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "You must be logged in to view your profile",
+          });
+          navigate("/auth");
+          return;
+        }
+
+        // First set the email from auth
+        form.setValue("email", user.email || "");
+
+        // Then fetch the rest of the profile data
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching profile:", error);
+          return;
+        }
+
+        if (profile) {
+          // Update all form fields with profile data
+          Object.entries(profile).forEach(([key, value]) => {
+            if (key in form.getValues()) {
+              form.setValue(key as keyof ProfileFormValues, value);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, [form, navigate, toast]);
 
   const onSubmit = async (values: ProfileFormValues) => {
     try {
@@ -107,20 +155,12 @@ export const useProfileForm = () => {
 
       if (updateError) {
         console.error("Supabase update error:", updateError);
-        if (updateError.code === '23505') {
-          toast({
-            variant: "destructive",
-            title: "Email already taken",
-            description: "Please use a different email address",
-          });
-          return;
-        }
         throw updateError;
       }
 
       toast({
-        title: "Profile completed!",
-        description: "Welcome to your personalized nutrition journey!",
+        title: "Profile updated!",
+        description: "Your profile has been updated successfully!",
       });
 
       navigate("/");

@@ -19,6 +19,7 @@ export type Database = {
           created_at: string | null
           date_of_birth: string | null
           dietary_preferences: string[] | null
+          email: string | null
           favorite_cuisines: string[] | null
           first_name: string | null
           gender: string | null
@@ -36,7 +37,6 @@ export type Database = {
           planning_preference: string | null
           preferred_grocery_stores: string[] | null
           religious_restrictions: string[] | null
-          username: string | null
           weight_kg: number | null
         }
         Insert: {
@@ -48,6 +48,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           dietary_preferences?: string[] | null
+          email?: string | null
           favorite_cuisines?: string[] | null
           first_name?: string | null
           gender?: string | null
@@ -65,7 +66,6 @@ export type Database = {
           planning_preference?: string | null
           preferred_grocery_stores?: string[] | null
           religious_restrictions?: string[] | null
-          username?: string | null
           weight_kg?: number | null
         }
         Update: {
@@ -77,6 +77,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           dietary_preferences?: string[] | null
+          email?: string | null
           favorite_cuisines?: string[] | null
           first_name?: string | null
           gender?: string | null
@@ -94,7 +95,6 @@ export type Database = {
           planning_preference?: string | null
           preferred_grocery_stores?: string[] | null
           religious_restrictions?: string[] | null
-          username?: string | null
           weight_kg?: number | null
         }
         Relationships: []
