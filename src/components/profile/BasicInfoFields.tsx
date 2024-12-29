@@ -9,12 +9,58 @@ import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues } from "@/schemas/profile";
 import { ProfileHeader } from "./ProfileHeader";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
 }
 
 export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
+  const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(filePath);
+
+      form.setValue('avatar_url', publicUrl);
+      
+      toast({
+        title: "Success",
+        description: "Profile picture uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to upload profile picture",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <FormField
@@ -64,17 +110,22 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
         name="avatar_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Profile Picture URL</FormLabel>
+            <FormLabel>Profile Picture</FormLabel>
             <FormControl>
               <div className="flex items-center gap-4">
                 <ProfileHeader
                   avatarUrl={field.value}
                   firstName={form.watch("first_name")}
                 />
-                <Input
-                  placeholder="https://example.com/avatar.jpg"
-                  {...field}
-                />
+                <div className="flex-1">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                  />
+                  <input type="hidden" {...field} />
+                </div>
               </div>
             </FormControl>
             <FormMessage />
