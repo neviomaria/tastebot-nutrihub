@@ -2,7 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import CompleteProfile from "@/pages/CompleteProfile";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
@@ -12,20 +14,50 @@ import { AppSidebar } from "@/components/AppSidebar";
 const queryClient = new QueryClient();
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    // Subscribe to auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Show nothing while checking auth state
+  if (isAuthenticated === null) {
+    return null;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AppSidebar>
+          {isAuthenticated ? (
+            <AppSidebar>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Navigate to="/" replace />} />
+                <Route path="/complete-profile" element={<CompleteProfile />} />
+                <Route path="/profile" element={<Profile />} />
+              </Routes>
+            </AppSidebar>
+          ) : (
             <Routes>
-              <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/complete-profile" element={<CompleteProfile />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="*" element={<Navigate to="/auth" replace />} />
             </Routes>
-          </AppSidebar>
+          )}
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
