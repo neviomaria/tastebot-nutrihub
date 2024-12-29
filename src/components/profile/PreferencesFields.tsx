@@ -1,4 +1,4 @@
-import { SelectField } from "@/components/form/SelectField";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
   FormField,
@@ -8,12 +8,14 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UseFormReturn } from "react-hook-form";
 import {
   ProfileFormValues,
   dietaryPreferences,
-  activityLevels,
+  allergies,
   healthGoals,
+  activityLevels,
   planningPreferences,
   cuisineTypes,
 } from "@/schemas/profile";
@@ -24,57 +26,257 @@ interface PreferencesFieldsProps {
 
 export const PreferencesFields = ({ form }: PreferencesFieldsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <SelectField
-        form={form}
-        name="dietary_preferences"
-        label="Dietary Preferences"
-        options={dietaryPreferences}
-      />
-
+    <div className="space-y-8">
+      {/* Dietary Preferences */}
       <FormField
         control={form.control}
-        name="allergies"
-        render={({ field }) => (
+        name="dietary_preferences"
+        render={() => (
           <FormItem>
-            <FormLabel>Allergies</FormLabel>
-            <FormControl>
-              <Input placeholder="e.g., nuts, dairy (optional)" {...field} />
-            </FormControl>
-            <FormDescription>
-              List any food allergies, separated by commas
-            </FormDescription>
+            <FormLabel>Dietary Preferences</FormLabel>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              {dietaryPreferences.map((item) => (
+                <FormField
+                  key={item}
+                  control={form.control}
+                  name="dietary_preferences"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value?.includes(item)}
+                          onCheckedChange={(checked) => {
+                            const value = field.value || [];
+                            return checked
+                              ? field.onChange([...value, item])
+                              : field.onChange(value.filter((i) => i !== item));
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">{item}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
             <FormMessage />
           </FormItem>
         )}
       />
 
-      <SelectField
-        form={form}
+      {/* Other Dietary Preferences */}
+      <FormField
+        control={form.control}
+        name="other_dietary_preferences"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Other Dietary Preferences</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter any other dietary preferences" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Allergies */}
+      <FormField
+        control={form.control}
+        name="allergies"
+        render={() => (
+          <FormItem>
+            <FormLabel>Allergies</FormLabel>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              {allergies.map((item) => (
+                <FormField
+                  key={item}
+                  control={form.control}
+                  name="allergies"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value?.includes(item)}
+                          onCheckedChange={(checked) => {
+                            const value = field.value || [];
+                            return checked
+                              ? field.onChange([...value, item])
+                              : field.onChange(value.filter((i) => i !== item));
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">{item}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Other Allergies */}
+      <FormField
+        control={form.control}
+        name="other_allergies"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Other Allergies</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter any other allergies" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Health Goals */}
+      <FormField
+        control={form.control}
         name="health_goal"
-        label="Primary Health Goal"
-        options={healthGoals}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Health Goals</FormLabel>
+            <FormControl>
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="grid grid-cols-2 gap-4"
+              >
+                {healthGoals.map((goal) => (
+                  <FormItem
+                    key={goal}
+                    className="flex items-center space-x-3 space-y-0"
+                  >
+                    <FormControl>
+                      <RadioGroupItem value={goal} />
+                    </FormControl>
+                    <FormLabel className="font-normal">{goal}</FormLabel>
+                  </FormItem>
+                ))}
+              </RadioGroup>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
       />
 
-      <SelectField
-        form={form}
+      {/* Activity Level */}
+      <FormField
+        control={form.control}
         name="activity_level"
-        label="Activity Level"
-        options={activityLevels}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Activity Level</FormLabel>
+            <FormDescription>
+              Select your typical weekly activity level
+            </FormDescription>
+            <FormControl>
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="grid gap-4"
+              >
+                {activityLevels.map((level) => (
+                  <FormItem
+                    key={level}
+                    className="flex items-center space-x-3 space-y-0"
+                  >
+                    <FormControl>
+                      <RadioGroupItem value={level} />
+                    </FormControl>
+                    <FormLabel className="font-normal">{level}</FormLabel>
+                  </FormItem>
+                ))}
+              </RadioGroup>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
       />
 
-      <SelectField
-        form={form}
+      {/* Planning Preferences */}
+      <FormField
+        control={form.control}
         name="planning_preference"
-        label="Meal Planning Preference"
-        options={planningPreferences}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Planning Preferences</FormLabel>
+            <FormControl>
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="grid gap-4"
+              >
+                {planningPreferences.map((pref) => (
+                  <FormItem
+                    key={pref}
+                    className="flex items-center space-x-3 space-y-0"
+                  >
+                    <FormControl>
+                      <RadioGroupItem value={pref} />
+                    </FormControl>
+                    <FormLabel className="font-normal">{pref}</FormLabel>
+                  </FormItem>
+                ))}
+              </RadioGroup>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
       />
 
-      <SelectField
-        form={form}
+      {/* Favorite Cuisines */}
+      <FormField
+        control={form.control}
         name="favorite_cuisines"
-        label="Favorite Cuisine"
-        options={cuisineTypes}
+        render={() => (
+          <FormItem>
+            <FormLabel>Favorite Cuisines</FormLabel>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              {cuisineTypes.map((cuisine) => (
+                <FormField
+                  key={cuisine}
+                  control={form.control}
+                  name="favorite_cuisines"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value?.includes(cuisine)}
+                          onCheckedChange={(checked) => {
+                            const value = field.value || [];
+                            return checked
+                              ? field.onChange([...value, cuisine])
+                              : field.onChange(value.filter((i) => i !== cuisine));
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal">{cuisine}</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      {/* Other Cuisines */}
+      <FormField
+        control={form.control}
+        name="other_cuisines"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Other Cuisines</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter any other favorite cuisines" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
       />
     </div>
   );

@@ -20,12 +20,15 @@ export const ProfileForm = () => {
       last_name: "",
       username: "",
       avatar_url: "",
-      dietary_preferences: "None",
-      allergies: "",
+      dietary_preferences: [],
+      allergies: [],
       health_goal: "General Health",
       activity_level: "Moderately Active",
       planning_preference: "Weekly Planning",
-      favorite_cuisines: "Italian",
+      favorite_cuisines: [],
+      other_dietary_preferences: "",
+      other_allergies: "",
+      other_cuisines: "",
     },
   });
 
@@ -44,7 +47,18 @@ export const ProfileForm = () => {
 
       const { error } = await supabase
         .from("profiles")
-        .update(values)
+        .update({
+          ...values,
+          dietary_preferences: values.dietary_preferences.includes("Other") 
+            ? [...values.dietary_preferences, values.other_dietary_preferences]
+            : values.dietary_preferences,
+          allergies: values.allergies.includes("Other")
+            ? [...values.allergies, values.other_allergies]
+            : values.allergies,
+          favorite_cuisines: values.favorite_cuisines.includes("Other")
+            ? [...values.favorite_cuisines, values.other_cuisines]
+            : values.favorite_cuisines,
+        })
         .eq("id", user.id);
 
       if (error) throw error;
@@ -66,7 +80,7 @@ export const ProfileForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <BasicInfoFields form={form} />
         <PreferencesFields form={form} />
 

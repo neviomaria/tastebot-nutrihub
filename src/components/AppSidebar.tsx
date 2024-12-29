@@ -17,6 +17,7 @@ const menuItems = [
   { title: "Recipes", icon: ChefHat, path: "/recipes" },
   { title: "Analytics", icon: Activity, path: "/analytics" },
   { title: "Community", icon: Users, path: "/community" },
+  { title: "Profile", icon: Users, path: "/complete-profile" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];
 

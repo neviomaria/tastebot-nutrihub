@@ -12,11 +12,11 @@ export type Database = {
       profiles: {
         Row: {
           activity_level: string | null
-          allergies: string | null
+          allergies: string[] | null
           avatar_url: string | null
           created_at: string | null
-          dietary_preferences: string | null
-          favorite_cuisines: string | null
+          dietary_preferences: string[] | null
+          favorite_cuisines: string[] | null
           first_name: string | null
           health_goal: string | null
           id: string
@@ -26,11 +26,11 @@ export type Database = {
         }
         Insert: {
           activity_level?: string | null
-          allergies?: string | null
+          allergies?: string[] | null
           avatar_url?: string | null
           created_at?: string | null
-          dietary_preferences?: string | null
-          favorite_cuisines?: string | null
+          dietary_preferences?: string[] | null
+          favorite_cuisines?: string[] | null
           first_name?: string | null
           health_goal?: string | null
           id: string
@@ -40,11 +40,11 @@ export type Database = {
         }
         Update: {
           activity_level?: string | null
-          allergies?: string | null
+          allergies?: string[] | null
           avatar_url?: string | null
           created_at?: string | null
-          dietary_preferences?: string | null
-          favorite_cuisines?: string | null
+          dietary_preferences?: string[] | null
+          favorite_cuisines?: string[] | null
           first_name?: string | null
           health_goal?: string | null
           id?: string
