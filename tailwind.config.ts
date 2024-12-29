@@ -33,12 +33,13 @@ export default {
           DEFAULT: "#F4F7FE",
           foreground: "#1B2559",
         },
-        sidebar: {
-          bg: "#FFFFFF",
-          hover: "#F4F7FE",
-          border: "#E6EDF9",
-          text: "#1B2559",
-          icon: "#9747FF",
+        auth: {
+          gradient: {
+            from: "#2D0B5A",
+            to: "#1A064F",
+          },
+          text: "#FFFFFF",
+          input: "#F4F7FE",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -60,20 +61,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        recipe: {
-          100: "#F8F5F2",
-          200: "#E8D5C4",
-          300: "#D0B49F",
-          400: "#A47551",
-          500: "#7D4E24",
-        },
-        herb: {
-          100: "#F1F5F2",
-          200: "#C2D6C4",
-          300: "#7EA172",
-          400: "#446B46",
-          500: "#2B4B2C",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -89,15 +76,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "fade-up": {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-up": "fade-up 0.5s ease-out",
       },
     },
   },
