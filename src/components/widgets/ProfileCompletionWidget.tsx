@@ -50,20 +50,24 @@ export const ProfileCompletionWidget = () => {
 
   return (
     <Link to="/profile">
-      <Card className="w-full hover:shadow-lg transition-shadow">
+      <Card className="w-full hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-white/50 backdrop-blur-sm border border-white/20">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Profile Completion</CardTitle>
+          <CardTitle className="text-xl font-bold gradient-text">Profile Completion</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               {completion}% Complete
             </span>
-            <span className="text-sm text-blue-600 hover:text-blue-700">
+            <span className="text-sm font-medium text-primary hover:text-primary-hover transition-colors inline-flex items-center gap-1">
               {completion < 100 ? 'Complete your profile →' : 'View your profile →'}
             </span>
           </div>
-          <Progress value={completion} className="h-2" />
+          <Progress 
+            value={completion} 
+            className="h-2 bg-secondary"
+            indicatorClassName="bg-gradient-to-r from-purple-600 to-blue-600"
+          />
         </CardContent>
       </Card>
     </Link>
