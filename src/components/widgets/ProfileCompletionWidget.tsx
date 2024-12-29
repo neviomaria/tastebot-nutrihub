@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 export const ProfileCompletionWidget = () => {
   const { data: profile } = useQuery({
@@ -48,21 +49,23 @@ export const ProfileCompletionWidget = () => {
   const completion = calculateCompletion();
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">Profile Completion</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {completion}% Complete
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {completion < 100 ? 'Complete your profile' : 'Profile completed!'}
-          </span>
-        </div>
-        <Progress value={completion} className="h-2" />
-      </CardContent>
-    </Card>
+    <Link to="/profile">
+      <Card className="w-full hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Profile Completion</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              {completion}% Complete
+            </span>
+            <span className="text-sm text-blue-600 hover:text-blue-700">
+              {completion < 100 ? 'Complete your profile →' : 'View your profile →'}
+            </span>
+          </div>
+          <Progress value={completion} className="h-2" />
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
