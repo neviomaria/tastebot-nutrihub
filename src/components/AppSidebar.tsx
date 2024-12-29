@@ -5,6 +5,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { AppHeader } from "./AppHeader";
 import {
   Tooltip,
   TooltipContent,
@@ -124,7 +125,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+      <div className="flex-1">
+        <AppHeader />
+        <main className="p-6">{children}</main>
+      </div>
     </div>
   );
 }

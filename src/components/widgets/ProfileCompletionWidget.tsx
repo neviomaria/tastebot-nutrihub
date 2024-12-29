@@ -1,0 +1,68 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+export const ProfileCompletionWidget = () => {
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const calculateCompletion = () => {
+    if (!profile) return 0;
+    
+    const fields = [
+      'first_name',
+      'last_name',
+      'country',
+      'health_goal',
+      'activity_level',
+      'dietary_preferences',
+      'allergies',
+      'favorite_cuisines',
+      'cooking_skill_level',
+      'meal_preferences'
+    ];
+    
+    const completedFields = fields.filter(field => {
+      const value = profile[field];
+      return value && (Array.isArray(value) ? value.length > 0 : true);
+    });
+    
+    return Math.round((completedFields.length / fields.length) * 100);
+  };
+
+  const completion = calculateCompletion();
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">Profile Completion</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {completion}% Complete
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {completion < 100 ? 'Complete your profile' : 'Profile completed!'}
+          </span>
+        </div>
+        <Progress value={completion} className="h-2" />
+      </CardContent>
+    </Card>
+  );
+};

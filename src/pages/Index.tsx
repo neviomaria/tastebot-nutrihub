@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useToast } from "@/components/ui/use-toast";
+import { ProfileCompletionWidget } from "@/components/widgets/ProfileCompletionWidget";
 
 const RECIPES = [
   {
@@ -50,28 +51,34 @@ const Index = () => {
   };
 
   return (
-    <div className="h-full animate-fade-up">
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-          Discover Delicious Recipes
-        </h1>
-        <p className="text-lg text-gray-600 mb-8">
-          Find and cook your favorite meals with our easy-to-follow recipes
-        </p>
-        <SearchBar onSearch={setSearchQuery} />
-      </header>
+    <div className="h-full animate-fade-up space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <ProfileCompletionWidget />
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredRecipes.map((recipe) => (
-          <RecipeCard
-            key={recipe.id}
-            title={recipe.title}
-            image={recipe.image}
-            cookTime={recipe.cookTime}
-            difficulty={recipe.difficulty}
-            onClick={() => handleRecipeClick(recipe.title)}
-          />
-        ))}
+      <div>
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+            Discover Delicious Recipes
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Find and cook your favorite meals with our easy-to-follow recipes
+          </p>
+          <SearchBar onSearch={setSearchQuery} />
+        </header>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredRecipes.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              title={recipe.title}
+              image={recipe.image}
+              cookTime={recipe.cookTime}
+              difficulty={recipe.difficulty}
+              onClick={() => handleRecipeClick(recipe.title)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
