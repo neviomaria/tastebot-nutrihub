@@ -29,6 +29,18 @@ export const ProfileForm = () => {
       other_dietary_preferences: "",
       other_allergies: "",
       other_cuisines: "",
+      // New fields
+      weight_kg: undefined,
+      height_cm: undefined,
+      date_of_birth: "",
+      gender: undefined,
+      cooking_skill_level: undefined,
+      meal_preferences: [],
+      medical_conditions: [],
+      other_medical_conditions: "",
+      preferred_grocery_stores: [],
+      grocery_budget: undefined,
+      religious_restrictions: [],
     },
   });
 
@@ -52,6 +64,10 @@ export const ProfileForm = () => {
           dietary_preferences: values.dietary_preferences,
           allergies: values.allergies,
           favorite_cuisines: values.favorite_cuisines,
+          meal_preferences: values.meal_preferences,
+          medical_conditions: values.medical_conditions,
+          preferred_grocery_stores: values.preferred_grocery_stores,
+          religious_restrictions: values.religious_restrictions,
           other_dietary_preferences: values.dietary_preferences.includes("Other") 
             ? values.other_dietary_preferences 
             : null,
@@ -60,6 +76,9 @@ export const ProfileForm = () => {
             : null,
           other_cuisines: values.favorite_cuisines.includes("Other") 
             ? values.other_cuisines 
+            : null,
+          other_medical_conditions: values.medical_conditions?.includes("Other")
+            ? values.other_medical_conditions
             : null,
         })
         .eq("id", user.id);
