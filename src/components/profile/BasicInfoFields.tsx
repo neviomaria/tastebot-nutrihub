@@ -138,12 +138,13 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
         name="avatar_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Profile Picture</FormLabel>
+            <FormLabel>Profile Picture (Optional)</FormLabel>
             <FormControl>
               <div className="flex items-center gap-4">
                 <ProfileHeader
                   avatarUrl={field.value}
                   firstName={form.watch("first_name")}
+                  lastName={form.watch("last_name")}
                 />
                 <div className="flex-1">
                   <Input
