@@ -65,8 +65,7 @@ export const ProfileCompletionWidget = () => {
           </div>
           <Progress 
             value={completion} 
-            className="h-2 bg-secondary"
-            indicatorClassName="bg-gradient-to-r from-purple-600 to-blue-600"
+            className="h-2 bg-secondary [&>div]:bg-gradient-to-r [&>div]:from-purple-600 [&>div]:to-blue-600"
           />
         </CardContent>
       </Card>
