@@ -117,17 +117,20 @@ export const religiousRestrictions = [
 ] as const;
 
 export const profileSchema = z.object({
+  // Basic profile info (mandatory)
   first_name: z.string().min(2, "First name must be at least 2 characters"),
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
   username: z.string().min(3, "Username must be at least 3 characters"),
   avatar_url: z.string().optional(),
   country: z.string().min(2, "Country must be at least 2 characters"),
-  dietary_preferences: z.array(z.enum(dietaryPreferences)).min(1, "Please select at least one dietary preference"),
-  allergies: z.array(z.enum(allergies)),
-  health_goal: z.enum(healthGoals),
-  activity_level: z.enum(activityLevels),
-  planning_preference: z.enum(planningPreferences),
-  favorite_cuisines: z.array(z.enum(cuisineTypes)).min(1, "Please select at least one cuisine"),
+  
+  // All other fields are optional
+  dietary_preferences: z.array(z.enum(dietaryPreferences)).optional(),
+  allergies: z.array(z.enum(allergies)).optional(),
+  health_goal: z.enum(healthGoals).optional(),
+  activity_level: z.enum(activityLevels).optional(),
+  planning_preference: z.enum(planningPreferences).optional(),
+  favorite_cuisines: z.array(z.enum(cuisineTypes)).optional(),
   other_dietary_preferences: z.string().optional(),
   other_allergies: z.string().optional(),
   other_cuisines: z.string().optional(),

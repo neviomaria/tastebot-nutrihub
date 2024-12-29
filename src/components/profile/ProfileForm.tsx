@@ -70,14 +70,21 @@ export const ProfileForm = () => {
       const { error } = await supabase
         .from("profiles")
         .update({
-          ...values,
-          dietary_preferences: values.dietary_preferences,
-          allergies: values.allergies,
-          favorite_cuisines: values.favorite_cuisines,
-          meal_preferences: values.meal_preferences,
-          medical_conditions: values.medical_conditions,
-          preferred_grocery_stores: values.preferred_grocery_stores,
-          religious_restrictions: values.religious_restrictions,
+          first_name: values.first_name,
+          last_name: values.last_name,
+          username: values.username,
+          avatar_url: values.avatar_url,
+          country: values.country,
+          dietary_preferences: values.dietary_preferences || [],
+          allergies: values.allergies || [],
+          favorite_cuisines: values.favorite_cuisines || [],
+          meal_preferences: values.meal_preferences || [],
+          medical_conditions: values.medical_conditions || [],
+          preferred_grocery_stores: values.preferred_grocery_stores || [],
+          religious_restrictions: values.religious_restrictions || [],
+          health_goal: values.health_goal,
+          activity_level: values.activity_level,
+          planning_preference: values.planning_preference,
           other_dietary_preferences: values.dietary_preferences?.includes("Other") 
             ? values.other_dietary_preferences 
             : null,
@@ -90,6 +97,12 @@ export const ProfileForm = () => {
           other_medical_conditions: values.medical_conditions?.includes("Other")
             ? values.other_medical_conditions
             : null,
+          weight_kg: values.weight_kg,
+          height_cm: values.height_cm,
+          date_of_birth: values.date_of_birth || null,
+          gender: values.gender,
+          cooking_skill_level: values.cooking_skill_level,
+          grocery_budget: values.grocery_budget,
         })
         .eq("id", user.id);
 
@@ -102,6 +115,7 @@ export const ProfileForm = () => {
 
       navigate("/");
     } catch (error) {
+      console.error("Profile update error:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -115,7 +129,7 @@ export const ProfileForm = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="w-full overflow-x-auto flex flex-nowrap">
-            <TabsTrigger value="profile" className="flex-shrink-0">Profile</TabsTrigger>
+            <TabsTrigger value="profile" className="flex-shrink-0">Profile*</TabsTrigger>
             <TabsTrigger value="dietary" className="flex-shrink-0">Dietary Preferences</TabsTrigger>
             <TabsTrigger value="cooking" className="flex-shrink-0">Cooking Preferences</TabsTrigger>
             <TabsTrigger value="medical" className="flex-shrink-0">Medical Information</TabsTrigger>
@@ -124,7 +138,10 @@ export const ProfileForm = () => {
           </TabsList>
 
           <TabsContent value="profile" className="mt-6">
-            <BasicInfoFields form={form} />
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">* Required fields</p>
+              <BasicInfoFields form={form} />
+            </div>
           </TabsContent>
 
           <TabsContent value="dietary" className="mt-6">
