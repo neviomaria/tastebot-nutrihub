@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProfileData {
-  username: string | null;
   first_name: string | null;
   last_name: string | null;
   avatar_url: string | null;
@@ -48,7 +47,6 @@ const Profile = () => {
         
         // Ensure all fields are present in the profile data
         const profileData: ProfileData = {
-          username: data.username,
           first_name: data.first_name,
           last_name: data.last_name,
           avatar_url: data.avatar_url,
@@ -113,10 +111,6 @@ const Profile = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-medium text-sm text-muted-foreground">Username</h3>
-              <p className="mt-1">{profile.username || "Not set"}</p>
-            </div>
             <div>
               <h3 className="font-medium text-sm text-muted-foreground">Name</h3>
               <p className="mt-1">

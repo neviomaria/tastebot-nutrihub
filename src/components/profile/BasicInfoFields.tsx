@@ -33,6 +33,17 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
+      // Delete previous avatar if it exists
+      const currentAvatarUrl = form.getValues("avatar_url");
+      if (currentAvatarUrl) {
+        const filePath = currentAvatarUrl.split("/").pop();
+        if (filePath) {
+          await supabase.storage
+            .from("profile-pictures")
+            .remove([filePath]);
+        }
+      }
+
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}-${Math.random()}.${fileExt}`;
 
