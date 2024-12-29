@@ -25,12 +25,20 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#9747FF",
+          hover: "#8A35FF",
+          foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#F4F7FE",
+          foreground: "#1B2559",
+        },
+        sidebar: {
+          bg: "#FFFFFF",
+          hover: "#F4F7FE",
+          border: "#E6EDF9",
+          text: "#1B2559",
+          icon: "#9747FF",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
