@@ -56,9 +56,17 @@ export const ProfileForm = () => {
 
   const onSubmit = async (values: ProfileFormValues) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      console.log("Starting profile update with values:", values);
+      
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error("Error getting user:", userError);
+        throw userError;
+      }
       
       if (!user) {
+        console.error("No user found");
         toast({
           variant: "destructive",
           title: "Error",
@@ -67,7 +75,9 @@ export const ProfileForm = () => {
         return;
       }
 
-      const { error } = await supabase
+      console.log("Updating profile for user:", user.id);
+
+      const { error: updateError, data: updateData } = await supabase
         .from("profiles")
         .update({
           first_name: values.first_name,
@@ -75,13 +85,13 @@ export const ProfileForm = () => {
           username: values.username,
           avatar_url: values.avatar_url || null,
           country: values.country,
-          dietary_preferences: values.dietary_preferences || null,
-          allergies: values.allergies || null,
-          favorite_cuisines: values.favorite_cuisines || null,
-          meal_preferences: values.meal_preferences || null,
-          medical_conditions: values.medical_conditions || null,
-          preferred_grocery_stores: values.preferred_grocery_stores || null,
-          religious_restrictions: values.religious_restrictions || null,
+          dietary_preferences: values.dietary_preferences?.length ? values.dietary_preferences : null,
+          allergies: values.allergies?.length ? values.allergies : null,
+          favorite_cuisines: values.favorite_cuisines?.length ? values.favorite_cuisines : null,
+          meal_preferences: values.meal_preferences?.length ? values.meal_preferences : null,
+          medical_conditions: values.medical_conditions?.length ? values.medical_conditions : null,
+          preferred_grocery_stores: values.preferred_grocery_stores?.length ? values.preferred_grocery_stores : null,
+          religious_restrictions: values.religious_restrictions?.length ? values.religious_restrictions : null,
           health_goal: values.health_goal || null,
           activity_level: values.activity_level || null,
           planning_preference: values.planning_preference || null,
@@ -104,11 +114,14 @@ export const ProfileForm = () => {
           cooking_skill_level: values.cooking_skill_level || null,
           grocery_budget: values.grocery_budget || null,
         })
-        .eq("id", user.id);
+        .eq("id", user.id)
+        .select();
 
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
+      console.log("Update response:", { error: updateError, data: updateData });
+
+      if (updateError) {
+        console.error("Supabase update error:", updateError);
+        throw updateError;
       }
 
       toast({
