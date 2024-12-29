@@ -21,6 +21,9 @@ export type Database = {
           health_goal: string | null
           id: string
           last_name: string | null
+          other_allergies: string | null
+          other_cuisines: string | null
+          other_dietary_preferences: string | null
           planning_preference: string | null
           username: string | null
         }
@@ -35,6 +38,9 @@ export type Database = {
           health_goal?: string | null
           id: string
           last_name?: string | null
+          other_allergies?: string | null
+          other_cuisines?: string | null
+          other_dietary_preferences?: string | null
           planning_preference?: string | null
           username?: string | null
         }
@@ -49,6 +55,9 @@ export type Database = {
           health_goal?: string | null
           id?: string
           last_name?: string | null
+          other_allergies?: string | null
+          other_cuisines?: string | null
+          other_dietary_preferences?: string | null
           planning_preference?: string | null
           username?: string | null
         }

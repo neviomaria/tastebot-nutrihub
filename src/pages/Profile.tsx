@@ -45,7 +45,25 @@ const Profile = () => {
           .single();
 
         if (error) throw error;
-        setProfile(data);
+        
+        // Ensure all fields are present in the profile data
+        const profileData: ProfileData = {
+          username: data.username,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          avatar_url: data.avatar_url,
+          dietary_preferences: data.dietary_preferences,
+          other_dietary_preferences: data.other_dietary_preferences,
+          allergies: data.allergies,
+          other_allergies: data.other_allergies,
+          health_goal: data.health_goal,
+          activity_level: data.activity_level,
+          planning_preference: data.planning_preference,
+          favorite_cuisines: data.favorite_cuisines,
+          other_cuisines: data.other_cuisines,
+        };
+        
+        setProfile(profileData);
       } catch (error) {
         toast({
           variant: "destructive",
