@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { SelectField } from "@/components/form/SelectField";
+import { countries } from "@/schemas/countries";
+import { Flag } from "lucide-react";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -106,19 +109,15 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="country"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Country</FormLabel>
-              <FormControl>
-                <Input placeholder="United States" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="relative">
+          <SelectField
+            form={form}
+            name="country"
+            label="Country"
+            options={countries}
+          />
+          <Flag className="absolute right-10 top-9 h-4 w-4 text-muted-foreground" />
+        </div>
       </div>
 
       <FormField
