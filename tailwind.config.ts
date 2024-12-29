@@ -22,8 +22,8 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "#F5F5F7",
+        foreground: "#1A1A1A",
         primary: {
           DEFAULT: "#8B5CF6",
           hover: "#7C3AED",
@@ -33,11 +33,18 @@ export default {
           DEFAULT: "#F4F7FE",
           foreground: "#1B2559",
         },
+        sidebar: {
+          DEFAULT: "#FFFFFF",
+          hover: "#F5F5F7",
+          active: "#F0F0F2",
+          border: "#E5E7EB",
+          text: "#1A1A1A",
+        },
+        widget: {
+          background: "#FFFFFF",
+          border: "rgba(255, 255, 255, 0.1)",
+        },
         auth: {
-          gradient: {
-            from: "#2D0B5A",
-            to: "#1A064F",
-          },
           text: "#FFFFFF",
           input: "#F4F7FE",
         },
@@ -46,28 +53,23 @@ export default {
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#F5F5F7",
+          foreground: "#6B7280",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#F5F5F7",
+          foreground: "#1A1A1A",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "#FFFFFF",
+          foreground: "#1A1A1A",
         },
       },
       fontFamily: {
         sans: ['Inter var', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(90deg, hsla(277, 75%, 84%, 1) 0%, hsla(297, 50%, 51%, 1) 100%)',
-        'gradient-secondary': 'linear-gradient(90deg, hsla(221, 45%, 73%, 1) 0%, hsla(220, 78%, 29%, 1) 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #F5F5F7 0%, #FFFFFF 100%)',
       },
     },
   },

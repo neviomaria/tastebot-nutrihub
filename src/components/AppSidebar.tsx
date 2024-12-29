@@ -41,10 +41,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-secondary">
+    <div className="flex min-h-screen w-full bg-background">
       <aside
         className={cn(
-          "relative flex h-screen flex-col border-r border-sidebar-border bg-sidebar-bg transition-all duration-300",
+          "relative flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300",
           isCollapsed ? "w-20" : "w-64"
         )}
       >
@@ -56,7 +56,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-sidebar-icon hover:bg-sidebar-hover"
+            className="text-sidebar-text hover:bg-sidebar-hover"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             {isCollapsed ? (
@@ -76,7 +76,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-start text-sidebar-text hover:bg-sidebar-hover hover:text-primary",
+                      "w-full justify-start text-sidebar-text hover:bg-sidebar-hover",
                       !isCollapsed && "px-4"
                     )}
                     onClick={() => navigate(item.path)}
