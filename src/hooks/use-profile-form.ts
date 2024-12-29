@@ -14,7 +14,7 @@ export const useProfileForm = () => {
     defaultValues: {
       first_name: "",
       last_name: "",
-      username: "",
+      email: "",
       avatar_url: "",
       country: "",
       dietary_preferences: [],
@@ -66,7 +66,7 @@ export const useProfileForm = () => {
       const updateData = {
         first_name: values.first_name,
         last_name: values.last_name,
-        username: values.username,
+        email: values.email,
         avatar_url: values.avatar_url || null,
         country: values.country,
         dietary_preferences: values.dietary_preferences?.length ? values.dietary_preferences : null,
@@ -110,8 +110,8 @@ export const useProfileForm = () => {
         if (updateError.code === '23505') {
           toast({
             variant: "destructive",
-            title: "Username already taken",
-            description: "Please choose a different username",
+            title: "Email already taken",
+            description: "Please use a different email address",
           });
           return;
         }

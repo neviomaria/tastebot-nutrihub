@@ -120,7 +120,7 @@ export const profileSchema = z.object({
   // Basic profile info (mandatory)
   first_name: z.string().min(2, "First name must be at least 2 characters"),
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Invalid email address"),
   avatar_url: z.string().optional(),
   country: z.string().min(2, "Country must be at least 2 characters"),
   

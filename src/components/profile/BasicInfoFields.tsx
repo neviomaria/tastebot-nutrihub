@@ -15,7 +15,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { SelectField } from "@/components/form/SelectField";
 import { countries } from "@/schemas/countries";
-import { Flag } from "lucide-react";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -24,7 +23,6 @@ interface BasicInfoFieldsProps {
 export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
-  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -65,37 +63,6 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
     }
   };
 
-  const checkUsername = async (username: string) => {
-    try {
-      setCheckingUsername(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username)
-        .neq('id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking username:', error);
-        return;
-      }
-
-      if (data) {
-        form.setError('username', {
-          type: 'manual',
-          message: 'This username is already taken'
-        });
-      }
-    } catch (error) {
-      console.error('Error checking username:', error);
-    } finally {
-      setCheckingUsername(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -129,39 +96,28 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
 
         <FormField
           control={form.control}
-          name="username"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder="johndoe" 
+                  type="email"
+                  placeholder="john.doe@example.com" 
                   {...field} 
-                  onChange={(e) => {
-                    field.onChange(e);
-                    if (e.target.value.length >= 3) {
-                      checkUsername(e.target.value);
-                    }
-                  }}
                 />
               </FormControl>
               <FormMessage />
-              {checkingUsername && (
-                <p className="text-sm text-muted-foreground">Checking username availability...</p>
-              )}
             </FormItem>
           )}
         />
 
-        <div className="relative">
-          <SelectField
-            form={form}
-            name="country"
-            label="Country"
-            options={countries}
-          />
-          <Flag className="absolute right-8 top-[2.25rem] h-4 w-4 text-muted-foreground pointer-events-none" />
-        </div>
+        <SelectField
+          form={form}
+          name="country"
+          label="Country"
+          options={countries}
+        />
       </div>
 
       <FormField
