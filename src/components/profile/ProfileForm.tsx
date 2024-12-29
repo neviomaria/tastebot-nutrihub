@@ -73,18 +73,18 @@ export const ProfileForm = () => {
           first_name: values.first_name,
           last_name: values.last_name,
           username: values.username,
-          avatar_url: values.avatar_url,
+          avatar_url: values.avatar_url || null,
           country: values.country,
-          dietary_preferences: values.dietary_preferences || [],
-          allergies: values.allergies || [],
-          favorite_cuisines: values.favorite_cuisines || [],
-          meal_preferences: values.meal_preferences || [],
-          medical_conditions: values.medical_conditions || [],
-          preferred_grocery_stores: values.preferred_grocery_stores || [],
-          religious_restrictions: values.religious_restrictions || [],
-          health_goal: values.health_goal,
-          activity_level: values.activity_level,
-          planning_preference: values.planning_preference,
+          dietary_preferences: values.dietary_preferences || null,
+          allergies: values.allergies || null,
+          favorite_cuisines: values.favorite_cuisines || null,
+          meal_preferences: values.meal_preferences || null,
+          medical_conditions: values.medical_conditions || null,
+          preferred_grocery_stores: values.preferred_grocery_stores || null,
+          religious_restrictions: values.religious_restrictions || null,
+          health_goal: values.health_goal || null,
+          activity_level: values.activity_level || null,
+          planning_preference: values.planning_preference || null,
           other_dietary_preferences: values.dietary_preferences?.includes("Other") 
             ? values.other_dietary_preferences 
             : null,
@@ -97,16 +97,19 @@ export const ProfileForm = () => {
           other_medical_conditions: values.medical_conditions?.includes("Other")
             ? values.other_medical_conditions
             : null,
-          weight_kg: values.weight_kg,
-          height_cm: values.height_cm,
+          weight_kg: values.weight_kg || null,
+          height_cm: values.height_cm || null,
           date_of_birth: values.date_of_birth || null,
-          gender: values.gender,
-          cooking_skill_level: values.cooking_skill_level,
-          grocery_budget: values.grocery_budget,
+          gender: values.gender || null,
+          cooking_skill_level: values.cooking_skill_level || null,
+          grocery_budget: values.grocery_budget || null,
         })
         .eq("id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
       toast({
         title: "Profile completed!",
