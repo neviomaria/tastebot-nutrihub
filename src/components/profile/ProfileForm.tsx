@@ -7,7 +7,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { profileSchema, type ProfileFormValues } from "@/schemas/profile";
 import { BasicInfoFields } from "./BasicInfoFields";
-import { PreferencesFields } from "./PreferencesFields";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DietarySection } from "./sections/DietarySection";
 import { AllergiesSection } from "./sections/AllergiesSection";

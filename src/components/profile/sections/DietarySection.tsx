@@ -1,71 +1,43 @@
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues, dietaryPreferences } from "@/schemas/profile";
+import { CheckboxField } from "@/components/form/CheckboxField";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 interface DietarySectionProps {
   form: UseFormReturn<ProfileFormValues>;
 }
 
 export const DietarySection = ({ form }: DietarySectionProps) => {
+  const showOtherField = form.watch("dietary_preferences")?.includes("Other");
+
   return (
     <div className="space-y-4">
-      <FormField
-        control={form.control}
-        name="dietary_preferences"
-        render={() => (
-          <FormItem>
-            <FormLabel>Dietary Preferences</FormLabel>
-            <div className="grid grid-cols-2 gap-4 mt-2">
-              {dietaryPreferences.map((item) => (
-                <FormField
-                  key={item}
-                  control={form.control}
-                  name="dietary_preferences"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value?.includes(item)}
-                          onCheckedChange={(checked) => {
-                            const value = field.value || [];
-                            return checked
-                              ? field.onChange([...value, item])
-                              : field.onChange(value.filter((i) => i !== item));
-                          }}
-                        />
-                      </FormControl>
-                      <FormLabel className="font-normal">{item}</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              ))}
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <h3 className="text-lg font-semibold">Dietary Preferences</h3>
+      <div className="space-y-6">
+        <CheckboxField
+          form={form}
+          name="dietary_preferences"
+          label="Dietary Preferences"
+          options={dietaryPreferences}
+        />
 
-      <FormField
-        control={form.control}
-        name="other_dietary_preferences"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Other Dietary Preferences</FormLabel>
-            <FormControl>
-              <Input placeholder="Enter any other dietary preferences" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+        {showOtherField && (
+          <FormField
+            control={form.control}
+            name="other_dietary_preferences"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Other Dietary Preferences</FormLabel>
+                <FormControl>
+                  <Input placeholder="Please specify" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         )}
-      />
+      </div>
     </div>
   );
 };
