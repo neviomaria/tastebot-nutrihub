@@ -14,52 +14,85 @@ export type Database = {
           activity_level: string | null
           allergies: string[] | null
           avatar_url: string | null
+          cooking_skill_level: string | null
           created_at: string | null
+          date_of_birth: string | null
           dietary_preferences: string[] | null
           favorite_cuisines: string[] | null
           first_name: string | null
+          gender: string | null
+          grocery_budget: string | null
           health_goal: string | null
+          height_cm: number | null
           id: string
           last_name: string | null
+          meal_preferences: string[] | null
+          medical_conditions: string[] | null
           other_allergies: string | null
           other_cuisines: string | null
           other_dietary_preferences: string | null
+          other_medical_conditions: string | null
           planning_preference: string | null
+          preferred_grocery_stores: string[] | null
+          religious_restrictions: string[] | null
           username: string | null
+          weight_kg: number | null
         }
         Insert: {
           activity_level?: string | null
           allergies?: string[] | null
           avatar_url?: string | null
+          cooking_skill_level?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           dietary_preferences?: string[] | null
           favorite_cuisines?: string[] | null
           first_name?: string | null
+          gender?: string | null
+          grocery_budget?: string | null
           health_goal?: string | null
+          height_cm?: number | null
           id: string
           last_name?: string | null
+          meal_preferences?: string[] | null
+          medical_conditions?: string[] | null
           other_allergies?: string | null
           other_cuisines?: string | null
           other_dietary_preferences?: string | null
+          other_medical_conditions?: string | null
           planning_preference?: string | null
+          preferred_grocery_stores?: string[] | null
+          religious_restrictions?: string[] | null
           username?: string | null
+          weight_kg?: number | null
         }
         Update: {
           activity_level?: string | null
           allergies?: string[] | null
           avatar_url?: string | null
+          cooking_skill_level?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           dietary_preferences?: string[] | null
           favorite_cuisines?: string[] | null
           first_name?: string | null
+          gender?: string | null
+          grocery_budget?: string | null
           health_goal?: string | null
+          height_cm?: number | null
           id?: string
           last_name?: string | null
+          meal_preferences?: string[] | null
+          medical_conditions?: string[] | null
           other_allergies?: string | null
           other_cuisines?: string | null
           other_dietary_preferences?: string | null
+          other_medical_conditions?: string | null
           planning_preference?: string | null
+          preferred_grocery_stores?: string[] | null
+          religious_restrictions?: string[] | null
           username?: string | null
+          weight_kg?: number | null
         }
         Relationships: []
       }
