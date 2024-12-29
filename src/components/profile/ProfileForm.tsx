@@ -34,9 +34,9 @@ export const ProfileForm = () => {
       country: "",
       dietary_preferences: [],
       allergies: [],
-      health_goal: "General Health",
-      activity_level: "Moderately Active",
-      planning_preference: "Weekly Planning",
+      health_goal: undefined,
+      activity_level: undefined,
+      planning_preference: undefined,
       favorite_cuisines: [],
       other_dietary_preferences: "",
       other_allergies: "",
@@ -79,13 +79,13 @@ export const ProfileForm = () => {
           medical_conditions: values.medical_conditions,
           preferred_grocery_stores: values.preferred_grocery_stores,
           religious_restrictions: values.religious_restrictions,
-          other_dietary_preferences: values.dietary_preferences.includes("Other") 
+          other_dietary_preferences: values.dietary_preferences?.includes("Other") 
             ? values.other_dietary_preferences 
             : null,
-          other_allergies: values.allergies.includes("Other") 
+          other_allergies: values.allergies?.includes("Other") 
             ? values.other_allergies 
             : null,
-          other_cuisines: values.favorite_cuisines.includes("Other") 
+          other_cuisines: values.favorite_cuisines?.includes("Other") 
             ? values.other_cuisines 
             : null,
           other_medical_conditions: values.medical_conditions?.includes("Other")
@@ -113,15 +113,15 @@ export const ProfileForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="dietary">Dietary Preferences</TabsTrigger>
-            <TabsTrigger value="cooking">Cooking Preferences</TabsTrigger>
-            <TabsTrigger value="medical">Medical Information</TabsTrigger>
-            <TabsTrigger value="shopping">Shopping Preferences</TabsTrigger>
-            <TabsTrigger value="religious">Religious or Ethical</TabsTrigger>
+          <TabsList className="w-full overflow-x-auto flex flex-nowrap">
+            <TabsTrigger value="profile" className="flex-shrink-0">Profile</TabsTrigger>
+            <TabsTrigger value="dietary" className="flex-shrink-0">Dietary Preferences</TabsTrigger>
+            <TabsTrigger value="cooking" className="flex-shrink-0">Cooking Preferences</TabsTrigger>
+            <TabsTrigger value="medical" className="flex-shrink-0">Medical Information</TabsTrigger>
+            <TabsTrigger value="shopping" className="flex-shrink-0">Shopping Preferences</TabsTrigger>
+            <TabsTrigger value="religious" className="flex-shrink-0">Religious or Ethical</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="mt-6">
