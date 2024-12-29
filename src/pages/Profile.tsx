@@ -11,12 +11,15 @@ interface ProfileData {
   first_name: string | null;
   last_name: string | null;
   avatar_url: string | null;
-  dietary_preferences: string | null;
-  allergies: string | null;
+  dietary_preferences: string[] | null;
+  other_dietary_preferences: string | null;
+  allergies: string[] | null;
+  other_allergies: string | null;
   health_goal: string | null;
   activity_level: string | null;
   planning_preference: string | null;
-  favorite_cuisines: string | null;
+  favorite_cuisines: string[] | null;
+  other_cuisines: string | null;
 }
 
 const Profile = () => {
@@ -70,6 +73,15 @@ const Profile = () => {
     return null;
   }
 
+  const formatArrayField = (array: string[] | null, otherValue: string | null) => {
+    if (!array) return "None";
+    const items = array.filter(item => item !== "Other");
+    if (otherValue) {
+      items.push(otherValue);
+    }
+    return items.join(", ");
+  };
+
   return (
     <div className="container max-w-2xl py-8 space-y-6">
       <ProfileHeader
@@ -97,11 +109,11 @@ const Profile = () => {
             </div>
             <div>
               <h3 className="font-medium text-sm text-muted-foreground">Dietary Preferences</h3>
-              <p className="mt-1">{profile.dietary_preferences || "None"}</p>
+              <p className="mt-1">{formatArrayField(profile.dietary_preferences, profile.other_dietary_preferences)}</p>
             </div>
             <div>
               <h3 className="font-medium text-sm text-muted-foreground">Allergies</h3>
-              <p className="mt-1">{profile.allergies || "None"}</p>
+              <p className="mt-1">{formatArrayField(profile.allergies, profile.other_allergies)}</p>
             </div>
             <div>
               <h3 className="font-medium text-sm text-muted-foreground">Health Goal</h3>
@@ -117,7 +129,7 @@ const Profile = () => {
             </div>
             <div>
               <h3 className="font-medium text-sm text-muted-foreground">Favorite Cuisines</h3>
-              <p className="mt-1">{profile.favorite_cuisines || "Not set"}</p>
+              <p className="mt-1">{formatArrayField(profile.favorite_cuisines, profile.other_cuisines)}</p>
             </div>
           </div>
         </CardContent>

@@ -49,15 +49,18 @@ export const ProfileForm = () => {
         .from("profiles")
         .update({
           ...values,
-          dietary_preferences: values.dietary_preferences.includes("Other") 
-            ? [...values.dietary_preferences, values.other_dietary_preferences]
-            : values.dietary_preferences,
-          allergies: values.allergies.includes("Other")
-            ? [...values.allergies, values.other_allergies]
-            : values.allergies,
-          favorite_cuisines: values.favorite_cuisines.includes("Other")
-            ? [...values.favorite_cuisines, values.other_cuisines]
-            : values.favorite_cuisines,
+          dietary_preferences: values.dietary_preferences,
+          allergies: values.allergies,
+          favorite_cuisines: values.favorite_cuisines,
+          other_dietary_preferences: values.dietary_preferences.includes("Other") 
+            ? values.other_dietary_preferences 
+            : null,
+          other_allergies: values.allergies.includes("Other") 
+            ? values.other_allergies 
+            : null,
+          other_cuisines: values.favorite_cuisines.includes("Other") 
+            ? values.other_cuisines 
+            : null,
         })
         .eq("id", user.id);
 
