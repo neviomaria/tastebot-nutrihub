@@ -28,12 +28,13 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [menuItems, setMenuItems] = useState(baseMenuItems);
+  const [userBooks, setUserBooks] = useState<{ book_id: string; book_title: string }[]>([]);
 
   useEffect(() => {
-    const checkCoupon = async () => {
+    const checkCouponAndBooks = async () => {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("coupon_code")
+        .select("coupon_code, book_id, book_title")
         .single();
 
       if (profile?.coupon_code) {
@@ -41,12 +42,20 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           ...baseMenuItems,
           { title: "My Books", icon: Book, path: "/my-books" },
         ]);
+
+        if (profile.book_id && profile.book_title) {
+          setUserBooks([{ 
+            book_id: profile.book_id,
+            book_title: profile.book_title
+          }]);
+        }
       } else {
         setMenuItems(baseMenuItems);
+        setUserBooks([]);
       }
     };
 
-    checkCoupon();
+    checkCouponAndBooks();
   }, []);
 
   const handleLogout = async () => {
@@ -93,28 +102,46 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 space-y-1 p-2">
           <TooltipProvider delayDuration={0}>
             {menuItems.map((item) => (
-              <Tooltip key={item.title}>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start text-sidebar-text hover:bg-sidebar-hover",
-                      !isCollapsed && "px-4"
-                    )}
-                    onClick={() => navigate(item.path)}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    {!isCollapsed && (
-                      <span className="ml-3">{item.title}</span>
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                {isCollapsed && (
-                  <TooltipContent side="right">
-                    {item.title}
-                  </TooltipContent>
+              <div key={item.title}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start text-sidebar-text hover:bg-sidebar-hover",
+                        !isCollapsed && "px-4"
+                      )}
+                      onClick={() => navigate(item.path)}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {!isCollapsed && (
+                        <span className="ml-3">{item.title}</span>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  {isCollapsed && (
+                    <TooltipContent side="right">
+                      {item.title}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+
+                {/* Display user's books under My Books */}
+                {item.title === "My Books" && !isCollapsed && userBooks.length > 0 && (
+                  <div className="ml-9 mt-1 space-y-1">
+                    {userBooks.map((book) => (
+                      <Button
+                        key={book.book_id}
+                        variant="ghost"
+                        className="w-full justify-start px-4 text-sm text-sidebar-text hover:bg-sidebar-hover"
+                        onClick={() => navigate(`/my-books/${book.book_id}`)}
+                      >
+                        {book.book_title}
+                      </Button>
+                    ))}
+                  </div>
                 )}
-              </Tooltip>
+              </div>
             ))}
           </TooltipProvider>
         </nav>
