@@ -5,6 +5,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { SignUpCouponForm } from "@/components/auth/SignUpCouponForm";
+import { ViewType } from "@supabase/auth-ui-shared";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -78,7 +79,6 @@ const AuthPage = () => {
           },
         }}
         providers={[]}
-        onViewChange={({ view }) => setView(view)}
       />
       
       {view === "sign_up" && (
