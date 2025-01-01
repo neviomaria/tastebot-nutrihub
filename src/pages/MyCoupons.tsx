@@ -42,14 +42,14 @@ const MyCoupons = () => {
         .from("profiles")
         .select("coupon_code, book_id, book_title")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      if (profile.coupon_code && profile.book_id) {
+      if (profile?.coupon_code && profile?.book_id && profile?.book_title) {
         setBookAccess([{
           book_id: profile.book_id,
-          book_title: profile.book_title || "Book title not available",
+          book_title: profile.book_title,
           coupon_code: profile.coupon_code,
         }]);
       } else {

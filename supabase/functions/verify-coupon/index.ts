@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     )
 
-    const { coupon } = await req.json()
+    const { coupon_code } = await req.json()
     
     const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/login', {
       method: 'POST',
@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     })
 
     const books = await booksResponse.json()
-    const book = books.find((book: any) => book.acf.coupon === coupon)
+    const book = books.find((book: any) => book.acf.coupon === coupon_code)
 
     if (!book) {
       return new Response(
@@ -47,27 +47,12 @@ Deno.serve(async (req) => {
       )
     }
 
-    const { error } = await supabaseClient
-      .from('profiles')
-      .update({ 
-        coupon_code: coupon,
-        book_id: book.id.toString(),
-        book_title: book.title.rendered
-      })
-      .eq('id', req.headers.get('x-user-id'))
-
-    if (error) throw error
-
     return new Response(
       JSON.stringify({ 
-        message: 'Coupon verified successfully',
-        book: {
-          id: book.id,
-          title: book.title.rendered,
-          subtitle: book.acf.sottotitolo_per_sito,
-          preview_url: book.acf.preview_libro_kindle,
-          kindle_url: book.acf.link_kindle
-        }
+        success: true,
+        book_id: book.id.toString(),
+        book_title: book.title.rendered,
+        access_level: 'premium'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
