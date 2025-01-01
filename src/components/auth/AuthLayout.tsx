@@ -7,7 +7,7 @@ interface AuthLayoutProps {
 export const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen w-full flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-auth-gradient-from to-auth-gradient-to text-auth-text p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary text-auth-text p-12 flex-col justify-between">
         <div>
           <h1 className="text-4xl font-bold mb-6">Meal Planner</h1>
           <p className="text-xl opacity-90 leading-relaxed">

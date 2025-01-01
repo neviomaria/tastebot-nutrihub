@@ -9,7 +9,7 @@ import { ViewType } from "@supabase/auth-ui-shared";
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const [view, setView] = useState<"sign_in" | "sign_up">("sign_in");
+  const [view, setView] = useState<ViewType>("sign_in");
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
