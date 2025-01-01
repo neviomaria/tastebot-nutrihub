@@ -61,12 +61,13 @@ Deno.serve(async (req) => {
     })
 
     if (!loginResponse.ok) {
-      const errorData = await loginResponse.text()
-      console.error('WordPress login error. Status:', loginResponse.status, 'Response:', errorData)
+      const errorText = await loginResponse.text()
+      console.error('WordPress login error. Status:', loginResponse.status, 'Response:', errorText)
       return new Response(
         JSON.stringify({
           success: false,
           error: 'Failed to authenticate with WordPress. Please try again later.',
+          debug: { status: loginResponse.status, response: errorText }
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -76,7 +77,7 @@ Deno.serve(async (req) => {
     }
 
     const authData = await loginResponse.json()
-    console.log('WordPress authentication successful. Token received.')
+    console.log('WordPress authentication response:', authData)
 
     if (!authData.token) {
       console.error('No token received from WordPress')
@@ -84,6 +85,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: false,
           error: 'Authentication error. Please try again later.',
+          debug: { authData }
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -93,6 +95,7 @@ Deno.serve(async (req) => {
     }
 
     // Get all books with their coupon codes using the received token
+    console.log('Fetching books with token:', authData.token)
     const booksResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/wp/v2/libri?_fields=id,title,acf`, {
       headers: {
         'Authorization': `Bearer ${authData.token}`,
@@ -100,12 +103,13 @@ Deno.serve(async (req) => {
     })
 
     if (!booksResponse.ok) {
-      const errorData = await booksResponse.text()
-      console.error('WordPress books fetch error. Status:', booksResponse.status, 'Response:', errorData)
+      const errorText = await booksResponse.text()
+      console.error('WordPress books fetch error. Status:', booksResponse.status, 'Response:', errorText)
       return new Response(
         JSON.stringify({
           success: false,
           error: 'Failed to verify coupon. Please try again later.',
+          debug: { status: booksResponse.status, response: errorText }
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -115,7 +119,7 @@ Deno.serve(async (req) => {
     }
 
     const books = await booksResponse.json()
-    console.log('Successfully fetched books from WordPress')
+    console.log('Successfully fetched books:', books)
 
     // Find the book with matching coupon code
     const matchingBook = books.find(book => book.acf?.coupon === coupon_code)
@@ -157,6 +161,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: false,
         error: error.message,
+        debug: { error: error.toString() }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
