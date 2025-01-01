@@ -6,7 +6,8 @@ const corsHeaders = {
 }
 
 const WORDPRESS_API_URL = 'https://brainscapebooks.com'
-const WORDPRESS_JWT_TOKEN = Deno.env.get('WORDPRESS_JWT_TOKEN')
+const WORDPRESS_USERNAME = Deno.env.get('WORDPRESS_USERNAME')
+const WORDPRESS_PASSWORD = Deno.env.get('WORDPRESS_PASSWORD')
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,16 +18,37 @@ Deno.serve(async (req) => {
     const { coupon_code } = await req.json()
     console.log('Verifying coupon:', coupon_code)
 
-    if (!WORDPRESS_JWT_TOKEN) {
-      throw new Error('WordPress JWT token missing')
+    if (!WORDPRESS_USERNAME || !WORDPRESS_PASSWORD) {
+      throw new Error('WordPress credentials missing')
     }
 
-    // Call WordPress API to verify the coupon
+    // First, authenticate with WordPress
+    const loginResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/custom/v1/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: WORDPRESS_USERNAME,
+        password: WORDPRESS_PASSWORD,
+      }),
+    })
+
+    if (!loginResponse.ok) {
+      const errorData = await loginResponse.json()
+      console.error('WordPress login error:', errorData)
+      throw new Error(errorData.message || 'Failed to authenticate with WordPress')
+    }
+
+    const { token } = await loginResponse.json()
+    console.log('Successfully authenticated with WordPress')
+
+    // Call WordPress API to verify the coupon using the obtained token
     const response = await fetch(`${WORDPRESS_API_URL}/wp-json/custom/v1/verify-coupon`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${WORDPRESS_JWT_TOKEN}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ coupon_code }),
     })
