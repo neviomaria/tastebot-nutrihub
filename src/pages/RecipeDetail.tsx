@@ -75,6 +75,7 @@ const RecipeDetail = () => {
           description: "Failed to load recipe details",
           variant: "destructive",
         });
+        setRecipe(null);
       } finally {
         setLoading(false);
       }
@@ -83,7 +84,7 @@ const RecipeDetail = () => {
     if (id) {
       fetchRecipeDetails();
     }
-  }, [id, toast]);
+  }, [id, toast]); // Added id to dependencies to refetch when it changes
 
   if (loading) {
     return (
@@ -121,6 +122,10 @@ const RecipeDetail = () => {
       </div>
     );
   }
+
+  const handleNavigation = (recipeId: number) => {
+    navigate(`/recipe/${recipeId}`);
+  };
 
   return (
     <div className="p-6">
@@ -168,7 +173,7 @@ const RecipeDetail = () => {
               {prevRecipe && (
                 <PaginationItem>
                   <PaginationPrevious 
-                    onClick={() => navigate(`/recipe/${prevRecipe.id}`)}
+                    onClick={() => handleNavigation(prevRecipe.id)}
                   />
                 </PaginationItem>
               )}
@@ -176,7 +181,7 @@ const RecipeDetail = () => {
               {nextRecipe && (
                 <PaginationItem>
                   <PaginationNext 
-                    onClick={() => navigate(`/recipe/${nextRecipe.id}`)}
+                    onClick={() => handleNavigation(nextRecipe.id)}
                   />
                 </PaginationItem>
               )}
