@@ -79,7 +79,6 @@ const AuthPage = () => {
           },
         }}
         providers={[]}
-        onChange={({ view }) => setView(view)}
       />
       
       {view === "sign_up" && (
