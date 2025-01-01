@@ -55,7 +55,7 @@ function App() {
       console.log("Auth state changed:", event);
       setIsAuthenticated(!!session);
       
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         // Clear query cache when user logs out
         queryClient.clear();
         toast({
