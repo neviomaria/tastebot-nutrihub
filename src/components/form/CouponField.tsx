@@ -13,10 +13,10 @@ export const CouponField = ({ form }: CouponFieldProps) => {
       name="coupon_code"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Codice Coupon</FormLabel>
+          <FormLabel>Coupon Code</FormLabel>
           <FormControl>
             <Input
-              placeholder="Inserisci il codice del tuo libro"
+              placeholder="Enter your book coupon code"
               {...field}
             />
           </FormControl>

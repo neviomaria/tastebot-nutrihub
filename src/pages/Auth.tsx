@@ -3,6 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { CouponField } from "@/components/form/CouponField";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -22,8 +23,8 @@ const AuthPage = () => {
         <div>
           <h1 className="text-4xl font-bold mb-6">Meal Planner</h1>
           <p className="text-xl opacity-90 leading-relaxed">
-            Il tuo assistente personale per la pianificazione dei pasti, incluso con l'acquisto del libro.
-            Inserisci il codice coupon che hai ricevuto per accedere ai contenuti esclusivi.
+            Your personal meal planning assistant, included with your book purchase.
+            Enter your book coupon code to access exclusive content.
           </p>
         </div>
         <div className="space-y-8">
@@ -45,9 +46,9 @@ const AuthPage = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold">Piani Personalizzati</h3>
+              <h3 className="font-semibold">Personalized Plans</h3>
               <p className="opacity-75">
-                Ottieni piani alimentari su misura per te
+                Get customized meal plans based on your preferences
               </p>
             </div>
           </div>
@@ -69,9 +70,9 @@ const AuthPage = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold">Risparmia Tempo</h3>
+              <h3 className="font-semibold">Save Time</h3>
               <p className="opacity-75">
-                Pianifica i tuoi pasti settimanali in pochi minuti
+                Plan your meals for the week in minutes
               </p>
             </div>
           </div>
@@ -83,10 +84,10 @@ const AuthPage = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Benvenuto
+              Welcome
             </h2>
             <p className="text-gray-600">
-              Accedi con il tuo account per continuare
+              Sign in to your account to continue
             </p>
           </div>
           <Auth
@@ -128,15 +129,15 @@ const AuthPage = () => {
                 sign_up: {
                   email_label: "Email",
                   password_label: "Password",
-                  button_label: "Registrati",
-                  link_text: "Non hai un account? Registrati",
-                  confirmation_text: "Controlla la tua email per il link di conferma",
+                  button_label: "Sign Up",
+                  link_text: "Don't have an account? Sign up",
+                  confirmation_text: "Check your email for the confirmation link",
                 },
                 sign_in: {
                   email_label: "Email",
                   password_label: "Password",
-                  button_label: "Accedi",
-                  link_text: "Hai già un account? Accedi",
+                  button_label: "Sign In",
+                  link_text: "Already have an account? Sign in",
                 },
               },
             }}
