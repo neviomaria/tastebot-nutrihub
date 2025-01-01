@@ -10,6 +10,7 @@ const WORDPRESS_USERNAME = Deno.env.get('WORDPRESS_USERNAME')
 const WORDPRESS_PASSWORD = Deno.env.get('WORDPRESS_PASSWORD')
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -17,6 +18,19 @@ Deno.serve(async (req) => {
   try {
     const { coupon_code } = await req.json()
     console.log('Verifying coupon:', coupon_code)
+
+    if (!coupon_code) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Coupon code is required',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      )
+    }
 
     if (!WORDPRESS_USERNAME || !WORDPRESS_PASSWORD) {
       throw new Error('WordPress credentials missing')
@@ -66,13 +80,14 @@ Deno.serve(async (req) => {
       console.log('No matching book found for coupon:', coupon_code)
       return new Response(
         JSON.stringify({
-          success: false,
-          error: 'Invalid coupon code',
+          success: true,
+          valid: false,
+          message: 'Invalid coupon code',
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        },
+          status: 200,
+        }
       )
     }
 
@@ -85,11 +100,12 @@ Deno.serve(async (req) => {
         valid: true,
         book_id: matchingBook.id.toString(),
         book_title: matchingBook.title.rendered,
-        access_level: 'premium', // You can customize this based on your needs
+        access_level: 'premium',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      },
+        status: 200,
+      }
     )
   } catch (error) {
     console.error('Error:', error.message)
@@ -100,8 +116,8 @@ Deno.serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      },
+        status: 200, // Changed from 400 to 200 to avoid the FunctionsHttpError
+      }
     )
   }
 })
