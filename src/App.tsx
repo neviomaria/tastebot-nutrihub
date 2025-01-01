@@ -12,6 +12,7 @@ import Profile from "@/pages/Profile";
 import MyCoupons from "@/pages/MyCoupons";
 import MyBooks from "@/pages/MyBooks";
 import BookDetail from "@/pages/BookDetail";
+import BookRecipes from "@/pages/BookRecipes";
 import { AppSidebar } from "@/components/AppSidebar";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,10 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
+      if (!session) {
+        // Clear query cache when user logs out
+        queryClient.clear();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -56,6 +61,7 @@ function App() {
                 <Route path="/my-coupons" element={<MyCoupons />} />
                 <Route path="/my-books" element={<MyBooks />} />
                 <Route path="/book/:id" element={<BookDetail />} />
+                <Route path="/book/:id/recipes" element={<BookRecipes />} />
               </Routes>
             </AppSidebar>
           ) : (
