@@ -1,33 +1,33 @@
-import { Home, ChefHat, Activity, Users, Settings, LogOut, ChevronLeft, ChevronRight, Ticket, Book } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { AppHeader } from "./AppHeader";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, User, Book } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-const baseMenuItems = [
-  { title: "Home", icon: Home, path: "/" },
-  { title: "Recipes", icon: ChefHat, path: "/recipes" },
-  { title: "Analytics", icon: Activity, path: "/analytics" },
-  { title: "Community", icon: Users, path: "/community" },
-  { title: "My Coupons", icon: Ticket, path: "/my-coupons" },
-  { title: "Profile", icon: Users, path: "/complete-profile" },
-  { title: "Settings", icon: Settings, path: "/settings" },
-];
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
 
-export function AppSidebar({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
+interface MenuItem {
+  title: string;
+  icon: any;
+  path: string;
+}
+
+export function AppSidebar({ className, children }: SidebarProps) {
+  const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [menuItems, setMenuItems] = useState(baseMenuItems);
+  const location = useLocation();
+
+  const baseMenuItems: MenuItem[] = [
+    { title: "Profile", icon: User, path: "/profile" },
+  ];
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(baseMenuItems);
   const [userBooks, setUserBooks] = useState<{ book_id: string; book_title: string }[]>([]);
 
   useEffect(() => {
@@ -41,11 +41,13 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         if (error) throw error;
 
         if (profile?.coupon_code) {
+          // Add My Books to menu items if user has a coupon
           setMenuItems([
             ...baseMenuItems,
             { title: "My Books", icon: Book, path: "/my-books" },
           ]);
 
+          // Set user books if book_id and book_title exist
           if (profile.book_id && profile.book_title) {
             setUserBooks([{ 
               book_id: profile.book_id,
@@ -74,121 +76,122 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     if (error) {
       toast({
         title: "Error",
-        description: "Failed to log out. Please try again.",
+        description: "Failed to sign out",
         variant: "destructive",
       });
-    } else {
-      navigate("/auth");
     }
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <aside
-        className={cn(
-          "relative flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300",
-          isCollapsed ? "w-20" : "w-64"
-        )}
-      >
-        {/* Logo */}
-        <div className="flex h-16 items-center justify-between px-4">
-          {!isCollapsed && (
-            <span className="text-xl font-semibold text-primary">FlavorFit</span>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-sidebar-text hover:bg-sidebar-hover"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-5 w-5" />
-            ) : (
-              <ChevronLeft className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-2">
-          <TooltipProvider delayDuration={0}>
-            {menuItems.map((item) => (
-              <div key={item.title}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start text-sidebar-text hover:bg-sidebar-hover",
-                        !isCollapsed && "px-4"
-                      )}
-                      onClick={() => navigate(item.path)}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {!isCollapsed && (
-                        <span className="ml-3">{item.title}</span>
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  {isCollapsed && (
-                    <TooltipContent side="right">
-                      {item.title}
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-
-                {/* Display user's books under My Books */}
-                {item.title === "My Books" && !isCollapsed && userBooks.length > 0 && (
-                  <div className="ml-9 mt-1 space-y-1">
-                    {userBooks.map((book) => (
+    <div className="flex min-h-screen">
+      {/* Sidebar for larger screens */}
+      <div className="hidden lg:flex">
+        <div className={cn("pb-12 w-64", className)}>
+          <div className="space-y-4 py-4">
+            <div className="px-3 py-2">
+              <div className="space-y-1">
+                {menuItems.map((item, index) => (
+                  <div key={item.title}>
+                    <Link to={item.path}>
                       <Button
-                        key={book.book_id}
-                        variant="ghost"
-                        className="w-full justify-start px-4 text-sm text-sidebar-text hover:bg-sidebar-hover"
-                        onClick={() => navigate(`/my-books/${book.book_id}`)}
+                        variant={location.pathname === item.path ? "secondary" : "ghost"}
+                        className="w-full justify-start"
                       >
-                        {book.book_title}
+                        <item.icon className="mr-2 h-4 w-4" />
+                        {item.title}
                       </Button>
-                    ))}
+                    </Link>
+                    {/* Display books list under My Books */}
+                    {item.title === "My Books" && userBooks.length > 0 && (
+                      <div className="ml-6 mt-2 space-y-1">
+                        {userBooks.map((book) => (
+                          <Link key={book.book_id} to={`/book/${book.book_id}`}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start text-sm"
+                            >
+                              {book.book_title}
+                            </Button>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
-          </TooltipProvider>
-        </nav>
-
-        {/* Logout */}
-        <div className="p-2">
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
+                ))}
                 <Button
                   variant="ghost"
-                  className={cn(
-                    "w-full justify-start text-sidebar-text hover:bg-red-50 hover:text-red-600",
-                    !isCollapsed && "px-4"
-                  )}
+                  className="w-full justify-start"
                   onClick={handleLogout}
                 >
-                  <LogOut className="h-5 w-5" />
-                  {!isCollapsed && <span className="ml-3">Logout</span>}
+                  Sign Out
                 </Button>
-              </TooltipTrigger>
-              {isCollapsed && (
-                <TooltipContent side="right">
-                  Logout
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
+              </div>
+            </div>
+          </div>
         </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1">
-        <AppHeader />
-        <main className="p-6">{children}</main>
       </div>
+
+      {/* Mobile sidebar */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" className="lg:hidden" size="icon">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-64 p-0">
+          <ScrollArea className="h-full px-3 py-2">
+            <div className="space-y-1">
+              {menuItems.map((item) => (
+                <div key={item.title}>
+                  <Link to={item.path} onClick={() => setOpen(false)}>
+                    <Button
+                      variant={location.pathname === item.path ? "secondary" : "ghost"}
+                      className="w-full justify-start"
+                    >
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {item.title}
+                    </Button>
+                  </Link>
+                  {/* Display books list under My Books in mobile view */}
+                  {item.title === "My Books" && userBooks.length > 0 && (
+                    <div className="ml-6 mt-2 space-y-1">
+                      {userBooks.map((book) => (
+                        <Link 
+                          key={book.book_id} 
+                          to={`/book/${book.book_id}`}
+                          onClick={() => setOpen(false)}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-sm"
+                          >
+                            {book.book_title}
+                          </Button>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={async () => {
+                  await handleLogout();
+                  setOpen(false);
+                }}
+              >
+                Sign Out
+              </Button>
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
+      {/* Main content */}
+      <div className="flex-1">{children}</div>
     </div>
   );
 }
