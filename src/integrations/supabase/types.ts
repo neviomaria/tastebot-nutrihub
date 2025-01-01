@@ -11,11 +11,14 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          access_level: string | null
           activity_level: string | null
           allergies: string[] | null
           avatar_url: string | null
+          book_id: string | null
           cooking_skill_level: string | null
           country: string | null
+          coupon_code: string | null
           created_at: string | null
           date_of_birth: string | null
           dietary_preferences: string[] | null
@@ -40,11 +43,14 @@ export type Database = {
           weight_kg: number | null
         }
         Insert: {
+          access_level?: string | null
           activity_level?: string | null
           allergies?: string[] | null
           avatar_url?: string | null
+          book_id?: string | null
           cooking_skill_level?: string | null
           country?: string | null
+          coupon_code?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           dietary_preferences?: string[] | null
@@ -69,11 +75,14 @@ export type Database = {
           weight_kg?: number | null
         }
         Update: {
+          access_level?: string | null
           activity_level?: string | null
           allergies?: string[] | null
           avatar_url?: string | null
+          book_id?: string | null
           cooking_skill_level?: string | null
           country?: string | null
+          coupon_code?: string | null
           created_at?: string | null
           date_of_birth?: string | null
           dietary_preferences?: string[] | null

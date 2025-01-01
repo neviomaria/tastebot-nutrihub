@@ -22,8 +22,8 @@ const AuthPage = () => {
         <div>
           <h1 className="text-4xl font-bold mb-6">Meal Planner</h1>
           <p className="text-xl opacity-90 leading-relaxed">
-            Your personal AI-powered meal planning assistant. Create delicious,
-            healthy meal plans tailored to your preferences and dietary needs.
+            Il tuo assistente personale per la pianificazione dei pasti, incluso con l'acquisto del libro.
+            Inserisci il codice coupon che hai ricevuto per accedere ai contenuti esclusivi.
           </p>
         </div>
         <div className="space-y-8">
@@ -45,9 +45,9 @@ const AuthPage = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold">Personalized Meal Plans</h3>
+              <h3 className="font-semibold">Piani Personalizzati</h3>
               <p className="opacity-75">
-                Get customized meal plans based on your preferences
+                Ottieni piani alimentari su misura per te
               </p>
             </div>
           </div>
@@ -69,9 +69,9 @@ const AuthPage = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold">Save Time</h3>
+              <h3 className="font-semibold">Risparmia Tempo</h3>
               <p className="opacity-75">
-                Plan your meals for the week in minutes
+                Pianifica i tuoi pasti settimanali in pochi minuti
               </p>
             </div>
           </div>
@@ -83,10 +83,10 @@ const AuthPage = () => {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back
+              Benvenuto
             </h2>
             <p className="text-gray-600">
-              Sign in to your account to continue
+              Accedi con il tuo account per continuare
             </p>
           </div>
           <Auth
@@ -122,6 +122,24 @@ const AuthPage = () => {
             }}
             theme="default"
             providers={[]}
+            view="sign_up"
+            localization={{
+              variables: {
+                sign_up: {
+                  email_label: "Email",
+                  password_label: "Password",
+                  button_label: "Registrati",
+                  link_text: "Non hai un account? Registrati",
+                  confirmation_text: "Controlla la tua email per il link di conferma",
+                },
+                sign_in: {
+                  email_label: "Email",
+                  password_label: "Password",
+                  button_label: "Accedi",
+                  link_text: "Hai già un account? Accedi",
+                },
+              },
+            }}
           />
         </div>
       </div>
