@@ -43,31 +43,49 @@ Deno.serve(async (req) => {
     const { token } = await loginResponse.json()
     console.log('Successfully authenticated with WordPress')
 
-    // Call WordPress API to verify the coupon using the obtained token
-    const response = await fetch(`${WORDPRESS_API_URL}/wp-json/custom/v1/verify-coupon`, {
-      method: 'POST',
+    // Get all books with their coupon codes
+    const booksResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/wp/v2/libri?_fields=id,title,acf`, {
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ coupon_code }),
     })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('WordPress API error:', errorData)
-      throw new Error(errorData.message || 'Failed to verify coupon')
+    if (!booksResponse.ok) {
+      const errorData = await booksResponse.json()
+      console.error('WordPress books fetch error:', errorData)
+      throw new Error(errorData.message || 'Failed to fetch books')
     }
 
-    const data = await response.json()
-    console.log('WordPress API response:', data)
+    const books = await booksResponse.json()
+    console.log('Fetched books:', books)
 
+    // Find the book with matching coupon code
+    const matchingBook = books.find(book => book.acf?.coupon === coupon_code)
+
+    if (!matchingBook) {
+      console.log('No matching book found for coupon:', coupon_code)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid coupon code',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      )
+    }
+
+    console.log('Found matching book:', matchingBook)
+
+    // Return success with book information
     return new Response(
       JSON.stringify({
         success: true,
-        valid: data.valid,
-        book_id: data.book_id,
-        access_level: data.access_level,
+        valid: true,
+        book_id: matchingBook.id.toString(),
+        book_title: matchingBook.title.rendered,
+        access_level: 'premium', // You can customize this based on your needs
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
