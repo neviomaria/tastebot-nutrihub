@@ -11,6 +11,7 @@ import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import MyCoupons from "@/pages/MyCoupons";
 import MyBooks from "@/pages/MyBooks";
+import BookDetail from "@/pages/BookDetail";
 import { AppSidebar } from "@/components/AppSidebar";
 
 const queryClient = new QueryClient();
@@ -45,7 +46,6 @@ function App() {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-
           {isAuthenticated ? (
             <AppSidebar>
               <Routes>
@@ -55,6 +55,7 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/my-coupons" element={<MyCoupons />} />
                 <Route path="/my-books" element={<MyBooks />} />
+                <Route path="/book/:id" element={<BookDetail />} />
               </Routes>
             </AppSidebar>
           ) : (
@@ -63,7 +64,6 @@ function App() {
               <Route path="*" element={<Navigate to="/auth" replace />} />
             </Routes>
           )}
-
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

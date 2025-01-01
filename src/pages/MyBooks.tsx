@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface Book {
   title: string;
@@ -77,13 +78,13 @@ const MyBooks = () => {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">My Books</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {[...Array(6)].map((_, i) => (
             <Card key={i}>
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <Skeleton className="aspect-[3/4] w-full mb-4" />
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-3 w-1/2" />
               </CardContent>
             </Card>
           ))}
@@ -95,24 +96,26 @@ const MyBooks = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">My Books</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {books.map((book, index) => (
-          <Card key={index} className="overflow-hidden">
-            <CardContent className="p-6">
-              <div className="aspect-[3/4] relative mb-4">
-                <img
-                  src={book.coverUrl}
-                  alt={book.title}
-                  className="w-full h-full object-cover rounded-lg"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.svg";
-                  }}
-                />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">{book.title}</h2>
-              <p className="text-gray-600">{book.subtitle}</p>
-            </CardContent>
-          </Card>
+          <Link to={`/book/${index}`} key={index}>
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+              <CardContent className="p-4">
+                <div className="aspect-[3/4] relative mb-4">
+                  <img
+                    src={book.coverUrl}
+                    alt={book.title}
+                    className="w-full h-full object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
+                  />
+                </div>
+                <h2 className="text-sm font-semibold mb-1 line-clamp-2">{book.title}</h2>
+                <p className="text-xs text-gray-600 line-clamp-2">{book.subtitle}</p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
