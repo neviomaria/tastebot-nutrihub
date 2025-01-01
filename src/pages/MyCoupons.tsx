@@ -73,6 +73,10 @@ const MyCoupons = () => {
 
   const onSubmit = async (values: CouponFormValues) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) throw new Error("User not found");
+
       const { data, error } = await supabase.functions.invoke('verify-coupon', {
         body: { coupon_code: values.coupon_code }
       });
@@ -80,16 +84,13 @@ const MyCoupons = () => {
       if (error) throw error;
 
       if (data.success) {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) throw new Error("User not found");
-
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
             coupon_code: values.coupon_code,
             book_id: data.book_id,
-            book_title: data.book_title
+            book_title: data.book_title,
+            access_level: data.access_level
           })
           .eq('id', user.id);
 
@@ -124,7 +125,8 @@ const MyCoupons = () => {
         .update({
           coupon_code: null,
           book_id: null,
-          book_title: null
+          book_title: null,
+          access_level: null
         })
         .eq('id', user.id);
 
