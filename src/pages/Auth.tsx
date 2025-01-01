@@ -33,7 +33,6 @@ const AuthPage = () => {
       <Auth
         supabaseClient={supabase}
         view={view}
-        onViewChange={(newView) => setView(newView)}
         appearance={{
           theme: ThemeSupa,
           variables: {
