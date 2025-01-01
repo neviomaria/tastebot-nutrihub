@@ -31,6 +31,7 @@ const AuthPage = () => {
       
       <Auth
         supabaseClient={supabase}
+        view={view}
         appearance={{
           theme: ThemeSupa,
           variables: {
@@ -77,10 +78,14 @@ const AuthPage = () => {
           },
         }}
         providers={[]}
-        view={view}
+        onViewChange={({ view }) => setView(view)}
       />
       
-      {view === "sign_up" && <SignUpCouponForm />}
+      {view === "sign_up" && (
+        <div className="mt-4">
+          <SignUpCouponForm />
+        </div>
+      )}
     </AuthLayout>
   );
 };
