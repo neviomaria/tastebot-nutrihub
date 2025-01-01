@@ -21,7 +21,7 @@ const AuthPage = () => {
 
   return (
     <AuthLayout>
-      <div className="text-center">
+      <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-2">
           Welcome
         </h2>
@@ -60,6 +60,8 @@ const AuthPage = () => {
             button: "w-full bg-primary hover:bg-primary-hover text-white",
             input: "w-full bg-auth-input text-secondary-foreground",
             label: "text-gray-700",
+            message: "text-sm text-red-500",
+            anchor: "text-primary hover:text-primary-hover",
           },
         }}
         localization={{
@@ -82,7 +84,8 @@ const AuthPage = () => {
       />
       
       {view === "sign_up" && (
-        <div className="mt-4">
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <h3 className="text-sm font-medium text-gray-700 mb-4">Enter your book coupon code</h3>
           <SignUpCouponForm />
         </div>
       )}
