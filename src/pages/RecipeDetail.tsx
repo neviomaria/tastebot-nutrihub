@@ -108,7 +108,7 @@ const RecipeDetail = () => {
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-8 w-48" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-[30%_70%] gap-6">
           <Skeleton className="aspect-[3/4] w-full" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-3/4" />
@@ -137,7 +137,7 @@ const RecipeDetail = () => {
         onNext={() => handleNavigation('next')}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[30%_70%] gap-6">
         <RecipeImage
           imageUrl={recipe.acf.recipe_image?.url}
           title={recipe.title}
