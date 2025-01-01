@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CouponField } from "@/components/form/CouponField";
+import { Button } from "@/components/ui/button";
 
 interface ProfileData {
   first_name: string | null;
@@ -19,6 +21,10 @@ interface ProfileData {
   planning_preference: string | null;
   favorite_cuisines: string[] | null;
   other_cuisines: string | null;
+  id: string | null;
+  coupon_code: string | null;
+  book_id: string | null;
+  access_level: string | null;
 }
 
 const Profile = () => {
@@ -59,6 +65,10 @@ const Profile = () => {
           planning_preference: data.planning_preference,
           favorite_cuisines: data.favorite_cuisines,
           other_cuisines: data.other_cuisines,
+          id: data.id,
+          coupon_code: data.coupon_code,
+          book_id: data.book_id,
+          access_level: data.access_level,
         };
         
         setProfile(profileData);
@@ -75,6 +85,41 @@ const Profile = () => {
 
     fetchProfile();
   }, [navigate, toast]);
+
+  const handleCouponSubmit = async (values: { coupon_code: string }) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-coupon', {
+        body: { coupon_code: values.coupon_code }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            coupon_code: values.coupon_code,
+            book_id: data.book_id,
+            access_level: data.access_level
+          })
+          .eq('id', profile?.id);
+
+        if (updateError) throw updateError;
+
+        toast({
+          title: "Success",
+          description: "Coupon code verified and applied successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to verify coupon code",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -143,6 +188,13 @@ const Profile = () => {
               <h3 className="font-medium text-sm text-muted-foreground">Favorite Cuisines</h3>
               <p className="mt-1">{formatArrayField(profile.favorite_cuisines, profile.other_cuisines)}</p>
             </div>
+          </div>
+          <div>
+            <h3 className="font-medium text-sm text-muted-foreground">Coupon Management</h3>
+            <form onSubmit={handleCouponSubmit} className="mt-4">
+              <CouponField form={{ control: { setValue: () => {} }, handleSubmit: () => {} }} />
+              <Button type="submit" className="mt-2">Add Coupon</Button>
+            </form>
           </div>
         </CardContent>
       </Card>

@@ -142,6 +142,7 @@ const AuthPage = () => {
               },
             }}
           />
+          <CouponField form={form} />
         </div>
       </div>
     </div>
