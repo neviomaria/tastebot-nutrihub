@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 
 interface RecipeCardProps {
   title: string;
@@ -19,6 +19,9 @@ export function RecipeCard({ title, image, cookTime, difficulty, onClick }: Reci
           src={image} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder.svg";
+          }}
         />
       </div>
       <CardHeader className="p-4">

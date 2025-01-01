@@ -114,13 +114,20 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                 {item.title === "My Books" && userBooks.length > 0 && (
                   <div className="ml-6 mt-2 space-y-1">
                     {userBooks.map((book) => (
-                      <Link
-                        key={book.book_id}
-                        to={`/book/${book.book_id}`}
-                        className="block rounded-lg px-3 py-2 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
-                      >
-                        {book.book_title}
-                      </Link>
+                      <div key={book.book_id} className="space-y-1">
+                        <Link
+                          to={`/book/${book.book_id}`}
+                          className="block rounded-lg px-3 py-2 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                        >
+                          {book.book_title}
+                        </Link>
+                        <Link
+                          to={`/book/${book.book_id}/recipes`}
+                          className="block rounded-lg px-3 py-2 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ml-4"
+                        >
+                          Book Recipes
+                        </Link>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -144,12 +151,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex">
-      {/* Sidebar for desktop */}
       <div className="hidden border-r bg-gray-100/40 lg:block dark:bg-gray-800/40 w-[300px]">
         <SidebarContent />
       </div>
 
-      {/* Sidebar for mobile */}
       <Sheet>
         <SheetTrigger asChild>
           <Button
@@ -166,7 +171,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      {/* Main content */}
       <main className="flex-1">{children}</main>
     </div>
   );
