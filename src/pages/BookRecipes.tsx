@@ -13,6 +13,10 @@ interface Recipe {
   acf: {
     prep_time: string;
     cook_time: string;
+    libro_associato: Array<{
+      ID: number;
+      post_title: string;
+    }>;
     recipe_image: {
       url: string;
     };
@@ -33,7 +37,7 @@ const BookRecipes = () => {
         
         // Filter recipes for the current book
         const bookRecipes = data.filter((recipe: Recipe) => 
-          recipe.acf.libro_associato?.some((book: any) => book.ID.toString() === id)
+          recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
         );
         
         setRecipes(bookRecipes);
@@ -96,7 +100,6 @@ const BookRecipes = () => {
                 cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                 difficulty="Easy"
                 onClick={() => {
-                  // Handle recipe click - could navigate to a detailed view
                   toast({
                     title: "Recipe Selected",
                     description: "Recipe details coming soon!",
