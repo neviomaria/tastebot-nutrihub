@@ -4,106 +4,61 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface Recipe {
-  id: number;
-  title: string;
-  description: string;
-  ingredients: string[];
-  instructions: string[];
-  prepTime: string;
-  cookTime: string;
-  servings: number;
-  mealType: string;
-}
+import { Recipe } from "@/types/recipe";
+import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
+import { RecipeContent } from "@/components/recipe/RecipeContent";
+import { useQuery } from "@tanstack/react-query";
 
 const RecipeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [prevRecipe, setPrevRecipe] = useState<Recipe | null>(null);
-  const [nextRecipe, setNextRecipe] = useState<Recipe | null>(null);
 
-  useEffect(() => {
-    const fetchRecipeDetails = async () => {
-      try {
-        setLoading(true);
-        
-        // First check if we have a valid session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          console.error("Session error:", sessionError);
-          navigate("/auth");
-          return;
-        }
+  // Check authentication status
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return session;
+    },
+    retry: false,
+    meta: {
+      errorHandler: async (error: Error) => {
+        console.error("Session error:", error);
+        await supabase.auth.signOut();
+        navigate("/auth");
+      }
+    }
+  });
 
-        // Fetch recipe details
-        const { data: recipeData, error: recipeError } = await supabase
-          .from("recipes")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (recipeError) {
-          throw recipeError;
-        }
-
-        if (!recipeData) {
-          throw new Error("Recipe not found");
-        }
-
-        setRecipe(recipeData);
-
-        // Fetch previous recipe
-        const { data: prevData } = await supabase
-          .from("recipes")
-          .select("id, title")
-          .lt("id", id)
-          .order("id", { ascending: false })
-          .limit(1)
-          .single();
-
-        setPrevRecipe(prevData);
-
-        // Fetch next recipe
-        const { data: nextData } = await supabase
-          .from("recipes")
-          .select("id, title")
-          .gt("id", id)
-          .order("id", { ascending: true })
-          .limit(1)
-          .single();
-
-        setNextRecipe(nextData);
-
-      } catch (error) {
-        console.error("Error fetching recipe:", error);
+  // Fetch recipe data
+  const { data: recipe, isLoading, error } = useQuery({
+    queryKey: ['recipe', id],
+    queryFn: async () => {
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipes');
+      }
+      const recipes: Recipe[] = await response.json();
+      const recipe = recipes.find(r => r.id.toString() === id);
+      if (!recipe) {
+        throw new Error('Recipe not found');
+      }
+      return recipe;
+    },
+    enabled: !!session && !!id,
+    meta: {
+      errorHandler: (error: Error) => {
         toast({
           title: "Error",
-          description: "Failed to load recipe details",
+          description: "Failed to load recipe details. Please try again later.",
           variant: "destructive",
         });
-        setRecipe(null);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    if (id) {
-      fetchRecipeDetails();
     }
-  }, [id, toast, navigate]);
+  });
 
   // Add auth state change listener
   useEffect(() => {
@@ -118,7 +73,11 @@ const RecipeDetail = () => {
     };
   }, [navigate]);
 
-  if (loading) {
+  if (!session) {
+    return null;
+  }
+
+  if (isLoading) {
     return (
       <div className="p-6 space-y-4">
         <div className="flex items-center gap-4">
@@ -153,10 +112,6 @@ const RecipeDetail = () => {
     );
   }
 
-  const handleNavigation = (recipeId: number) => {
-    navigate(`/recipe/${recipeId}`);
-  };
-
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -171,68 +126,34 @@ const RecipeDetail = () => {
       </div>
 
       <div className="space-y-6">
+        {recipe.acf.recipe_image?.url && (
+          <div className="aspect-video w-full overflow-hidden rounded-lg">
+            <img
+              src={recipe.acf.recipe_image.url}
+              alt={recipe.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg";
+              }}
+            />
+          </div>
+        )}
+
         <div>
           <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
-          <p className="text-gray-600">{recipe.description}</p>
+          <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: recipe.content }} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-3">Ingredients</h2>
-            <ul className="list-disc pl-5 space-y-2">
-              {recipe.ingredients.map((ingredient, index) => (
-                <li key={index}>{ingredient}</li>
-              ))}
-            </ul>
-          </div>
+        <RecipeMetadata
+          prepTime={recipe.acf.prep_time}
+          cookTime={recipe.acf.cook_time}
+          mealType={recipe.acf.pasto}
+        />
 
-          <div>
-            <h2 className="text-xl font-semibold mb-3">Instructions</h2>
-            <ol className="list-decimal pl-5 space-y-2">
-              {recipe.instructions.map((instruction, index) => (
-                <li key={index}>{instruction}</li>
-              ))}
-            </ol>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
-          <div>
-            <span className="font-medium">Prep Time:</span>
-            <p>{recipe.prepTime}</p>
-          </div>
-          <div>
-            <span className="font-medium">Cook Time:</span>
-            <p>{recipe.cookTime}</p>
-          </div>
-          <div>
-            <span className="font-medium">Servings:</span>
-            <p>{recipe.servings}</p>
-          </div>
-          <div>
-            <span className="font-medium">Meal Type:</span>
-            <p>{recipe.mealType}</p>
-          </div>
-        </div>
-
-        <Pagination>
-          <PaginationContent>
-            {prevRecipe && (
-              <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => handleNavigation(prevRecipe.id)}
-                />
-              </PaginationItem>
-            )}
-            {nextRecipe && (
-              <PaginationItem>
-                <PaginationNext 
-                  onClick={() => handleNavigation(nextRecipe.id)}
-                />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
+        <RecipeContent
+          ingredients={recipe.acf.ingredients || []}
+          instructions={recipe.acf.instructions || []}
+        />
       </div>
     </div>
   );
