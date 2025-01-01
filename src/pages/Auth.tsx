@@ -4,20 +4,34 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { SignUpCouponForm } from "@/components/auth/SignUpCouponForm";
 import { ViewType } from "@supabase/auth-ui-shared";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 const AuthPage = () => {
   const navigate = useNavigate();
   const [view, setView] = useState<ViewType>("sign_in");
+  const [couponCode, setCouponCode] = useState("");
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Update the user's profile with the coupon code if provided
+        if (couponCode) {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ coupon_code: couponCode })
+            .eq('id', session.user.id);
+
+          if (error) {
+            console.error('Error saving coupon code:', error);
+          }
+        }
         navigate("/");
       }
     });
-  }, [navigate]);
+  }, [navigate, couponCode]);
 
   return (
     <AuthLayout>
@@ -84,9 +98,19 @@ const AuthPage = () => {
       />
       
       {view === "sign_up" && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-4">Enter your book coupon code</h3>
-          <SignUpCouponForm />
+        <div className="mt-6 pt-6">
+          <Separator className="mb-6" />
+          <div className="space-y-4">
+            <Label htmlFor="coupon" className="text-sm font-medium text-gray-700">Book Coupon Code</Label>
+            <Input
+              id="coupon"
+              type="text"
+              placeholder="Enter your book coupon code"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value)}
+              className="w-full bg-auth-input text-secondary-foreground"
+            />
+          </div>
         </div>
       )}
     </AuthLayout>
