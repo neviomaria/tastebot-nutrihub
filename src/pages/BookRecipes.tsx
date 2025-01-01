@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Recipe {
   id: number;
@@ -48,6 +49,7 @@ const fetchRecipes = async () => {
 
 const BookRecipes = () => {
   const [groupedRecipes, setGroupedRecipes] = useState<GroupedRecipes>({});
+  const [activeTab, setActiveTab] = useState<string>("");
   const { toast } = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -75,8 +77,8 @@ const BookRecipes = () => {
     queryKey: ['recipes'],
     queryFn: fetchRecipes,
     enabled: !!session,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     meta: {
       errorHandler: (error: Error) => {
         const errorMessage = error instanceof Error && error.message.includes("NetworkError")
@@ -109,8 +111,12 @@ const BookRecipes = () => {
       }, {});
 
       setGroupedRecipes(grouped);
+      // Set the first meal type as active tab
+      if (Object.keys(grouped).length > 0 && !activeTab) {
+        setActiveTab(Object.keys(grouped)[0]);
+      }
     }
-  }, [recipes, id]);
+  }, [recipes, id, activeTab]);
 
   if (!session) {
     return null;
@@ -120,8 +126,8 @@ const BookRecipes = () => {
     return (
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
               <Card key={i} className="animate-pulse">
                 <div className="aspect-[4/3] bg-gray-200" />
                 <CardContent className="p-4">
@@ -151,25 +157,37 @@ const BookRecipes = () => {
         {Object.keys(groupedRecipes).length === 0 ? (
           <p className="text-gray-500">No recipes available for this book.</p>
         ) : (
-          Object.entries(groupedRecipes).map(([mealType, mealRecipes]) => (
-            <div key={mealType} className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-recipe-500 capitalize">{mealType}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mealRecipes.map((recipe) => (
-                  <RecipeCard
-                    key={recipe.id}
-                    title={recipe.title}
-                    image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
-                    cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
-                    difficulty="Easy"
-                    onClick={() => {
-                      window.location.href = `/recipe/${recipe.id}`;
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          ))
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-6 bg-card border">
+              {Object.keys(groupedRecipes).map((mealType) => (
+                <TabsTrigger
+                  key={mealType}
+                  value={mealType}
+                  className="capitalize"
+                >
+                  {mealType}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {Object.entries(groupedRecipes).map(([mealType, mealRecipes]) => (
+              <TabsContent key={mealType} value={mealType}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {mealRecipes.map((recipe) => (
+                    <RecipeCard
+                      key={recipe.id}
+                      title={recipe.title}
+                      image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
+                      cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
+                      difficulty="Easy"
+                      onClick={() => {
+                        window.location.href = `/recipe/${recipe.id}`;
+                      }}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
         )}
       </div>
     </div>
