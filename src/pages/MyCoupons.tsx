@@ -2,19 +2,10 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CouponField } from "@/components/form/CouponField";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Form } from "@/components/ui/form";
-import { Trash2 } from "lucide-react";
-
-const couponSchema = z.object({
-  coupon_code: z.string().min(1, "Coupon code is required"),
-});
-
-type CouponFormValues = z.infer<typeof couponSchema>;
+import { AddCouponForm, couponSchema, type CouponFormValues } from "@/components/coupons/AddCouponForm";
+import { CouponList } from "@/components/coupons/CouponList";
 
 interface BookAccess {
   book_id: string;
@@ -34,10 +25,6 @@ const MyCoupons = () => {
     },
   });
 
-  useEffect(() => {
-    fetchUserCoupons();
-  }, []);
-
   const fetchUserCoupons = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -53,7 +40,7 @@ const MyCoupons = () => {
 
       const { data: profile, error } = await supabase
         .from("profiles")
-        .select("coupon_code, book_id")
+        .select("coupon_code, book_id, book_title")
         .eq("id", user.id)
         .single();
 
@@ -62,9 +49,11 @@ const MyCoupons = () => {
       if (profile.coupon_code && profile.book_id) {
         setBookAccess([{
           book_id: profile.book_id,
-          book_title: "Your Book", // You might want to fetch the actual title from WordPress
+          book_title: profile.book_title || "Book title not available",
           coupon_code: profile.coupon_code,
         }]);
+      } else {
+        setBookAccess([]);
       }
     } catch (error) {
       console.error("Error fetching coupons:", error);
@@ -77,6 +66,10 @@ const MyCoupons = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchUserCoupons();
+  }, []);
 
   const onSubmit = async (values: CouponFormValues) => {
     try {
@@ -95,7 +88,8 @@ const MyCoupons = () => {
           .from('profiles')
           .update({
             coupon_code: values.coupon_code,
-            book_id: data.book_id
+            book_id: data.book_id,
+            book_title: data.book_title
           })
           .eq('id', user.id);
 
@@ -129,7 +123,8 @@ const MyCoupons = () => {
         .from('profiles')
         .update({
           coupon_code: null,
-          book_id: null
+          book_id: null,
+          book_title: null
         })
         .eq('id', user.id);
 
@@ -162,43 +157,8 @@ const MyCoupons = () => {
           <CardTitle>My Coupons</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <CouponField form={form} />
-              <Button type="submit">Add Coupon</Button>
-            </form>
-          </Form>
-
-          <div className="space-y-4">
-            <h3 className="font-medium">Active Coupons</h3>
-            {bookAccess.length === 0 ? (
-              <p className="text-muted-foreground">No active coupons</p>
-            ) : (
-              <div className="space-y-4">
-                {bookAccess.map((access) => (
-                  <div
-                    key={access.book_id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
-                  >
-                    <div>
-                      <h4 className="font-medium">{access.book_title}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Coupon: {access.coupon_code}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeCoupon(access.coupon_code)}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <AddCouponForm form={form} onSubmit={onSubmit} />
+          <CouponList bookAccess={bookAccess} onRemoveCoupon={removeCoupon} />
         </CardContent>
       </Card>
     </div>

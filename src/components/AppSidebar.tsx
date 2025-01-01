@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, User, Book, LayoutDashboard, Ticket } from "lucide-react";
+import { Menu, User, Book, LayoutDashboard, Ticket, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -49,7 +49,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           throw error;
         }
 
-        // Set user books if book_id and book_title exist
         if (profile?.book_id && profile?.book_title) {
           setUserBooks([{ 
             book_id: profile.book_id,
@@ -70,6 +69,20 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
     fetchUserProfile();
   }, [toast]);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out",
+      });
+    }
+  };
 
   const MenuLink = ({ item }: { item: MenuItem }) => (
     <Link
@@ -116,6 +129,16 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </ScrollArea>
+      <div className="border-t p-3">
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
+          onClick={handleLogout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
+      </div>
     </div>
   );
 
