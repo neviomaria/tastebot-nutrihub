@@ -1,4 +1,4 @@
-import { Auth } from "@supabase/auth-ui-react";
+import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -123,9 +123,8 @@ const AuthPage = () => {
               {view === "sign_in" ? "Sign in to your account" : "Create your account"}
             </p>
           </div>
-          <Auth
+          <SupabaseAuth
             supabaseClient={supabase}
-            view={view}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -172,7 +171,7 @@ const AuthPage = () => {
               },
             }}
             providers={[]}
-            onViewChange={(newView) => setView(newView as "sign_in" | "sign_up")}
+            view={view}
           />
           {view === "sign_up" && (
             <Form {...form}>
