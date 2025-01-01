@@ -1,7 +1,7 @@
-import { Home, ChefHat, Activity, Users, Settings, LogOut, ChevronLeft, ChevronRight, Ticket } from "lucide-react";
+import { Home, ChefHat, Activity, Users, Settings, LogOut, ChevronLeft, ChevronRight, Ticket, Book } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const menuItems = [
+const baseMenuItems = [
   { title: "Home", icon: Home, path: "/" },
   { title: "Recipes", icon: ChefHat, path: "/recipes" },
   { title: "Analytics", icon: Activity, path: "/analytics" },
@@ -27,6 +27,27 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [menuItems, setMenuItems] = useState(baseMenuItems);
+
+  useEffect(() => {
+    const checkCoupon = async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("coupon_code")
+        .single();
+
+      if (profile?.coupon_code) {
+        setMenuItems([
+          ...baseMenuItems,
+          { title: "My Books", icon: Book, path: "/my-books" },
+        ]);
+      } else {
+        setMenuItems(baseMenuItems);
+      }
+    };
+
+    checkCoupon();
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -132,4 +153,3 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
-}

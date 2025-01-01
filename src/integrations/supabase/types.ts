@@ -16,6 +16,7 @@ export type Database = {
           allergies: string[] | null
           avatar_url: string | null
           book_id: string | null
+          book_title: string | null
           cooking_skill_level: string | null
           country: string | null
           coupon_code: string | null
@@ -48,6 +49,7 @@ export type Database = {
           allergies?: string[] | null
           avatar_url?: string | null
           book_id?: string | null
+          book_title?: string | null
           cooking_skill_level?: string | null
           country?: string | null
           coupon_code?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           allergies?: string[] | null
           avatar_url?: string | null
           book_id?: string | null
+          book_title?: string | null
           cooking_skill_level?: string | null
           country?: string | null
           coupon_code?: string | null

@@ -1,214 +1,105 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from '@supabase/supabase-js';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-const WORDPRESS_API_URL = 'https://brainscapebooks.com'
-const WORDPRESS_USERNAME = Deno.env.get('WORDPRESS_USERNAME')
-const WORDPRESS_PASSWORD = Deno.env.get('WORDPRESS_PASSWORD')
-
-Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
+const handler = async (req: any) => {
   try {
-    const { coupon_code } = await req.json()
-    console.log('Verifying coupon:', coupon_code)
+    const { coupon_code } = await req.json();
+    console.log('Verifying coupon:', coupon_code);
 
-    if (!coupon_code) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Coupon code is required',
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      )
+    // Get WordPress credentials from environment variables
+    const wpUsername = Deno.env.get('WORDPRESS_USERNAME');
+    const wpPassword = Deno.env.get('WORDPRESS_PASSWORD');
+
+    if (!wpUsername || !wpPassword) {
+      throw new Error('WordPress credentials not configured');
     }
 
-    // Check if WordPress credentials are available
-    if (!WORDPRESS_USERNAME || !WORDPRESS_PASSWORD) {
-      console.error('WordPress credentials missing')
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Service configuration error. Please contact support.',
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
-    }
-
-    // First, authenticate with WordPress using custom login endpoint
-    console.log('Attempting WordPress authentication...')
-    const loginResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/custom/v1/login`, {
+    // Login to WordPress
+    const loginResponse = await fetch('https://brainscapebooks.com/wp-json/custom/v1/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: WORDPRESS_USERNAME,
-        password: WORDPRESS_PASSWORD,
+        username: wpUsername,
+        password: wpPassword,
       }),
-    })
+    });
 
-    console.log('Login response status:', loginResponse.status)
-    const responseText = await loginResponse.text()
-    console.log('Raw login response:', responseText)
-
-    // Try to parse the response as JSON
-    let authData
-    try {
-      authData = JSON.parse(responseText)
-      console.log('Auth data:', {
-        hasToken: !!authData.token,
-        userId: authData.user_id,
-        username: authData.username
-      })
-    } catch (e) {
-      console.error('Failed to parse auth response:', e)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Invalid authentication response from WordPress',
-          debug: { responseText }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
+    if (!loginResponse.ok) {
+      throw new Error('WordPress login failed');
     }
 
-    // Validate auth response
-    if (!authData || !authData.token) {
-      console.error('Invalid auth response:', authData)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Authentication failed - invalid response from WordPress',
-          debug: { authData }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
-    }
+    const loginData = await loginResponse.json();
+    console.log('Login successful, token:', loginData.token);
 
-    // Get all books with their coupon codes using the received token
-    console.log('Fetching books with token:', authData.token)
-    const booksResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/wp/v2/libri?_fields=id,title,acf`, {
+    // Fetch books
+    const booksResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri', {
       headers: {
-        'Authorization': authData.token, // Use the token directly without 'Bearer' prefix
+        'Authorization': loginData.token,
       },
-    })
+    });
 
     if (!booksResponse.ok) {
-      console.error('Books fetch failed:', booksResponse.status)
-      const errorText = await booksResponse.text()
-      console.error('Books fetch error response:', errorText)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Failed to fetch books data',
-          debug: { status: booksResponse.status, error: errorText }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
+      console.error('Books fetch failed:', booksResponse.status);
+      const errorText = await booksResponse.text();
+      console.error('Books fetch error response:', errorText);
+      throw new Error('Failed to fetch books');
     }
 
-    const booksText = await booksResponse.text()
-    console.log('Raw books response:', booksText)
+    const books = await booksResponse.json();
+    console.log('Fetched books:', books);
 
-    let books
-    try {
-      books = JSON.parse(booksText)
-      console.log('Successfully parsed books data:', books.length, 'books found')
-      
-      // Log the structure of the first book to understand the data
-      if (books.length > 0) {
-        console.log('First book structure:', JSON.stringify(books[0], null, 2))
-        console.log('ACF fields of first book:', books[0].acf)
-      }
-    } catch (e) {
-      console.error('Failed to parse books response:', e)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Invalid books response from WordPress',
-          debug: { booksText }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
+    // Find book with matching coupon
+    const book = books.find((b: any) => b.acf?.coupon === coupon_code);
+    console.log('Found book:', book);
+
+    if (!book) {
+      return new Response(JSON.stringify({
+        valid: false,
+        error: 'Invalid coupon code'
+      }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    // Find the book with matching coupon code
-    const matchingBook = books.find(book => {
-      console.log('Checking book:', book.title.rendered, 'Coupon:', book.acf?.coupon)
-      return book.acf?.coupon === coupon_code
-    })
+    // Update Supabase profile with book info
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    if (!matchingBook) {
-      console.log('No matching book found for coupon:', coupon_code)
-      return new Response(
-        JSON.stringify({
-          success: true,
-          valid: false,
-          message: 'Invalid coupon code',
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      )
+    const { error: updateError } = await supabaseClient
+      .from('profiles')
+      .update({
+        coupon_code,
+        book_id: book.id.toString(),
+        book_title: book.title.rendered,
+        access_level: 'standard'
+      })
+      .eq('coupon_code', coupon_code);
+
+    if (updateError) {
+      console.error('Error updating profile:', updateError);
+      throw updateError;
     }
 
-    console.log('Found matching book:', matchingBook.title.rendered)
-
-    // Return success with book information
-    return new Response(
-      JSON.stringify({
-        success: true,
-        valid: true,
-        book_id: matchingBook.id.toString(),
-        book_title: matchingBook.title.rendered,
-        access_level: 'premium',
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    )
+    return new Response(JSON.stringify({
+      valid: true,
+      book_id: book.id.toString(),
+      access_level: 'standard'
+    }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
-    console.error('Error:', error)
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-        debug: { 
-          error: error.toString(),
-          stack: error.stack
-        }
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    )
+    console.error('Error:', error);
+    return new Response(JSON.stringify({
+      valid: false,
+      error: error.message
+    }), {
+      headers: { 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
-})
+};
+
+export default handler;
