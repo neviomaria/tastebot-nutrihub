@@ -114,7 +114,7 @@ const RecipeDetail = () => {
           <Skeleton className="h-8 w-48" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-[calc(100vh-8rem)]" />
+          <Skeleton className="aspect-[3/4] w-full" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-2/3" />
@@ -177,10 +177,10 @@ const RecipeDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="relative h-[calc(100vh-8rem)]">
-          <div className="sticky top-6 h-full w-full">
+        <div className="relative">
+          <div className="sticky top-6">
             {recipe.acf.recipe_image?.url && (
-              <div className="h-full w-full rounded-lg overflow-hidden">
+              <div className="aspect-[3/4] w-full rounded-lg overflow-hidden">
                 <img
                   src={recipe.acf.recipe_image.url}
                   alt={recipe.title}
