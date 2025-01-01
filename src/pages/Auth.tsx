@@ -19,6 +19,11 @@ const AuthPage = () => {
     });
   }, [navigate]);
 
+  // Handle view changes manually since onViewChange prop is not supported
+  const handleViewChange = (newView: ViewType) => {
+    setView(newView);
+  };
+
   return (
     <AuthLayout>
       <div className="text-center mb-8">
@@ -29,7 +34,39 @@ const AuthPage = () => {
           {view === "sign_in" ? "Sign in to your account" : "Create your account"}
         </p>
       </div>
+
+      {/* Add view toggle buttons */}
+      <div className="flex justify-center space-x-4 mb-6">
+        <button
+          onClick={() => handleViewChange("sign_in")}
+          className={`px-4 py-2 rounded-md ${
+            view === "sign_in"
+              ? "bg-primary text-white"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          Sign In
+        </button>
+        <button
+          onClick={() => handleViewChange("sign_up")}
+          className={`px-4 py-2 rounded-md ${
+            view === "sign_up"
+              ? "bg-primary text-white"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          Sign Up
+        </button>
+      </div>
       
+      {/* Show coupon form before auth form when signing up */}
+      {view === "sign_up" && (
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-gray-700 mb-4">Enter your book coupon code</h3>
+          <SignUpCouponForm />
+        </div>
+      )}
+
       <Auth
         supabaseClient={supabase}
         view={view}
@@ -82,13 +119,6 @@ const AuthPage = () => {
         }}
         providers={[]}
       />
-      
-      {view === "sign_up" && (
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-4">Enter your book coupon code</h3>
-          <SignUpCouponForm />
-        </div>
-      )}
     </AuthLayout>
   );
 };
