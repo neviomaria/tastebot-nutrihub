@@ -4,9 +4,24 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CouponField } from "@/components/form/CouponField";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const couponSchema = z.object({
+  coupon_code: z.string().optional(),
+});
+
+type CouponFormValues = z.infer<typeof couponSchema>;
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const form = useForm<CouponFormValues>({
+    resolver: zodResolver(couponSchema),
+    defaultValues: {
+      coupon_code: "",
+    },
+  });
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {

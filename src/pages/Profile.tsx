@@ -7,6 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CouponField } from "@/components/form/CouponField";
 import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const couponSchema = z.object({
+  coupon_code: z.string().min(1, "Coupon code is required"),
+});
+
+type CouponFormValues = z.infer<typeof couponSchema>;
 
 interface ProfileData {
   first_name: string | null;
@@ -33,6 +42,13 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const form = useForm<CouponFormValues>({
+    resolver: zodResolver(couponSchema),
+    defaultValues: {
+      coupon_code: "",
+    },
+  });
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -51,7 +67,6 @@ const Profile = () => {
 
         if (error) throw error;
         
-        // Ensure all fields are present in the profile data
         const profileData: ProfileData = {
           first_name: data.first_name,
           last_name: data.last_name,
@@ -86,7 +101,7 @@ const Profile = () => {
     fetchProfile();
   }, [navigate, toast]);
 
-  const handleCouponSubmit = async (values: { coupon_code: string }) => {
+  const onSubmit = async (values: CouponFormValues) => {
     try {
       const { data, error } = await supabase.functions.invoke('verify-coupon', {
         body: { coupon_code: values.coupon_code }
@@ -110,6 +125,8 @@ const Profile = () => {
           title: "Success",
           description: "Coupon code verified and applied successfully",
         });
+
+        form.reset();
       }
     } catch (error) {
       console.error('Error:', error);
@@ -191,8 +208,8 @@ const Profile = () => {
           </div>
           <div>
             <h3 className="font-medium text-sm text-muted-foreground">Coupon Management</h3>
-            <form onSubmit={handleCouponSubmit} className="mt-4">
-              <CouponField form={{ control: { setValue: () => {} }, handleSubmit: () => {} }} />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
+              <CouponField form={form} />
               <Button type="submit" className="mt-2">Add Coupon</Button>
             </form>
           </div>
