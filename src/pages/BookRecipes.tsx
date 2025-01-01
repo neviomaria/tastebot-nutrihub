@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { RecipeCard } from "@/components/RecipeCard";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Recipe {
   id: number;
@@ -34,13 +35,36 @@ const BookRecipes = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
+        // Check auth state before fetching
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          return;
+        }
+
         const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+        if (!response.ok) {
+          throw new Error('Failed to fetch recipes');
+        }
+        
         const data = await response.json();
-        console.log("Fetched recipes:", data); // Debug log
+        console.log("Fetched recipes:", data);
         
         // Filter recipes for the current book
         const bookRecipes = data.filter((recipe: Recipe) => 
@@ -63,7 +87,7 @@ const BookRecipes = () => {
         console.error("Error fetching recipes:", error);
         toast({
           title: "Error",
-          description: "Failed to load recipes",
+          description: "Failed to load recipes. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -72,7 +96,7 @@ const BookRecipes = () => {
     };
 
     fetchRecipes();
-  }, [id, toast]);
+  }, [id, toast, navigate]);
 
   if (loading) {
     return (
