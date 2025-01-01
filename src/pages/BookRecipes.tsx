@@ -179,9 +179,7 @@ const BookRecipes = () => {
                       image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
                       cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                       difficulty="Easy"
-                      onClick={() => {
-                        window.location.href = `/recipe/${recipe.id}`;
-                      }}
+                      onClick={() => navigate(`/recipe/${recipe.id}`)}
                     />
                   ))}
                 </div>

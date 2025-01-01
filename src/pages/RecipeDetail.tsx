@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
@@ -42,11 +41,17 @@ const RecipeDetail = () => {
       try {
         // Fetch current recipe
         const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/recipes/${id}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const recipeData = await response.json();
         setRecipe(recipeData);
 
         // Fetch all recipes to determine next and previous
         const allRecipesResponse = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+        if (!allRecipesResponse.ok) {
+          throw new Error(`HTTP error! status: ${allRecipesResponse.status}`);
+        }
         const allRecipes = await allRecipesResponse.json();
         
         const currentIndex = allRecipes.findIndex((r: Recipe) => r.id === parseInt(id!));
@@ -163,11 +168,7 @@ const RecipeDetail = () => {
               {prevRecipe && (
                 <PaginationItem>
                   <PaginationPrevious 
-                    href={`/recipe/${prevRecipe.id}`} 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(`/recipe/${prevRecipe.id}`);
-                    }}
+                    onClick={() => navigate(`/recipe/${prevRecipe.id}`)}
                   />
                 </PaginationItem>
               )}
@@ -175,11 +176,7 @@ const RecipeDetail = () => {
               {nextRecipe && (
                 <PaginationItem>
                   <PaginationNext 
-                    href={`/recipe/${nextRecipe.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(`/recipe/${nextRecipe.id}`);
-                    }}
+                    onClick={() => navigate(`/recipe/${nextRecipe.id}`)}
                   />
                 </PaginationItem>
               )}
