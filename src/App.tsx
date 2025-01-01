@@ -13,6 +13,7 @@ import MyCoupons from "@/pages/MyCoupons";
 import MyBooks from "@/pages/MyBooks";
 import BookDetail from "@/pages/BookDetail";
 import BookRecipes from "@/pages/BookRecipes";
+import RecipeDetail from "@/pages/RecipeDetail";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -99,6 +100,7 @@ function App() {
                 <Route path="/my-books" element={<MyBooks />} />
                 <Route path="/book/:id" element={<BookDetail />} />
                 <Route path="/book/:id/recipes" element={<BookRecipes />} />
+                <Route path="/recipe/:id" element={<RecipeDetail />} />
               </Routes>
             </AppSidebar>
           ) : (
