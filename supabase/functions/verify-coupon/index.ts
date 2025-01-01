@@ -64,10 +64,15 @@ Deno.serve(async (req) => {
     const responseText = await loginResponse.text()
     console.log('Raw login response:', responseText)
 
+    // Try to parse the response as JSON
     let authData
     try {
       authData = JSON.parse(responseText)
-      console.log('Parsed auth data:', authData)
+      console.log('Auth data:', {
+        hasToken: !!authData.token,
+        userId: authData.user_id,
+        username: authData.username
+      })
     } catch (e) {
       console.error('Failed to parse auth response:', e)
       return new Response(
@@ -83,12 +88,13 @@ Deno.serve(async (req) => {
       )
     }
 
-    if (!authData.token) {
-      console.error('No token in auth response')
+    // Validate auth response
+    if (!authData || !authData.token) {
+      console.error('Invalid auth response:', authData)
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Authentication failed - no token received',
+          error: 'Authentication failed - invalid response from WordPress',
           debug: { authData }
         }),
         {
@@ -106,14 +112,30 @@ Deno.serve(async (req) => {
       },
     })
 
-    console.log('Books response status:', booksResponse.status)
+    if (!booksResponse.ok) {
+      console.error('Books fetch failed:', booksResponse.status)
+      const errorText = await booksResponse.text()
+      console.error('Books fetch error response:', errorText)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Failed to fetch books data',
+          debug: { status: booksResponse.status, error: errorText }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
+    }
+
     const booksText = await booksResponse.text()
     console.log('Raw books response:', booksText)
 
     let books
     try {
       books = JSON.parse(booksText)
-      console.log('Parsed books:', books)
+      console.log('Successfully parsed books data:', books.length, 'books found')
     } catch (e) {
       console.error('Failed to parse books response:', e)
       return new Response(
