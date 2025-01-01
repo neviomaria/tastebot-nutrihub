@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
     console.log('Fetching books with token:', authData.token)
     const booksResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/wp/v2/libri?_fields=id,title,acf`, {
       headers: {
-        'Authorization': `Bearer ${authData.token}`,
+        'Authorization': authData.token, // Use the token directly without 'Bearer' prefix
       },
     })
 
