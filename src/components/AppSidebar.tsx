@@ -38,7 +38,10 @@ export function AppSidebar({ className, children }: SidebarProps) {
           .select("coupon_code, book_id, book_title")
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching profile:", error);
+          throw error;
+        }
 
         if (profile?.coupon_code) {
           // Add My Books to menu items if user has a coupon
@@ -90,7 +93,7 @@ export function AppSidebar({ className, children }: SidebarProps) {
           <div className="space-y-4 py-4">
             <div className="px-3 py-2">
               <div className="space-y-1">
-                {menuItems.map((item, index) => (
+                {menuItems.map((item) => (
                   <div key={item.title}>
                     <Link to={item.path}>
                       <Button
