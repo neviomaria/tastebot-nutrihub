@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface Book {
   title: string;
@@ -10,9 +10,12 @@ interface Book {
   coverUrl: string;
 }
 
-interface WordPressMedia {
-  guid: {
+interface WordPressBook {
+  title: {
     rendered: string;
+  };
+  acf: {
+    sottotitolo_per_sito: string;
   };
 }
 
@@ -30,33 +33,29 @@ const MyBooks = () => {
           .single();
 
         if (profile?.book_id) {
-          // Fetch cover image from WordPress
           try {
-            const response = await fetch('https://brainscapebooks.com/wp-json/wp/v2/media/2571');
-            const mediaData: WordPressMedia = await response.json();
+            // Fetch book details from WordPress
+            const bookResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri/1896');
+            const bookData: WordPressBook = await bookResponse.json();
+            
+            // Fetch cover image from WordPress
+            const mediaResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/media/2571');
+            const mediaData = await mediaResponse.json();
             
             setBooks([
               {
-                title: profile.book_title || "Your Book",
-                subtitle: "Gluten Free Recipe Book", // We can make this dynamic later if needed
+                title: bookData.title.rendered,
+                subtitle: bookData.acf.sottotitolo_per_sito,
                 coverUrl: mediaData.guid.rendered,
               },
             ]);
           } catch (error) {
-            console.error("Error fetching book cover:", error);
+            console.error("Error fetching book details:", error);
             toast({
               title: "Error",
-              description: "Failed to load book cover image",
+              description: "Failed to load book details",
               variant: "destructive",
             });
-            // Still show the book but with placeholder image
-            setBooks([
-              {
-                title: profile.book_title || "Your Book",
-                subtitle: "Gluten Free Recipe Book",
-                coverUrl: "/placeholder.svg",
-              },
-            ]);
           }
         }
       } catch (error) {
