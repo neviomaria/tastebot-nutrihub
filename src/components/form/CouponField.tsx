@@ -15,21 +15,24 @@ interface CouponFieldProps {
 
 export const CouponField = ({ form }: CouponFieldProps) => {
   return (
-    <FormField
-      control={form.control}
-      name="coupon_code"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Coupon Code</FormLabel>
-          <FormControl>
-            <Input
-              placeholder="Enter your book coupon code"
-              {...field}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <div className="space-y-2">
+      <FormField
+        control={form.control}
+        name="coupon_code"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Coupon Code</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="Enter your book coupon code"
+                {...field}
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
 };

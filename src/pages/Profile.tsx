@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Form } from "@/components/ui/form";
 
 const couponSchema = z.object({
   coupon_code: z.string().min(1, "Coupon code is required"),
@@ -208,10 +209,12 @@ const Profile = () => {
           </div>
           <div>
             <h3 className="font-medium text-sm text-muted-foreground">Coupon Management</h3>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
-              <CouponField form={form} />
-              <Button type="submit" className="mt-2">Add Coupon</Button>
-            </form>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
+                <CouponField form={form} />
+                <Button type="submit" className="mt-2">Add Coupon</Button>
+              </form>
+            </Form>
           </div>
         </CardContent>
       </Card>
