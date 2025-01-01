@@ -14,31 +14,68 @@ import MyBooks from "@/pages/MyBooks";
 import BookDetail from "@/pages/BookDetail";
 import BookRecipes from "@/pages/BookRecipes";
 import { AppSidebar } from "@/components/AppSidebar";
+import { useToast } from "@/components/ui/use-toast";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check initial auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Session error:", error);
+          setIsAuthenticated(false);
+          return;
+        }
+        setIsAuthenticated(!!session);
+      } catch (error) {
+        console.error("Failed to check session:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkSession();
 
     // Subscribe to auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
       setIsAuthenticated(!!session);
-      if (!session) {
+      
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         // Clear query cache when user logs out
         queryClient.clear();
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully.",
+        });
+      } else if (event === 'SIGNED_IN') {
+        toast({
+          title: "Signed in",
+          description: "Welcome back!",
+        });
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed successfully");
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   // Show nothing while checking auth state
   if (isAuthenticated === null) {
