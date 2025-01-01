@@ -6,8 +6,12 @@ export interface Recipe {
     prep_time: string;
     cook_time: string;
     pasto: string;
-    ingredients: string[];
-    instructions: string[];
+    ingredients: Array<{
+      ingredient_item: string;
+    }>;
+    instructions: Array<{
+      instructions_step: string;
+    }>;
     recipe_image: {
       url: string;
     };
