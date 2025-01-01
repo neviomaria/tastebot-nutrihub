@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +26,7 @@ const MyBooks = () => {
       try {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("book_title, book_id")
+          .select("book_id, book_title")
           .single();
 
         if (profile?.book_id) {
@@ -76,10 +76,17 @@ const MyBooks = () => {
 
   if (loading) {
     return (
-      <div className="container max-w-7xl py-8">
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">My Books</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[300px] w-full" />
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="aspect-[3/4] w-full mb-4" />
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -87,7 +94,7 @@ const MyBooks = () => {
   }
 
   return (
-    <div className="container max-w-7xl py-8">
+    <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">My Books</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {books.map((book, index) => (
@@ -104,9 +111,7 @@ const MyBooks = () => {
                 />
               </div>
               <h2 className="text-xl font-semibold mb-2">{book.title}</h2>
-              {book.subtitle && (
-                <p className="text-sm text-muted-foreground">{book.subtitle}</p>
-              )}
+              <p className="text-gray-600">{book.subtitle}</p>
             </CardContent>
           </Card>
         ))}
