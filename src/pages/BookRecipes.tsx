@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface Recipe {
   id: number;
@@ -29,102 +30,89 @@ type GroupedRecipes = {
   [key: string]: Recipe[];
 };
 
+const fetchRecipes = async () => {
+  const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes', {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch recipes: ${response.status} ${response.statusText}`);
+  }
+  
+  return response.json();
+};
+
 const BookRecipes = () => {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [groupedRecipes, setGroupedRecipes] = useState<GroupedRecipes>({});
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // Check authentication status
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return session;
+    },
+    retry: false,
+    onError: async (error) => {
+      console.error("Session error:", error);
+      await supabase.auth.signOut();
+      navigate("/auth");
+    }
+  });
+
+  // Fetch recipes with caching
+  const { data: recipes, isLoading, error } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: fetchRecipes,
+    enabled: !!session,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    cacheTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    onError: (error) => {
+      const errorMessage = error instanceof Error && error.message.includes("NetworkError")
+        ? "Unable to connect to the recipe service. Please check your internet connection and try again."
+        : "Failed to load recipes. Please try again later.";
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Group recipes by meal type when recipes data changes
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          await supabase.auth.signOut();
-          navigate("/auth");
-          return;
+    if (recipes) {
+      const bookRecipes = recipes.filter((recipe: Recipe) => 
+        recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
+      );
+      
+      const grouped = bookRecipes.reduce((acc: GroupedRecipes, recipe: Recipe) => {
+        const mealType = recipe.acf.pasto || 'Other';
+        if (!acc[mealType]) {
+          acc[mealType] = [];
         }
+        acc[mealType].push(recipe);
+        return acc;
+      }, {});
 
-        if (!session) {
-          navigate("/auth");
-          return;
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        navigate("/auth");
-      }
-    };
+      setGroupedRecipes(grouped);
+    }
+  }, [recipes, id]);
 
-    checkAuth();
-  }, [navigate]);
+  if (!session) {
+    return null;
+  }
 
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        // Check auth state before fetching
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          return;
-        }
-
-        const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch recipes: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log("Fetched recipes:", data);
-        
-        // Filter recipes for the current book
-        const bookRecipes = data.filter((recipe: Recipe) => 
-          recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
-        );
-        
-        // Group recipes by meal type
-        const grouped = bookRecipes.reduce((acc: GroupedRecipes, recipe: Recipe) => {
-          const mealType = recipe.acf.pasto || 'Other';
-          if (!acc[mealType]) {
-            acc[mealType] = [];
-          }
-          acc[mealType].push(recipe);
-          return acc;
-        }, {});
-
-        setRecipes(bookRecipes);
-        setGroupedRecipes(grouped);
-      } catch (error) {
-        console.error("Error fetching recipes:", error);
-        
-        // Show a more specific error message based on the error type
-        const errorMessage = error instanceof Error && error.message.includes("NetworkError")
-          ? "Unable to connect to the recipe service. Please check your internet connection and try again."
-          : "Failed to load recipes. Please try again later.";
-        
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRecipes();
-  }, [id, toast, navigate]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
