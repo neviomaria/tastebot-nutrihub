@@ -47,9 +47,9 @@ Deno.serve(async (req) => {
       )
     }
 
-    // First, get a JWT token using basic auth
+    // First, authenticate with WordPress using custom login endpoint
     console.log('Attempting WordPress authentication...')
-    const tokenResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/jwt-auth/v1/token`, {
+    const loginResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/custom/v1/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -60,21 +60,55 @@ Deno.serve(async (req) => {
       }),
     })
 
-    if (!tokenResponse.ok) {
-      console.error('Token fetch failed:', tokenResponse.status)
-      const errorText = await tokenResponse.text()
-      console.error('Token error response:', errorText)
-      throw new Error('Failed to authenticate with WordPress')
+    console.log('Login response status:', loginResponse.status)
+    const responseText = await loginResponse.text()
+    console.log('Raw login response:', responseText)
+
+    // Try to parse the response as JSON
+    let authData
+    try {
+      authData = JSON.parse(responseText)
+      console.log('Auth data:', {
+        hasToken: !!authData.token,
+        userId: authData.user_id,
+        username: authData.username
+      })
+    } catch (e) {
+      console.error('Failed to parse auth response:', e)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid authentication response from WordPress',
+          debug: { responseText }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
     }
 
-    const tokenData = await tokenResponse.json()
-    console.log('Successfully obtained WordPress token')
+    // Validate auth response
+    if (!authData || !authData.token) {
+      console.error('Invalid auth response:', authData)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Authentication failed - invalid response from WordPress',
+          debug: { authData }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
+    }
 
-    // Get all books with their coupon codes using the JWT token
-    console.log('Fetching books with JWT token')
+    // Get all books with their coupon codes using the received token
+    console.log('Fetching books with token:', authData.token)
     const booksResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/wp/v2/libri?_fields=id,title,acf`, {
       headers: {
-        'Authorization': `Bearer ${tokenData.token}`,
+        'Authorization': `Bearer ${authData.token}`,
       },
     })
 
@@ -95,11 +129,39 @@ Deno.serve(async (req) => {
       )
     }
 
-    const books = await booksResponse.json()
-    console.log('Successfully fetched books data:', books.length, 'books found')
+    const booksText = await booksResponse.text()
+    console.log('Raw books response:', booksText)
+
+    let books
+    try {
+      books = JSON.parse(booksText)
+      console.log('Successfully parsed books data:', books.length, 'books found')
+      
+      // Log the structure of the first book to understand the data
+      if (books.length > 0) {
+        console.log('First book structure:', JSON.stringify(books[0], null, 2))
+        console.log('ACF fields of first book:', books[0].acf)
+      }
+    } catch (e) {
+      console.error('Failed to parse books response:', e)
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid books response from WordPress',
+          debug: { booksText }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
+    }
 
     // Find the book with matching coupon code
-    const matchingBook = books.find(book => book.acf?.coupon === coupon_code)
+    const matchingBook = books.find(book => {
+      console.log('Checking book:', book.title.rendered, 'Coupon:', book.acf?.coupon)
+      return book.acf?.coupon === coupon_code
+    })
 
     if (!matchingBook) {
       console.log('No matching book found for coupon:', coupon_code)
