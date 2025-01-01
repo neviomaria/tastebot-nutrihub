@@ -7,6 +7,7 @@ import { CouponField } from "@/components/form/CouponField";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Form } from "@/components/ui/form";
 
 const couponSchema = z.object({
   coupon_code: z.string().optional(),
@@ -30,6 +31,26 @@ const AuthPage = () => {
       }
     });
   }, [navigate]);
+
+  const onSubmit = async (values: CouponFormValues) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-coupon', {
+        body: { coupon_code: values.coupon_code }
+      });
+
+      if (error) throw error;
+
+      if (data.valid) {
+        // Handle successful coupon verification
+        console.log('Coupon verified:', data);
+      } else {
+        // Handle invalid coupon
+        console.log('Invalid coupon');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full flex">
@@ -157,7 +178,11 @@ const AuthPage = () => {
               },
             }}
           />
-          <CouponField form={form} />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <CouponField form={form} />
+            </form>
+          </Form>
         </div>
       </div>
     </div>
