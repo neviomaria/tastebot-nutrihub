@@ -1,7 +1,7 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CouponField } from "@/components/form/CouponField";
 import { useForm } from "react-hook-form";
@@ -17,6 +17,7 @@ type CouponFormValues = z.infer<typeof couponSchema>;
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const [view, setView] = useState<"sign_in" | "sign_up">("sign_in");
   const form = useForm<CouponFormValues>({
     resolver: zodResolver(couponSchema),
     defaultValues: {
@@ -41,10 +42,8 @@ const AuthPage = () => {
       if (error) throw error;
 
       if (data.valid) {
-        // Handle successful coupon verification
         console.log('Coupon verified:', data);
       } else {
-        // Handle invalid coupon
         console.log('Invalid coupon');
       }
     } catch (error) {
@@ -54,7 +53,6 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen w-full flex">
-      {/* Left side - App presentation */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-auth-gradient-from to-auth-gradient-to text-auth-text p-12 flex-col justify-between">
         <div>
           <h1 className="text-4xl font-bold mb-6">Meal Planner</h1>
@@ -115,7 +113,6 @@ const AuthPage = () => {
         </div>
       </div>
 
-      {/* Right side - Auth form */}
       <div className="w-full lg:w-1/2 p-8 flex items-center justify-center bg-white">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
@@ -123,11 +120,12 @@ const AuthPage = () => {
               Welcome
             </h2>
             <p className="text-gray-600">
-              Sign in to your account to continue
+              {view === "sign_in" ? "Sign in to your account" : "Create your account"}
             </p>
           </div>
           <Auth
             supabaseClient={supabase}
+            view={view}
             appearance={{
               theme: ThemeSupa,
               variables: {
@@ -157,9 +155,6 @@ const AuthPage = () => {
                 label: "text-gray-700",
               },
             }}
-            theme="default"
-            providers={[]}
-            view="sign_up"
             localization={{
               variables: {
                 sign_up: {
@@ -167,7 +162,6 @@ const AuthPage = () => {
                   password_label: "Password",
                   button_label: "Sign Up",
                   link_text: "Don't have an account? Sign up",
-                  confirmation_text: "Check your email for the confirmation link",
                 },
                 sign_in: {
                   email_label: "Email",
@@ -177,12 +171,16 @@ const AuthPage = () => {
                 },
               },
             }}
+            providers={[]}
+            onViewChange={(newView) => setView(newView as "sign_in" | "sign_up")}
           />
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <CouponField form={form} />
-            </form>
-          </Form>
+          {view === "sign_up" && (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <CouponField form={form} />
+              </form>
+            </Form>
+          )}
         </div>
       </div>
     </div>

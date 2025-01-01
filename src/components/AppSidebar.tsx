@@ -1,4 +1,4 @@
-import { Home, ChefHat, Activity, Users, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, ChefHat, Activity, Users, Settings, LogOut, ChevronLeft, ChevronRight, Ticket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -18,6 +18,7 @@ const menuItems = [
   { title: "Recipes", icon: ChefHat, path: "/recipes" },
   { title: "Analytics", icon: Activity, path: "/analytics" },
   { title: "Community", icon: Users, path: "/community" },
+  { title: "My Coupons", icon: Ticket, path: "/my-coupons" },
   { title: "Profile", icon: Users, path: "/complete-profile" },
   { title: "Settings", icon: Settings, path: "/settings" },
 ];
