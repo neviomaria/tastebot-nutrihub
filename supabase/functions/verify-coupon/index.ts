@@ -1,105 +1,80 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-const handler = async (req: any) => {
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   try {
-    const { coupon_code } = await req.json();
-    console.log('Verifying coupon:', coupon_code);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    )
 
-    // Get WordPress credentials from environment variables
-    const wpUsername = Deno.env.get('WORDPRESS_USERNAME');
-    const wpPassword = Deno.env.get('WORDPRESS_PASSWORD');
-
-    if (!wpUsername || !wpPassword) {
-      throw new Error('WordPress credentials not configured');
-    }
-
-    // Login to WordPress
-    const loginResponse = await fetch('https://brainscapebooks.com/wp-json/custom/v1/login', {
+    const { coupon } = await req.json()
+    
+    const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: wpUsername,
-        password: wpPassword,
+        username: Deno.env.get('WORDPRESS_USERNAME'),
+        password: Deno.env.get('WORDPRESS_PASSWORD'),
       }),
-    });
+    })
 
-    if (!loginResponse.ok) {
-      throw new Error('WordPress login failed');
-    }
+    const { token } = await response.json()
 
-    const loginData = await loginResponse.json();
-    console.log('Login successful, token:', loginData.token);
-
-    // Fetch books
     const booksResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri', {
       headers: {
-        'Authorization': loginData.token,
+        'Authorization': token,
       },
-    });
+    })
 
-    if (!booksResponse.ok) {
-      console.error('Books fetch failed:', booksResponse.status);
-      const errorText = await booksResponse.text();
-      console.error('Books fetch error response:', errorText);
-      throw new Error('Failed to fetch books');
-    }
-
-    const books = await booksResponse.json();
-    console.log('Fetched books:', books);
-
-    // Find book with matching coupon
-    const book = books.find((b: any) => b.acf?.coupon === coupon_code);
-    console.log('Found book:', book);
+    const books = await booksResponse.json()
+    const book = books.find((book: any) => book.acf.coupon === coupon)
 
     if (!book) {
-      return new Response(JSON.stringify({
-        valid: false,
-        error: 'Invalid coupon code'
-      }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ error: 'Invalid coupon code' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
-    // Update Supabase profile with book info
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    const { error: updateError } = await supabaseClient
+    const { error } = await supabaseClient
       .from('profiles')
-      .update({
-        coupon_code,
+      .update({ 
+        coupon_code: coupon,
         book_id: book.id.toString(),
-        book_title: book.title.rendered,
-        access_level: 'standard'
+        book_title: book.title.rendered
       })
-      .eq('coupon_code', coupon_code);
+      .eq('id', req.headers.get('x-user-id'))
 
-    if (updateError) {
-      console.error('Error updating profile:', updateError);
-      throw updateError;
-    }
+    if (error) throw error
 
-    return new Response(JSON.stringify({
-      valid: true,
-      book_id: book.id.toString(),
-      access_level: 'standard'
-    }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ 
+        message: 'Coupon verified successfully',
+        book: {
+          id: book.id,
+          title: book.title.rendered,
+          subtitle: book.acf.sottotitolo_per_sito,
+          preview_url: book.acf.preview_libro_kindle,
+          kindle_url: book.acf.link_kindle
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(JSON.stringify({
-      valid: false,
-      error: error.message
-    }), {
-      headers: { 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    )
   }
-};
-
-export default handler;
+})
