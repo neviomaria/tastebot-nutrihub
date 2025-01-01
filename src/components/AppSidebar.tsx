@@ -31,32 +31,43 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const [userBooks, setUserBooks] = useState<{ book_id: string; book_title: string }[]>([]);
 
   useEffect(() => {
-    const checkCouponAndBooks = async () => {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("coupon_code, book_id, book_title")
-        .single();
+    const fetchUserBooks = async () => {
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("coupon_code, book_id, book_title")
+          .single();
 
-      if (profile?.coupon_code) {
-        setMenuItems([
-          ...baseMenuItems,
-          { title: "My Books", icon: Book, path: "/my-books" },
-        ]);
+        if (error) throw error;
 
-        if (profile.book_id && profile.book_title) {
-          setUserBooks([{ 
-            book_id: profile.book_id,
-            book_title: profile.book_title
-          }]);
+        if (profile?.coupon_code) {
+          setMenuItems([
+            ...baseMenuItems,
+            { title: "My Books", icon: Book, path: "/my-books" },
+          ]);
+
+          if (profile.book_id && profile.book_title) {
+            setUserBooks([{ 
+              book_id: profile.book_id,
+              book_title: profile.book_title
+            }]);
+          }
+        } else {
+          setMenuItems(baseMenuItems);
+          setUserBooks([]);
         }
-      } else {
-        setMenuItems(baseMenuItems);
-        setUserBooks([]);
+      } catch (error) {
+        console.error("Error fetching user books:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your books",
+          variant: "destructive",
+        });
       }
     };
 
-    checkCouponAndBooks();
-  }, []);
+    fetchUserBooks();
+  }, [toast]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
