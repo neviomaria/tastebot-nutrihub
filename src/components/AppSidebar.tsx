@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -8,19 +7,20 @@ import { Menu, User, Book, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
-}
-
 interface MenuItem {
   title: string;
   icon: any;
   path: string;
 }
 
-export function AppSidebar({ className, children }: SidebarProps) {
-  const [open, setOpen] = useState(false);
+interface UserBook {
+  book_id: string;
+  book_title: string;
+}
+
+export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
+  const [userBooks, setUserBooks] = useState<UserBook[]>([]);
   const location = useLocation();
 
   const baseMenuItems: MenuItem[] = [
@@ -29,15 +29,18 @@ export function AppSidebar({ className, children }: SidebarProps) {
     { title: "My Books", icon: Book, path: "/my-books" },
   ];
 
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(baseMenuItems);
-  const [userBooks, setUserBooks] = useState<{ book_id: string; book_title: string }[]>([]);
+  const [menuItems] = useState<MenuItem[]>(baseMenuItems);
 
   useEffect(() => {
-    const fetchUserBooks = async () => {
+    const fetchUserProfile = async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("No user found");
+
         const { data: profile, error } = await supabase
           .from("profiles")
-          .select("coupon_code, book_id, book_title")
+          .select("book_id, book_title")
+          .eq("id", user.id)
           .single();
 
         if (error) {
@@ -55,139 +58,92 @@ export function AppSidebar({ className, children }: SidebarProps) {
           setUserBooks([]);
         }
       } catch (error) {
-        console.error("Error fetching user books:", error);
+        console.error("Error in fetchUserProfile:", error);
         toast({
-          title: "Error",
-          description: "Failed to load your books",
           variant: "destructive",
+          title: "Error",
+          description: "Failed to load user profile",
         });
       }
     };
 
-    fetchUserBooks();
+    fetchUserProfile();
   }, [toast]);
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out",
-        variant: "destructive",
-      });
-    }
-  };
+  const MenuLink = ({ item }: { item: MenuItem }) => (
+    <Link
+      to={item.path}
+      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ${
+        location.pathname === item.path
+          ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+          : ""
+      }`}
+    >
+      <item.icon className="h-4 w-4" />
+      {item.title}
+    </Link>
+  );
 
-  return (
-    <div className="flex min-h-screen">
-      {/* Sidebar for larger screens */}
-      <div className="hidden lg:flex">
-        <div className={cn("pb-12 w-64", className)}>
-          <div className="space-y-4 py-4">
-            <div className="px-3 py-2">
-              <div className="space-y-1">
-                {menuItems.map((item) => (
-                  <div key={item.title}>
-                    <Link to={item.path}>
-                      <Button
-                        variant={location.pathname === item.path ? "secondary" : "ghost"}
-                        className="w-full justify-start"
+  const SidebarContent = () => (
+    <div className="flex h-full flex-col gap-4">
+      <div className="flex h-[60px] items-center border-b px-6">
+        <Link to="/" className="flex items-center gap-2 font-semibold">
+          <span className="text-xl">FlavorFit</span>
+        </Link>
+      </div>
+      <ScrollArea className="flex-1 px-3">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-1">
+            {menuItems.map((item) => (
+              <div key={item.title}>
+                <MenuLink item={item} />
+                {item.title === "My Books" && userBooks.length > 0 && (
+                  <div className="ml-6 mt-2 space-y-1">
+                    {userBooks.map((book) => (
+                      <Link
+                        key={book.book_id}
+                        to={`/book/${book.book_id}`}
+                        className="block rounded-lg px-3 py-2 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
                       >
-                        <item.icon className="mr-2 h-4 w-4" />
-                        {item.title}
-                      </Button>
-                    </Link>
-                    {/* Display books list under My Books */}
-                    {item.title === "My Books" && userBooks.length > 0 && (
-                      <div className="ml-6 mt-2 space-y-1">
-                        {userBooks.map((book) => (
-                          <Link key={book.book_id} to={`/book/${book.book_id}`}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start text-sm"
-                            >
-                              {book.book_title}
-                            </Button>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                        {book.book_title}
+                      </Link>
+                    ))}
                   </div>
-                ))}
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={handleLogout}
-                >
-                  Sign Out
-                </Button>
+                )}
               </div>
-            </div>
+            ))}
           </div>
         </div>
+      </ScrollArea>
+    </div>
+  );
+
+  return (
+    <div className="flex">
+      {/* Sidebar for desktop */}
+      <div className="hidden border-r bg-gray-100/40 lg:block dark:bg-gray-800/40 w-[300px]">
+        <SidebarContent />
       </div>
 
-      {/* Mobile sidebar */}
-      <Sheet open={open} onOpenChange={setOpen}>
+      {/* Sidebar for mobile */}
+      <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" className="lg:hidden" size="icon">
+          <Button
+            variant="ghost"
+            className="lg:hidden fixed left-4 top-4 z-40"
+            size="icon"
+          >
             <Menu className="h-6 w-6" />
+            <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
-          <ScrollArea className="h-full px-3 py-2">
-            <div className="space-y-1">
-              {menuItems.map((item) => (
-                <div key={item.title}>
-                  <Link to={item.path} onClick={() => setOpen(false)}>
-                    <Button
-                      variant={location.pathname === item.path ? "secondary" : "ghost"}
-                      className="w-full justify-start"
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {item.title}
-                    </Button>
-                  </Link>
-                  {/* Display books list under My Books in mobile view */}
-                  {item.title === "My Books" && userBooks.length > 0 && (
-                    <div className="ml-6 mt-2 space-y-1">
-                      {userBooks.map((book) => (
-                        <Link 
-                          key={book.book_id} 
-                          to={`/book/${book.book_id}`}
-                          onClick={() => setOpen(false)}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full justify-start text-sm"
-                          >
-                            {book.book_title}
-                          </Button>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={async () => {
-                  await handleLogout();
-                  setOpen(false);
-                }}
-              >
-                Sign Out
-              </Button>
-            </div>
-          </ScrollArea>
+        <SheetContent side="left" className="w-[300px] p-0">
+          <SidebarContent />
         </SheetContent>
       </Sheet>
 
       {/* Main content */}
-      <div className="flex-1">{children}</div>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }
