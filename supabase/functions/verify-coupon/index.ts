@@ -61,12 +61,12 @@ Deno.serve(async (req) => {
     })
 
     if (!loginResponse.ok) {
-      const errorData = await loginResponse.json()
-      console.error('WordPress login error:', errorData)
+      const errorData = await loginResponse.text()
+      console.error('WordPress login error. Status:', loginResponse.status, 'Response:', errorData)
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Failed to verify coupon. Please try again later.',
+          error: 'Failed to authenticate with WordPress. Please try again later.',
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -75,19 +75,33 @@ Deno.serve(async (req) => {
       )
     }
 
-    const { token } = await loginResponse.json()
-    console.log('Successfully authenticated with WordPress')
+    const authData = await loginResponse.json()
+    console.log('WordPress authentication successful. Token received.')
 
-    // Get all books with their coupon codes
+    if (!authData.token) {
+      console.error('No token received from WordPress')
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Authentication error. Please try again later.',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
+    }
+
+    // Get all books with their coupon codes using the received token
     const booksResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/wp/v2/libri?_fields=id,title,acf`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${authData.token}`,
       },
     })
 
     if (!booksResponse.ok) {
-      const errorData = await booksResponse.json()
-      console.error('WordPress books fetch error:', errorData)
+      const errorData = await booksResponse.text()
+      console.error('WordPress books fetch error. Status:', booksResponse.status, 'Response:', errorData)
       return new Response(
         JSON.stringify({
           success: false,
@@ -101,7 +115,7 @@ Deno.serve(async (req) => {
     }
 
     const books = await booksResponse.json()
-    console.log('Fetched books:', books)
+    console.log('Successfully fetched books from WordPress')
 
     // Find the book with matching coupon code
     const matchingBook = books.find(book => book.acf?.coupon === coupon_code)
@@ -121,7 +135,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('Found matching book:', matchingBook)
+    console.log('Found matching book:', matchingBook.title.rendered)
 
     // Return success with book information
     return new Response(
