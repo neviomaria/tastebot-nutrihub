@@ -71,13 +71,15 @@ const MyBooks = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 1,
-    onError: (error: any) => {
-      console.error("Profile fetch error:", error);
-      toast({
-        title: "Error",
-        description: "Unable to load profile. Please try logging in again.",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: any) => {
+        console.error("Profile fetch error:", error);
+        toast({
+          title: "Error",
+          description: "Unable to load profile. Please try logging in again.",
+          variant: "destructive",
+        });
+      }
     }
   });
 
@@ -94,13 +96,15 @@ const MyBooks = () => {
     staleTime: 30 * 60 * 1000, // 30 minutes
     gcTime: 60 * 60 * 1000, // 1 hour
     retry: 1,
-    onError: (error) => {
-      console.error("Book details fetch error:", error);
-      toast({
-        title: "Error",
-        description: "Unable to load book details. Please try again later.",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error) => {
+        console.error("Book details fetch error:", error);
+        toast({
+          title: "Error",
+          description: "Unable to load book details. Please try again later.",
+          variant: "destructive",
+        });
+      }
     }
   });
 
