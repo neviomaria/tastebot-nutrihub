@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -11,62 +11,81 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Recipe {
   id: number;
   title: string;
-  content: string;
-  acf: {
-    prep_time: string;
-    cook_time: string;
-    pasto: string;
-    recipe_image: {
-      url: string;
-    };
-  };
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  prepTime: string;
+  cookTime: string;
+  servings: number;
+  mealType: string;
 }
 
 const RecipeDetail = () => {
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [nextRecipe, setNextRecipe] = useState<Recipe | null>(null);
-  const [prevRecipe, setPrevRecipe] = useState<Recipe | null>(null);
-  const { toast } = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [prevRecipe, setPrevRecipe] = useState<Recipe | null>(null);
+  const [nextRecipe, setNextRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
     const fetchRecipeDetails = async () => {
-      setLoading(true);
       try {
-        // Fetch current recipe
-        const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/recipes/${id}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        setLoading(true);
+        
+        // First check if we have a valid session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          console.error("Session error:", sessionError);
+          navigate("/auth");
+          return;
         }
-        const recipeData = await response.json();
+
+        // Fetch recipe details
+        const { data: recipeData, error: recipeError } = await supabase
+          .from("recipes")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (recipeError) {
+          throw recipeError;
+        }
+
+        if (!recipeData) {
+          throw new Error("Recipe not found");
+        }
+
         setRecipe(recipeData);
 
-        // Fetch all recipes to determine next and previous
-        const allRecipesResponse = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
-        if (!allRecipesResponse.ok) {
-          throw new Error(`HTTP error! status: ${allRecipesResponse.status}`);
-        }
-        const allRecipes = await allRecipesResponse.json();
-        
-        const currentIndex = allRecipes.findIndex((r: Recipe) => r.id === parseInt(id!));
-        
-        if (currentIndex > 0) {
-          setPrevRecipe(allRecipes[currentIndex - 1]);
-        } else {
-          setPrevRecipe(null);
-        }
+        // Fetch previous recipe
+        const { data: prevData } = await supabase
+          .from("recipes")
+          .select("id, title")
+          .lt("id", id)
+          .order("id", { ascending: false })
+          .limit(1)
+          .single();
 
-        if (currentIndex < allRecipes.length - 1) {
-          setNextRecipe(allRecipes[currentIndex + 1]);
-        } else {
-          setNextRecipe(null);
-        }
+        setPrevRecipe(prevData);
+
+        // Fetch next recipe
+        const { data: nextData } = await supabase
+          .from("recipes")
+          .select("id, title")
+          .gt("id", id)
+          .order("id", { ascending: true })
+          .limit(1)
+          .single();
+
+        setNextRecipe(nextData);
 
       } catch (error) {
         console.error("Error fetching recipe:", error);
@@ -84,26 +103,33 @@ const RecipeDetail = () => {
     if (id) {
       fetchRecipeDetails();
     }
-  }, [id, toast]); // Added id to dependencies to refetch when it changes
+  }, [id, toast, navigate]);
+
+  // Add auth state change listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto">
-          <Card>
-            <CardContent className="p-6">
-              <div className="animate-pulse">
-                <div className="h-8 w-3/4 bg-gray-200 rounded mb-4"></div>
-                <div className="h-6 w-1/2 bg-gray-200 rounded mb-8"></div>
-                <div className="aspect-video w-full bg-gray-200 rounded mb-8"></div>
-                <div className="space-y-4">
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 w-5/6 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="p-6 space-y-4">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-4 w-1/2" />
         </div>
       </div>
     );
@@ -112,12 +138,16 @@ const RecipeDetail = () => {
   if (!recipe) {
     return (
       <div className="p-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-2xl font-bold mb-4">Recipe not found</h1>
-          <Button onClick={() => navigate(-1)}>
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Recipes
-          </Button>
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+        <div className="text-center py-8">
+          <p className="text-lg text-gray-600">Recipe not found</p>
         </div>
       </div>
     );
@@ -129,65 +159,80 @@ const RecipeDetail = () => {
 
   return (
     <div className="p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Recipes
-          </Button>
-          <div className="text-sm text-muted-foreground">
-            {recipe.acf.pasto}
+      <div className="mb-6 flex items-center justify-between">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)}
+          className="flex items-center"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Recipes
+        </Button>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
+          <p className="text-gray-600">{recipe.description}</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-3">Ingredients</h2>
+            <ul className="list-disc pl-5 space-y-2">
+              {recipe.ingredients.map((ingredient, index) => (
+                <li key={index}>{ingredient}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-3">Instructions</h2>
+            <ol className="list-decimal pl-5 space-y-2">
+              {recipe.instructions.map((instruction, index) => (
+                <li key={index}>{instruction}</li>
+              ))}
+            </ol>
           </div>
         </div>
-        
-        <Card>
-          <CardContent className="p-6">
-            <h1 className="text-3xl font-bold mb-4">{recipe.title}</h1>
-            
-            <div className="flex gap-4 mb-6 text-sm text-muted-foreground">
-              <div>Prep time: {recipe.acf.prep_time}</div>
-              <div>Cook time: {recipe.acf.cook_time}</div>
-            </div>
 
-            {recipe.acf.recipe_image?.url && (
-              <img
-                src={recipe.acf.recipe_image.url}
-                alt={recipe.title}
-                className="w-full rounded-lg mb-6"
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder.svg";
-                }}
-              />
-            )}
-
-            <div 
-              className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: recipe.content }}
-            />
-          </CardContent>
-        </Card>
-
-        <div className="mt-8">
-          <Pagination>
-            <PaginationContent>
-              {prevRecipe && (
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => handleNavigation(prevRecipe.id)}
-                  />
-                </PaginationItem>
-              )}
-              
-              {nextRecipe && (
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => handleNavigation(nextRecipe.id)}
-                  />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4">
+          <div>
+            <span className="font-medium">Prep Time:</span>
+            <p>{recipe.prepTime}</p>
+          </div>
+          <div>
+            <span className="font-medium">Cook Time:</span>
+            <p>{recipe.cookTime}</p>
+          </div>
+          <div>
+            <span className="font-medium">Servings:</span>
+            <p>{recipe.servings}</p>
+          </div>
+          <div>
+            <span className="font-medium">Meal Type:</span>
+            <p>{recipe.mealType}</p>
+          </div>
         </div>
+
+        <Pagination>
+          <PaginationContent>
+            {prevRecipe && (
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => handleNavigation(prevRecipe.id)}
+                />
+              </PaginationItem>
+            )}
+            {nextRecipe && (
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => handleNavigation(nextRecipe.id)}
+                />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
