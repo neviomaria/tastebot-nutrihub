@@ -47,9 +47,9 @@ Deno.serve(async (req) => {
       )
     }
 
-    // First, authenticate with WordPress
+    // First, get a JWT token using basic auth
     console.log('Attempting WordPress authentication...')
-    const loginResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/custom/v1/login`, {
+    const tokenResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/jwt-auth/v1/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -60,55 +60,21 @@ Deno.serve(async (req) => {
       }),
     })
 
-    console.log('Login response status:', loginResponse.status)
-    const responseText = await loginResponse.text()
-    console.log('Raw login response:', responseText)
-
-    // Try to parse the response as JSON
-    let authData
-    try {
-      authData = JSON.parse(responseText)
-      console.log('Auth data:', {
-        hasToken: !!authData.token,
-        userId: authData.user_id,
-        username: authData.username
-      })
-    } catch (e) {
-      console.error('Failed to parse auth response:', e)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Invalid authentication response from WordPress',
-          debug: { responseText }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
+    if (!tokenResponse.ok) {
+      console.error('Token fetch failed:', tokenResponse.status)
+      const errorText = await tokenResponse.text()
+      console.error('Token error response:', errorText)
+      throw new Error('Failed to authenticate with WordPress')
     }
 
-    // Validate auth response
-    if (!authData || !authData.token) {
-      console.error('Invalid auth response:', authData)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Authentication failed - invalid response from WordPress',
-          debug: { authData }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
-    }
+    const tokenData = await tokenResponse.json()
+    console.log('Successfully obtained WordPress token')
 
-    // Get all books with their coupon codes using the received token
-    console.log('Fetching books with token:', authData.token)
+    // Get all books with their coupon codes using the JWT token
+    console.log('Fetching books with JWT token')
     const booksResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/wp/v2/libri?_fields=id,title,acf`, {
       headers: {
-        'Authorization': `Bearer ${authData.token}`,
+        'Authorization': `Bearer ${tokenData.token}`,
       },
     })
 
@@ -129,27 +95,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    const booksText = await booksResponse.text()
-    console.log('Raw books response:', booksText)
-
-    let books
-    try {
-      books = JSON.parse(booksText)
-      console.log('Successfully parsed books data:', books.length, 'books found')
-    } catch (e) {
-      console.error('Failed to parse books response:', e)
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Invalid books response from WordPress',
-          debug: { booksText }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      )
-    }
+    const books = await booksResponse.json()
+    console.log('Successfully fetched books data:', books.length, 'books found')
 
     // Find the book with matching coupon code
     const matchingBook = books.find(book => book.acf?.coupon === coupon_code)
