@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -114,7 +114,7 @@ const RecipeDetail = () => {
           <Skeleton className="h-8 w-48" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-[400px]" />
+          <Skeleton className="h-[calc(100vh-8rem)]" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-2/3" />
@@ -177,10 +177,10 @@ const RecipeDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="relative">
-          <div className="sticky top-6">
+        <div className="relative h-[calc(100vh-8rem)]">
+          <div className="sticky top-6 h-full w-full">
             {recipe.acf.recipe_image?.url && (
-              <div className="aspect-[3/4] w-full overflow-hidden rounded-lg">
+              <div className="h-full w-full rounded-lg overflow-hidden">
                 <img
                   src={recipe.acf.recipe_image.url}
                   alt={recipe.title}
