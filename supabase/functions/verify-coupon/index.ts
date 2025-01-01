@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     // Check if WordPress credentials are available
     if (!WORDPRESS_USERNAME || !WORDPRESS_PASSWORD) {
-      console.error('WordPress credentials missing. Please set WORDPRESS_USERNAME and WORDPRESS_PASSWORD in Supabase secrets')
+      console.error('WordPress credentials missing')
       return new Response(
         JSON.stringify({
           success: false,
@@ -60,14 +60,21 @@ Deno.serve(async (req) => {
       }),
     })
 
-    if (!loginResponse.ok) {
-      const errorText = await loginResponse.text()
-      console.error('WordPress login error. Status:', loginResponse.status, 'Response:', errorText)
+    console.log('Login response status:', loginResponse.status)
+    const responseText = await loginResponse.text()
+    console.log('Raw login response:', responseText)
+
+    let authData
+    try {
+      authData = JSON.parse(responseText)
+      console.log('Parsed auth data:', authData)
+    } catch (e) {
+      console.error('Failed to parse auth response:', e)
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Failed to authenticate with WordPress. Please try again later.',
-          debug: { status: loginResponse.status, response: errorText }
+          error: 'Invalid authentication response from WordPress',
+          debug: { responseText }
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -76,15 +83,12 @@ Deno.serve(async (req) => {
       )
     }
 
-    const authData = await loginResponse.json()
-    console.log('WordPress authentication response:', authData)
-
     if (!authData.token) {
-      console.error('No token received from WordPress')
+      console.error('No token in auth response')
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Authentication error. Please try again later.',
+          error: 'Authentication failed - no token received',
           debug: { authData }
         }),
         {
@@ -102,14 +106,21 @@ Deno.serve(async (req) => {
       },
     })
 
-    if (!booksResponse.ok) {
-      const errorText = await booksResponse.text()
-      console.error('WordPress books fetch error. Status:', booksResponse.status, 'Response:', errorText)
+    console.log('Books response status:', booksResponse.status)
+    const booksText = await booksResponse.text()
+    console.log('Raw books response:', booksText)
+
+    let books
+    try {
+      books = JSON.parse(booksText)
+      console.log('Parsed books:', books)
+    } catch (e) {
+      console.error('Failed to parse books response:', e)
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Failed to verify coupon. Please try again later.',
-          debug: { status: booksResponse.status, response: errorText }
+          error: 'Invalid books response from WordPress',
+          debug: { booksText }
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -117,9 +128,6 @@ Deno.serve(async (req) => {
         }
       )
     }
-
-    const books = await booksResponse.json()
-    console.log('Successfully fetched books:', books)
 
     // Find the book with matching coupon code
     const matchingBook = books.find(book => book.acf?.coupon === coupon_code)
@@ -156,12 +164,15 @@ Deno.serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error.message)
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({
         success: false,
         error: error.message,
-        debug: { error: error.toString() }
+        debug: { 
+          error: error.toString(),
+          stack: error.stack
+        }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
