@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, User, Book } from "lucide-react";
+import { Menu, User, Book, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -24,7 +24,9 @@ export function AppSidebar({ className, children }: SidebarProps) {
   const location = useLocation();
 
   const baseMenuItems: MenuItem[] = [
+    { title: "Dashboard", icon: LayoutDashboard, path: "/" },
     { title: "Profile", icon: User, path: "/profile" },
+    { title: "My Books", icon: Book, path: "/my-books" },
   ];
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(baseMenuItems);
@@ -43,22 +45,13 @@ export function AppSidebar({ className, children }: SidebarProps) {
           throw error;
         }
 
-        if (profile?.coupon_code) {
-          // Add My Books to menu items if user has a coupon
-          setMenuItems([
-            ...baseMenuItems,
-            { title: "My Books", icon: Book, path: "/my-books" },
-          ]);
-
-          // Set user books if book_id and book_title exist
-          if (profile.book_id && profile.book_title) {
-            setUserBooks([{ 
-              book_id: profile.book_id,
-              book_title: profile.book_title
-            }]);
-          }
+        // Set user books if book_id and book_title exist
+        if (profile?.book_id && profile?.book_title) {
+          setUserBooks([{ 
+            book_id: profile.book_id,
+            book_title: profile.book_title
+          }]);
         } else {
-          setMenuItems(baseMenuItems);
           setUserBooks([]);
         }
       } catch (error) {
