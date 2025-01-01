@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Navigate } from "react-router-dom";
 
 interface Book {
   title: string;
@@ -22,28 +22,42 @@ interface WordPressBook {
   };
 }
 
-const fetchUserProfile = async () => {
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("book_id, book_title")
-    .single();
+// Temporary mock data until WordPress API is properly configured
+const MOCK_BOOK_DATA = {
+  title: "Il Metodo BrainFood",
+  subtitle: "Nutri il tuo cervello",
+  coverUrl: "https://picsum.photos/400/600", // Temporary placeholder image
+};
 
-  if (error) throw error;
-  return profile;
+const fetchUserProfile = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No active session');
+    }
+
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("book_id, book_title")
+      .single();
+
+    if (error) throw error;
+    return profile;
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    throw error;
+  }
 };
 
 const fetchBookDetails = async (bookId: string) => {
-  const bookResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri/1896');
-  const bookData: WordPressBook = await bookResponse.json();
-  
-  const mediaResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/media/2571');
-  const mediaData = await mediaResponse.json();
-  
+  // For now, return mock data instead of making API calls
+  // We'll implement proper WordPress API integration later
   return {
     id: bookId,
-    title: bookData.title.rendered,
-    subtitle: bookData.acf.sottotitolo_per_sito,
-    coverUrl: mediaData.guid.rendered,
+    title: MOCK_BOOK_DATA.title,
+    subtitle: MOCK_BOOK_DATA.subtitle,
+    coverUrl: MOCK_BOOK_DATA.coverUrl,
   };
 };
 
@@ -51,13 +65,26 @@ const MyBooks = () => {
   const { toast } = useToast();
 
   // Query for user profile
-  const { data: profile, isLoading: isLoadingProfile } = useQuery({
+  const { data: profile, isLoading: isLoadingProfile, error: profileError } = useQuery({
     queryKey: ['profile'],
     queryFn: fetchUserProfile,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: 1,
+    onError: (error: any) => {
+      console.error("Profile fetch error:", error);
+      toast({
+        title: "Error",
+        description: "Unable to load profile. Please try logging in again.",
+        variant: "destructive",
+      });
+    }
   });
+
+  // If there's an authentication error, redirect to login
+  if (profileError?.message?.includes('No active session')) {
+    return <Navigate to="/auth" replace />;
+  }
 
   // Query for book details
   const { data: bookDetails, isLoading: isLoadingBook } = useQuery({
@@ -67,6 +94,14 @@ const MyBooks = () => {
     staleTime: 30 * 60 * 1000, // 30 minutes
     gcTime: 60 * 60 * 1000, // 1 hour
     retry: 1,
+    onError: (error) => {
+      console.error("Book details fetch error:", error);
+      toast({
+        title: "Error",
+        description: "Unable to load book details. Please try again later.",
+        variant: "destructive",
+      });
+    }
   });
 
   const isLoading = isLoadingProfile || isLoadingBook;
