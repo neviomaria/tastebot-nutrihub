@@ -1,22 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Recipe } from "@/types/recipe";
 import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
 import { RecipeContent } from "@/components/recipe/RecipeContent";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 
 const RecipeDetail = () => {
   const { id } = useParams();
@@ -41,7 +33,20 @@ const RecipeDetail = () => {
     }
   });
 
-  // Fetch recipe data
+  // Fetch all recipes for navigation
+  const { data: recipes } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: async () => {
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipes');
+      }
+      return await response.json() as Recipe[];
+    },
+    enabled: !!session
+  });
+
+  // Fetch current recipe data
   const { data: recipe, isLoading, error } = useQuery({
     queryKey: ['recipe', id],
     queryFn: async () => {
@@ -81,6 +86,22 @@ const RecipeDetail = () => {
     };
   }, [navigate]);
 
+  const handleNavigation = (direction: 'prev' | 'next') => {
+    if (!recipes || !id) return;
+    
+    const currentIndex = recipes.findIndex(r => r.id.toString() === id);
+    if (currentIndex === -1) return;
+
+    let newIndex;
+    if (direction === 'prev') {
+      newIndex = currentIndex > 0 ? currentIndex - 1 : recipes.length - 1;
+    } else {
+      newIndex = currentIndex < recipes.length - 1 ? currentIndex + 1 : 0;
+    }
+
+    navigate(`/recipe/${recipes[newIndex].id}`);
+  };
+
   if (!session) {
     return null;
   }
@@ -105,17 +126,14 @@ const RecipeDetail = () => {
   if (!recipe) {
     return (
       <div className="p-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink as={Link} to="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Recipe not found</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
         <div className="text-center py-8">
           <p className="text-lg text-gray-600">Recipe not found</p>
         </div>
@@ -125,22 +143,35 @@ const RecipeDetail = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink as={Link} to="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink as={Link} to="/my-books">My Books</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{recipe.title}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      <div className="mb-6 flex items-center justify-between">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)}
+          className="flex items-center"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Recipes
+        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handleNavigation('prev')}
+            className="rounded-full"
+          >
+            <ArrowLeftCircle className="h-4 w-4" />
+            <span className="sr-only">Previous recipe</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handleNavigation('next')}
+            className="rounded-full"
+          >
+            <ArrowRightCircle className="h-4 w-4" />
+            <span className="sr-only">Next recipe</span>
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-6">
