@@ -61,10 +61,12 @@ const BookRecipes = () => {
       return session;
     },
     retry: false,
-    onError: async (error) => {
-      console.error("Session error:", error);
-      await supabase.auth.signOut();
-      navigate("/auth");
+    meta: {
+      errorHandler: async (error: Error) => {
+        console.error("Session error:", error);
+        await supabase.auth.signOut();
+        navigate("/auth");
+      }
     }
   });
 
@@ -74,17 +76,19 @@ const BookRecipes = () => {
     queryFn: fetchRecipes,
     enabled: !!session,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    cacheTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
-    onError: (error) => {
-      const errorMessage = error instanceof Error && error.message.includes("NetworkError")
-        ? "Unable to connect to the recipe service. Please check your internet connection and try again."
-        : "Failed to load recipes. Please try again later.";
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    meta: {
+      errorHandler: (error: Error) => {
+        const errorMessage = error instanceof Error && error.message.includes("NetworkError")
+          ? "Unable to connect to the recipe service. Please check your internet connection and try again."
+          : "Failed to load recipes. Please try again later.";
+        
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   });
 
