@@ -32,11 +32,23 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Check if WordPress credentials are available
     if (!WORDPRESS_USERNAME || !WORDPRESS_PASSWORD) {
-      throw new Error('WordPress credentials missing')
+      console.error('WordPress credentials missing. Please set WORDPRESS_USERNAME and WORDPRESS_PASSWORD in Supabase secrets')
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Service configuration error. Please contact support.',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
     }
 
     // First, authenticate with WordPress
+    console.log('Attempting WordPress authentication...')
     const loginResponse = await fetch(`${WORDPRESS_API_URL}/wp-json/custom/v1/login`, {
       method: 'POST',
       headers: {
@@ -51,7 +63,16 @@ Deno.serve(async (req) => {
     if (!loginResponse.ok) {
       const errorData = await loginResponse.json()
       console.error('WordPress login error:', errorData)
-      throw new Error(errorData.message || 'Failed to authenticate with WordPress')
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Failed to verify coupon. Please try again later.',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
     }
 
     const { token } = await loginResponse.json()
@@ -67,7 +88,16 @@ Deno.serve(async (req) => {
     if (!booksResponse.ok) {
       const errorData = await booksResponse.json()
       console.error('WordPress books fetch error:', errorData)
-      throw new Error(errorData.message || 'Failed to fetch books')
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Failed to verify coupon. Please try again later.',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      )
     }
 
     const books = await booksResponse.json()
@@ -116,7 +146,7 @@ Deno.serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200, // Changed from 400 to 200 to avoid the FunctionsHttpError
+        status: 500,
       }
     )
   }
