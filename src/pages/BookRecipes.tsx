@@ -13,6 +13,7 @@ interface Recipe {
   acf: {
     prep_time: string;
     cook_time: string;
+    pasto: string;
     libro_associato: Array<{
       ID: number;
       post_title: string;
@@ -23,8 +24,13 @@ interface Recipe {
   };
 }
 
+type GroupedRecipes = {
+  [key: string]: Recipe[];
+};
+
 const BookRecipes = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [groupedRecipes, setGroupedRecipes] = useState<GroupedRecipes>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { id } = useParams();
@@ -34,13 +40,25 @@ const BookRecipes = () => {
       try {
         const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
         const data = await response.json();
+        console.log("Fetched recipes:", data); // Debug log
         
         // Filter recipes for the current book
         const bookRecipes = data.filter((recipe: Recipe) => 
           recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
         );
         
+        // Group recipes by meal type
+        const grouped = bookRecipes.reduce((acc: GroupedRecipes, recipe: Recipe) => {
+          const mealType = recipe.acf.pasto || 'Other';
+          if (!acc[mealType]) {
+            acc[mealType] = [];
+          }
+          acc[mealType].push(recipe);
+          return acc;
+        }, {});
+
         setRecipes(bookRecipes);
+        setGroupedRecipes(grouped);
       } catch (error) {
         console.error("Error fetching recipes:", error);
         toast({
@@ -88,26 +106,28 @@ const BookRecipes = () => {
 
         <h1 className="text-3xl font-bold mb-6">Book Recipes</h1>
 
-        {recipes.length === 0 ? (
+        {Object.keys(groupedRecipes).length === 0 ? (
           <p className="text-gray-500">No recipes available for this book.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                title={recipe.title}
-                image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
-                cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
-                difficulty="Easy"
-                onClick={() => {
-                  toast({
-                    title: "Recipe Selected",
-                    description: "Recipe details coming soon!",
-                  });
-                }}
-              />
-            ))}
-          </div>
+          Object.entries(groupedRecipes).map(([mealType, mealRecipes]) => (
+            <div key={mealType} className="mb-8">
+              <h2 className="text-2xl font-semibold mb-4 text-recipe-500 capitalize">{mealType}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {mealRecipes.map((recipe) => (
+                  <RecipeCard
+                    key={recipe.id}
+                    title={recipe.title}
+                    image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
+                    cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
+                    difficulty="Easy"
+                    onClick={() => {
+                      window.location.href = `/recipe/${recipe.id}`;
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
         )}
       </div>
     </div>
