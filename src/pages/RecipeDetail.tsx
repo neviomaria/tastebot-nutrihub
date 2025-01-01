@@ -113,11 +113,13 @@ const RecipeDetail = () => {
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-8 w-48" />
         </div>
-        <Skeleton className="h-64 w-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-4 w-1/2" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Skeleton className="h-[400px]" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
         </div>
       </div>
     );
@@ -174,35 +176,41 @@ const RecipeDetail = () => {
         </div>
       </div>
 
-      <div className="space-y-6">
-        {recipe.acf.recipe_image?.url && (
-          <div className="aspect-video w-full overflow-hidden rounded-lg">
-            <img
-              src={recipe.acf.recipe_image.url}
-              alt={recipe.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.src = "/placeholder.svg";
-              }}
-            />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="relative">
+          <div className="sticky top-6">
+            {recipe.acf.recipe_image?.url && (
+              <div className="aspect-[3/4] w-full overflow-hidden rounded-lg">
+                <img
+                  src={recipe.acf.recipe_image.url}
+                  alt={recipe.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+            )}
           </div>
-        )}
-
-        <div>
-          <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
-          <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: recipe.content }} />
         </div>
 
-        <RecipeMetadata
-          prepTime={recipe.acf.prep_time}
-          cookTime={recipe.acf.cook_time}
-          mealType={recipe.acf.pasto}
-        />
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
+            <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: recipe.content }} />
+          </div>
 
-        <RecipeContent
-          ingredients={recipe.acf.ingredients || []}
-          instructions={recipe.acf.instructions || []}
-        />
+          <RecipeMetadata
+            prepTime={recipe.acf.prep_time}
+            cookTime={recipe.acf.cook_time}
+            mealType={recipe.acf.pasto}
+          />
+
+          <RecipeContent
+            ingredients={recipe.acf.ingredients || []}
+            instructions={recipe.acf.instructions || []}
+          />
+        </div>
       </div>
     </div>
   );
