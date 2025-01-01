@@ -4,11 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 interface Book {
   title: string;
   subtitle: string;
   coverUrl: string;
+  id: string;
 }
 
 interface WordPressBook {
@@ -20,61 +22,57 @@ interface WordPressBook {
   };
 }
 
+const fetchUserProfile = async () => {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("book_id, book_title")
+    .single();
+
+  if (error) throw error;
+  return profile;
+};
+
+const fetchBookDetails = async (bookId: string) => {
+  const bookResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri/1896');
+  const bookData: WordPressBook = await bookResponse.json();
+  
+  const mediaResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/media/2571');
+  const mediaData = await mediaResponse.json();
+  
+  return {
+    id: bookId,
+    title: bookData.title.rendered,
+    subtitle: bookData.acf.sottotitolo_per_sito,
+    coverUrl: mediaData.guid.rendered,
+  };
+};
+
 const MyBooks = () => {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("book_id, book_title")
-          .single();
+  // Query for user profile
+  const { data: profile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: fetchUserProfile,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
+  });
 
-        if (profile?.book_id) {
-          try {
-            // Fetch book details from WordPress
-            const bookResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri/1896');
-            const bookData: WordPressBook = await bookResponse.json();
-            
-            // Fetch cover image from WordPress
-            const mediaResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/media/2571');
-            const mediaData = await mediaResponse.json();
-            
-            setBooks([
-              {
-                title: bookData.title.rendered,
-                subtitle: bookData.acf.sottotitolo_per_sito,
-                coverUrl: mediaData.guid.rendered,
-              },
-            ]);
-          } catch (error) {
-            console.error("Error fetching book details:", error);
-            toast({
-              title: "Error",
-              description: "Failed to load book details",
-              variant: "destructive",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching books:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load your books",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Query for book details
+  const { data: bookDetails, isLoading: isLoadingBook } = useQuery({
+    queryKey: ['book', profile?.book_id],
+    queryFn: () => fetchBookDetails(profile?.book_id || ''),
+    enabled: !!profile?.book_id,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+    retry: 1,
+  });
 
-    fetchBooks();
-  }, [toast]);
+  const isLoading = isLoadingProfile || isLoadingBook;
+  const books = bookDetails ? [bookDetails] : [];
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">My Books</h1>
@@ -97,8 +95,8 @@ const MyBooks = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">My Books</h1>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {books.map((book, index) => (
-          <Link to={`/book/${index}`} key={index}>
+        {books.map((book) => (
+          <Link to={`/book/${book.id}`} key={book.id}>
             <Card className="overflow-hidden hover:shadow-lg transition-shadow">
               <CardContent className="p-4">
                 <div className="aspect-[3/4] relative mb-4">
@@ -106,6 +104,7 @@ const MyBooks = () => {
                     src={book.coverUrl}
                     alt={book.title}
                     className="w-full h-full object-cover rounded-lg"
+                    loading="lazy"
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder.svg";
                     }}
