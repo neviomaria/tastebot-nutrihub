@@ -39,10 +39,23 @@ const BookRecipes = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          await supabase.auth.signOut();
+          navigate("/auth");
+          return;
+        }
+
+        if (!session) {
+          navigate("/auth");
+          return;
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
         navigate("/auth");
-        return;
       }
     };
 
@@ -58,9 +71,16 @@ const BookRecipes = () => {
           return;
         }
 
-        const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+        const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+        });
+
         if (!response.ok) {
-          throw new Error('Failed to fetch recipes');
+          throw new Error(`Failed to fetch recipes: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
@@ -85,9 +105,15 @@ const BookRecipes = () => {
         setGroupedRecipes(grouped);
       } catch (error) {
         console.error("Error fetching recipes:", error);
+        
+        // Show a more specific error message based on the error type
+        const errorMessage = error instanceof Error && error.message.includes("NetworkError")
+          ? "Unable to connect to the recipe service. Please check your internet connection and try again."
+          : "Failed to load recipes. Please try again later.";
+        
         toast({
           title: "Error",
-          description: "Failed to load recipes. Please try again.",
+          description: errorMessage,
           variant: "destructive",
         });
       } finally {
