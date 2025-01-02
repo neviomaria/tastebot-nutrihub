@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileFormValues } from "@/schemas/profile";
 import { getIncompleteFields } from "./use-profile-validation";
