@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, User, Book, LayoutDashboard, Ticket, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AppHeader } from "./AppHeader";
 
 interface MenuItem {
   title: string;
@@ -171,7 +172,10 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        <AppHeader />
+        {children}
+      </main>
     </div>
   );
 }
