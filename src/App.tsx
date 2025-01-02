@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import CompleteProfile from "@/pages/CompleteProfile";
@@ -26,6 +26,51 @@ const queryClient = new QueryClient({
   },
 });
 
+// Separate component for protected routes to handle auth state
+const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isChecking, setIsChecking] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check error:", error);
+          navigate('/auth', { replace: true, state: { from: location.pathname } });
+          return;
+        }
+
+        if (!session) {
+          navigate('/auth', { replace: true, state: { from: location.pathname } });
+          return;
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Please try logging in again.",
+        });
+        navigate('/auth', { replace: true, state: { from: location.pathname } });
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate, location, toast]);
+
+  if (isChecking) {
+    return null; // Or a loading spinner
+  }
+
+  return <>{children}</>;
+};
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { toast } = useToast();
@@ -37,46 +82,25 @@ function App() {
     const initializeAuth = async () => {
       try {
         console.log("Initializing auth state...");
-        
-        // Get the initial session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", sessionError);
           throw sessionError;
         }
 
-        console.log("Session data:", sessionData);
-
         if (!mounted) return;
-
-        // If we have a session, verify it's still valid
-        if (sessionData.session) {
-          const { data: { user }, error: userError } = await supabase.auth.getUser();
-          
-          if (userError) {
-            console.error("User error:", userError);
-            throw userError;
-          }
-
-          if (!mounted) return;
-          
-          setIsAuthenticated(!!user);
-          console.log("Session initialized with user:", user?.email);
+        setIsAuthenticated(!!session);
+        
+        if (session?.user) {
+          console.log("Session initialized with user:", session.user.email);
         } else {
-          if (!mounted) return;
-          setIsAuthenticated(false);
           console.log("No active session found");
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (!mounted) return;
         setIsAuthenticated(false);
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "Please try logging in again.",
-        });
       }
     };
 
@@ -88,6 +112,8 @@ function App() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, "Session:", session?.user?.email);
       
+      if (!mounted) return;
+
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         queryClient.clear();
@@ -95,19 +121,14 @@ function App() {
           title: "Signed out",
           description: "You have been signed out successfully.",
         });
-      } else if (event === 'SIGNED_IN') {
-        if (session?.user) {
-          setIsAuthenticated(true);
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        setIsAuthenticated(true);
+        if (event === 'SIGNED_IN') {
           toast({
             title: "Signed in",
             description: "Welcome back!",
           });
         }
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log("Token refreshed successfully");
-        setIsAuthenticated(true);
-      } else if (event === 'USER_UPDATED') {
-        setIsAuthenticated(true);
       }
     });
 
@@ -129,19 +150,21 @@ function App() {
         <Sonner />
         <BrowserRouter>
           {isAuthenticated ? (
-            <AppSidebar>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Navigate to="/" replace />} />
-                <Route path="/complete-profile" element={<CompleteProfile />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/my-coupons" element={<MyCoupons />} />
-                <Route path="/my-books" element={<MyBooks />} />
-                <Route path="/book/:id" element={<BookDetail />} />
-                <Route path="/book/:id/recipes" element={<BookRecipes />} />
-                <Route path="/recipe/:id" element={<RecipeDetail />} />
-              </Routes>
-            </AppSidebar>
+            <ProtectedRoutes>
+              <AppSidebar>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Navigate to="/" replace />} />
+                  <Route path="/complete-profile" element={<CompleteProfile />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/my-coupons" element={<MyCoupons />} />
+                  <Route path="/my-books" element={<MyBooks />} />
+                  <Route path="/book/:id" element={<BookDetail />} />
+                  <Route path="/book/:id/recipes" element={<BookRecipes />} />
+                  <Route path="/recipe/:id" element={<RecipeDetail />} />
+                </Routes>
+              </AppSidebar>
+            </ProtectedRoutes>
           ) : (
             <Routes>
               <Route path="/auth" element={<Auth />} />
