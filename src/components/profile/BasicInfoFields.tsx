@@ -110,14 +110,18 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="flex items-center gap-2">
+                Email
+                <span className="text-xs text-muted-foreground">(non modificabile)</span>
+              </FormLabel>
               <FormControl>
                 <Input 
                   type="email"
                   placeholder="john.doe@example.com" 
                   {...field} 
                   readOnly
-                  className="bg-gray-100"
+                  disabled
+                  className="bg-muted cursor-not-allowed"
                 />
               </FormControl>
               <FormMessage />
