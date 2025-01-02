@@ -31,45 +31,63 @@ function App() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check initial auth state
-    const checkSession = async () => {
+    // Initialize auth state
+    const initializeAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Session error:", error);
+        // Get the initial session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
+        // If we have a session, verify it's still valid
+        if (session) {
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError) throw userError;
+          
+          setIsAuthenticated(!!user);
+          console.log("Session initialized with user:", user.email);
+        } else {
           setIsAuthenticated(false);
-          return;
+          console.log("No active session found");
         }
-        setIsAuthenticated(!!session);
       } catch (error) {
-        console.error("Failed to check session:", error);
+        console.error("Auth initialization error:", error);
         setIsAuthenticated(false);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Please try logging in again.",
+        });
       }
     };
 
-    checkSession();
+    initializeAuth();
 
     // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
-      setIsAuthenticated(!!session);
       
       if (event === 'SIGNED_OUT') {
-        // Clear query cache when user logs out
+        setIsAuthenticated(false);
         queryClient.clear();
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
         });
       } else if (event === 'SIGNED_IN') {
-        toast({
-          title: "Signed in",
-          description: "Welcome back!",
-        });
+        if (session?.user) {
+          setIsAuthenticated(true);
+          toast({
+            title: "Signed in",
+            description: "Welcome back!",
+          });
+        }
       } else if (event === 'TOKEN_REFRESHED') {
         console.log("Token refreshed successfully");
+        setIsAuthenticated(true);
+      } else if (event === 'USER_UPDATED') {
+        setIsAuthenticated(true);
       }
     });
 
