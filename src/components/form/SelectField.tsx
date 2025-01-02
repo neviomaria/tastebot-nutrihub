@@ -29,7 +29,7 @@ export const SelectField = ({ form, name, label, options }: SelectFieldProps) =>
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <Select onValueChange={field.onChange} value={field.value || undefined}>
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger className="bg-white">
                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
