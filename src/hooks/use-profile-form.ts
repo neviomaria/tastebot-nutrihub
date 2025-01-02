@@ -14,7 +14,7 @@ export const useProfileForm = () => {
       avatar_url: "",
       country: "",
       dietary_preferences: [],
-      allergies: [],
+      allergies: [], // This is optional
       health_goal: undefined,
       activity_level: undefined,
       planning_preference: undefined,
@@ -34,6 +34,7 @@ export const useProfileForm = () => {
       grocery_budget: undefined,
       religious_restrictions: [],
     },
+    mode: "onChange", // This will help with immediate validation feedback
   });
 
   // Initialize form data

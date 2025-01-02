@@ -25,16 +25,15 @@ export const useProfileSubmit = () => {
           variant: "destructive",
           title: "Error",
           description: "You must be logged in to complete your profile",
-          duration: 3000,
+          duration: 5000,
         });
         return;
       }
 
       // Show loading toast
-      toast({
+      const loadingToast = toast({
         title: "Saving...",
         description: "Your profile is being updated",
-        duration: 1000,
       });
 
       console.log("Updating profile for user:", user.id);
@@ -86,6 +85,9 @@ export const useProfileSubmit = () => {
         throw updateError;
       }
 
+      // Dismiss loading toast
+      loadingToast.dismiss();
+
       // Get incomplete fields
       const incompleteFields = getIncompleteFields(values);
       
@@ -100,14 +102,14 @@ export const useProfileSubmit = () => {
         toast({
           title: "Profile saved successfully!",
           description: "Your profile is complete with all optional information filled in!",
-          duration: 3000,
+          duration: 5000,
         });
       }
 
       // Wait a bit for the toast to be visible before navigating
       setTimeout(() => {
         navigate("/");
-      }, 1000);
+      }, 2000);
 
     } catch (error) {
       console.error("Profile update error:", error);
@@ -115,7 +117,7 @@ export const useProfileSubmit = () => {
         variant: "destructive",
         title: "Error",
         description: "Failed to update profile. Please try again.",
-        duration: 3000,
+        duration: 5000,
       });
     }
   };

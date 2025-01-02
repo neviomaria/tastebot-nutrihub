@@ -126,7 +126,7 @@ export const profileSchema = z.object({
   
   // All other fields are optional
   dietary_preferences: z.array(z.enum(dietaryPreferences)).optional().nullable(),
-  allergies: z.array(z.enum(allergies)).optional().nullable(),
+  allergies: z.array(z.enum(allergies)).optional().nullable(), // Explicitly optional
   health_goal: z.enum(healthGoals).optional().nullable(),
   activity_level: z.enum(activityLevels).optional().nullable(),
   planning_preference: z.enum(planningPreferences).optional().nullable(),
