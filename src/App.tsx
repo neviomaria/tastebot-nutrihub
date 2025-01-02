@@ -31,26 +31,46 @@ function App() {
   const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+
     // Initialize auth state
     const initializeAuth = async () => {
       try {
+        console.log("Initializing auth state...");
+        
         // Get the initial session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
+
+        console.log("Session data:", sessionData);
+
+        if (!mounted) return;
 
         // If we have a session, verify it's still valid
-        if (session) {
+        if (sessionData.session) {
           const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (userError) throw userError;
+          
+          if (userError) {
+            console.error("User error:", userError);
+            throw userError;
+          }
+
+          if (!mounted) return;
           
           setIsAuthenticated(!!user);
-          console.log("Session initialized with user:", user.email);
+          console.log("Session initialized with user:", user?.email);
         } else {
+          if (!mounted) return;
           setIsAuthenticated(false);
           console.log("No active session found");
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
+        if (!mounted) return;
         setIsAuthenticated(false);
         toast({
           variant: "destructive",
@@ -66,7 +86,7 @@ function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+      console.log("Auth state changed:", event, "Session:", session?.user?.email);
       
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
@@ -92,6 +112,7 @@ function App() {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [toast]);
