@@ -92,6 +92,7 @@ export const useProfileSubmit = () => {
         toast({
           title: "Profile saved successfully!",
           description: "Your profile is complete with all optional information filled in!",
+          duration: 3000,
         });
       }
 
