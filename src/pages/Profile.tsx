@@ -2,20 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ProfileData } from "@/types/profile";
-import { ProfileInformation } from "@/components/profile/ProfileInformation";
+import { ProfileForm } from "@/components/profile/ProfileForm";
 
 const Profile = () => {
-  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const checkUser = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
@@ -23,16 +18,6 @@ const Profile = () => {
           navigate("/auth");
           return;
         }
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (error) throw error;
-        
-        setProfile(data);
       } catch (error) {
         toast({
           variant: "destructive",
@@ -44,37 +29,31 @@ const Profile = () => {
       }
     };
 
-    fetchProfile();
+    checkUser();
   }, [navigate, toast]);
 
   if (loading) {
     return (
-      <div className="container max-w-2xl py-8 space-y-6">
-        <Skeleton className="h-12 w-12 rounded-full" />
-        <Skeleton className="h-32 w-full" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
       </div>
     );
   }
 
-  if (!profile) {
-    return null;
-  }
-
   return (
-    <div className="container max-w-2xl py-8 space-y-6">
-      <ProfileHeader
-        avatarUrl={profile.avatar_url}
-        firstName={profile.first_name}
-      />
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProfileInformation profile={profile} />
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-blue-50 p-4">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Edit Your Profile
+          </h1>
+          <p className="text-gray-600">
+            Update your profile information and preferences
+          </p>
+        </div>
+
+        <ProfileForm />
+      </div>
     </div>
   );
 };
