@@ -99,8 +99,8 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   );
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col gap-4">
-      <div className="flex h-[60px] items-center border-b px-6">
+    <div className="flex h-full flex-col gap-4 bg-white">
+      <div className="flex h-[60px] items-center border-b px-6 bg-white">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <span className="text-xl">FlavorFit</span>
         </Link>
@@ -136,7 +136,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </ScrollArea>
-      <div className="border-t p-3">
+      <div className="border-t p-3 bg-white">
         <Button
           variant="ghost"
           className="w-full justify-start"
@@ -151,7 +151,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex">
-      <div className="hidden border-r bg-gray-100/40 lg:block dark:bg-gray-800/40 w-[300px]">
+      <div className="hidden border-r bg-white lg:block w-[300px]">
         <SidebarContent />
       </div>
 
@@ -166,7 +166,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0">
+        <SheetContent side="left" className="w-[300px] p-0 bg-white">
           <SidebarContent />
         </SheetContent>
       </Sheet>
