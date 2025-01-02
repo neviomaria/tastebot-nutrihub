@@ -112,13 +112,14 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
             <FormItem>
               <FormLabel className="flex items-center gap-2">
                 Email
-                <span className="text-xs text-muted-foreground">(non modificabile)</span>
+                <span className="text-xs text-muted-foreground">(non-editable)</span>
               </FormLabel>
               <FormControl>
                 <Input 
                   type="email"
                   placeholder="john.doe@example.com" 
                   {...field} 
+                  value={field.value || ''} // Ensure value is never null
                   readOnly
                   disabled
                   className="bg-muted cursor-not-allowed"
