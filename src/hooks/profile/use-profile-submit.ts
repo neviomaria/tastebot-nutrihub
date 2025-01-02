@@ -38,14 +38,19 @@ export const useProfileSubmit = () => {
 
       console.log("Updating profile for user:", user.id);
 
+      // Clean up allergies array - if it contains "None" or is empty, set to null
+      const cleanedAllergies = values.allergies?.length 
+        ? values.allergies[0] === "None" ? null : values.allergies
+        : null;
+
       const updateData = {
         first_name: values.first_name,
         last_name: values.last_name,
-        email: values.email || user.email || "", // Ensure email is never null
+        email: values.email || user.email || "",
         avatar_url: values.avatar_url || null,
         country: values.country,
         dietary_preferences: values.dietary_preferences?.length ? values.dietary_preferences : null,
-        allergies: values.allergies?.length ? values.allergies : null,
+        allergies: cleanedAllergies,
         favorite_cuisines: values.favorite_cuisines?.length ? values.favorite_cuisines : null,
         meal_preferences: values.meal_preferences?.length ? values.meal_preferences : null,
         medical_conditions: values.medical_conditions?.length ? values.medical_conditions : null,
@@ -82,7 +87,14 @@ export const useProfileSubmit = () => {
 
       if (updateError) {
         console.error("Supabase update error:", updateError);
-        throw updateError;
+        loadingToast.dismiss();
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update profile: " + updateError.message,
+          duration: 5000,
+        });
+        return;
       }
 
       // Dismiss loading toast

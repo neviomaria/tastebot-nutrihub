@@ -30,6 +30,9 @@ export const CheckboxField = ({ form, name, label, options }: CheckboxFieldProps
                 control={form.control}
                 name={name}
                 render={({ field }) => {
+                  const isNoneOption = option === "None";
+                  const currentValue = field.value || [];
+                  
                   return (
                     <FormItem
                       key={option}
@@ -39,10 +42,17 @@ export const CheckboxField = ({ form, name, label, options }: CheckboxFieldProps
                         <Checkbox
                           checked={field.value?.includes(option)}
                           onCheckedChange={(checked) => {
-                            const current = field.value || [];
-                            const updated = checked
-                              ? [...current, option]
-                              : current.filter((value: string) => value !== option);
+                            let updated;
+                            if (isNoneOption && checked) {
+                              // If "None" is selected, clear all other selections
+                              updated = ["None"];
+                            } else if (!isNoneOption && checked) {
+                              // If another option is selected, remove "None" if present
+                              updated = [...currentValue.filter(val => val !== "None"), option];
+                            } else {
+                              // If unchecking an option
+                              updated = currentValue.filter((value: string) => value !== option);
+                            }
                             field.onChange(updated);
                           }}
                         />
