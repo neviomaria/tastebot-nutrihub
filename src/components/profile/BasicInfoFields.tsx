@@ -28,15 +28,21 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
   // Fetch user email on component mount
   useEffect(() => {
     const fetchUserEmail = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Error fetching session:", error);
-        return;
-      }
-      
-      if (session?.user?.email) {
-        setUserEmail(session.user.email);
-        form.setValue('email', session.user.email);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error fetching session:", error);
+          return;
+        }
+        
+        if (session?.user?.email) {
+          const email = session.user.email;
+          setUserEmail(email);
+          // Set the email in the form with a default empty string if null
+          form.setValue('email', email || "");
+        }
+      } catch (error) {
+        console.error("Error in fetchUserEmail:", error);
       }
     };
 
@@ -144,7 +150,7 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
                 <Input 
                   type="email"
                   placeholder="john.doe@example.com" 
-                  value={userEmail} 
+                  value={userEmail || ""} 
                   readOnly
                   disabled
                   className="bg-muted cursor-not-allowed"
