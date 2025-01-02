@@ -25,9 +25,17 @@ export const useProfileSubmit = () => {
           variant: "destructive",
           title: "Error",
           description: "You must be logged in to complete your profile",
+          duration: 3000,
         });
         return;
       }
+
+      // Show loading toast
+      toast({
+        title: "Saving...",
+        description: "Your profile is being updated",
+        duration: 1000,
+      });
 
       console.log("Updating profile for user:", user.id);
 
@@ -96,13 +104,18 @@ export const useProfileSubmit = () => {
         });
       }
 
-      navigate("/");
+      // Wait a bit for the toast to be visible before navigating
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
+
     } catch (error) {
       console.error("Profile update error:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update profile. Please try again.",
+        duration: 3000,
       });
     }
   };
