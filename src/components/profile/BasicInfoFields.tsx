@@ -12,7 +12,7 @@ import { ProfileHeader } from "./ProfileHeader";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SelectField } from "@/components/form/SelectField";
 import { countries } from "@/schemas/countries";
 
@@ -23,6 +23,25 @@ interface BasicInfoFieldsProps {
 export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  // Fetch user email on component mount
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error fetching session:", error);
+        return;
+      }
+      
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+        form.setValue('email', session.user.email);
+      }
+    };
+
+    fetchUserEmail();
+  }, [form]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -30,8 +49,15 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "You must be logged in to upload a profile picture",
+        });
+        return;
+      }
 
       // Delete previous avatar if it exists
       const currentAvatarUrl = form.getValues("avatar_url");
@@ -45,7 +71,7 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
       }
 
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${session.user.id}-${Math.random()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('profile-pictures')
@@ -118,8 +144,7 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
                 <Input 
                   type="email"
                   placeholder="john.doe@example.com" 
-                  {...field} 
-                  value={field.value || ''} // Ensure value is never null
+                  value={userEmail} 
                   readOnly
                   disabled
                   className="bg-muted cursor-not-allowed"
