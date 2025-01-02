@@ -31,11 +31,11 @@ export const SelectField = ({ form, name, label, options }: SelectFieldProps) =>
           <FormLabel>{label}</FormLabel>
           <Select onValueChange={field.onChange} value={field.value || undefined}>
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white">
                 <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {options.map((option) => (
                 <SelectItem key={option} value={option}>
                   {option}
