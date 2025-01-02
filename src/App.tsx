@@ -26,7 +26,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Separate component for protected routes to handle auth state
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,38 +33,63 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error("Session check error:", error);
-          navigate('/auth', { replace: true, state: { from: location.pathname } });
+          if (mounted) {
+            navigate('/auth', { replace: true, state: { from: location.pathname } });
+          }
           return;
         }
 
         if (!session) {
-          navigate('/auth', { replace: true, state: { from: location.pathname } });
+          if (mounted) {
+            navigate('/auth', { replace: true, state: { from: location.pathname } });
+          }
           return;
         }
+
+        // Verify session is still valid
+        const { data: user, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error("User verification error:", userError);
+          if (mounted) {
+            navigate('/auth', { replace: true, state: { from: location.pathname } });
+          }
+          return;
+        }
+
       } catch (error) {
         console.error("Auth check error:", error);
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "Please try logging in again.",
-        });
-        navigate('/auth', { replace: true, state: { from: location.pathname } });
+        if (mounted) {
+          toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "Please try logging in again.",
+          });
+          navigate('/auth', { replace: true, state: { from: location.pathname } });
+        }
       } finally {
-        setIsChecking(false);
+        if (mounted) {
+          setIsChecking(false);
+        }
       }
     };
 
     checkAuth();
+
+    return () => {
+      mounted = false;
+    };
   }, [navigate, location, toast]);
 
   if (isChecking) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   return <>{children}</>;
@@ -78,7 +102,6 @@ function App() {
   useEffect(() => {
     let mounted = true;
 
-    // Initialize auth state
     const initializeAuth = async () => {
       try {
         console.log("Initializing auth state...");
@@ -90,7 +113,10 @@ function App() {
         }
 
         if (!mounted) return;
-        setIsAuthenticated(!!session);
+        
+        const isValid = !!session;
+        console.log("Session valid:", isValid);
+        setIsAuthenticated(isValid);
         
         if (session?.user) {
           console.log("Session initialized with user:", session.user.email);
