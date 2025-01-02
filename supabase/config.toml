@@ -1,3 +1,4 @@
 project_id = "xcpnxblpmecdzwatreid"
-[functions.verify-coupon]
+
+[functions.generate-with-ai]
 verify_jwt = true
