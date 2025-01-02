@@ -19,4 +19,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: "dist", // Assicura che la directory di output sia "dist"
+    emptyOutDir: true, // Svuota la directory di output prima di ogni build
+  },
 }));
