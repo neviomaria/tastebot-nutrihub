@@ -6,56 +6,55 @@ import { CouponField } from "@/components/form/CouponField";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-const couponSchema = z.object({
-  coupon_code: z.string().min(1, "Coupon code is required"),
+const signUpSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  coupon_code: z.string().optional(),
 });
 
-type CouponFormValues = z.infer<typeof couponSchema>;
+type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export const SignUpCouponForm = () => {
   const { toast } = useToast();
-  const form = useForm<CouponFormValues>({
-    resolver: zodResolver(couponSchema),
+  const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
+      email: "",
+      password: "",
       coupon_code: "",
     },
   });
 
-  const onSubmit = async (values: CouponFormValues) => {
+  const onSubmit = async (values: SignUpFormValues) => {
     try {
-      console.log('Verifying coupon:', values.coupon_code);
-      
-      const { data, error } = await supabase.functions.invoke('verify-coupon', {
-        body: { coupon_code: values.coupon_code }
+      console.log('Signing up user:', values);
+
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
       });
 
       if (error) {
-        console.error('Verification error:', error);
+        console.error('Sign up error:', error);
         toast({
           title: "Error",
-          description: "Failed to verify coupon code. Please try again.",
+          description: "Failed to sign up. Please try again.",
           variant: "destructive",
         });
         return;
       }
 
-      console.log('Verification response:', data);
+      console.log('Sign up response:', data);
 
-      if (data?.valid) {
-        toast({
-          title: "Success",
-          description: "Coupon code verified successfully!",
-        });
-        // Clear the form after successful verification
-        form.reset();
-      } else {
-        toast({
-          title: "Invalid Coupon",
-          description: data?.error || "The provided coupon code is not valid.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Success",
+        description: "Account created successfully! Please check your email to confirm your account.",
+      });
+
+      // Clear the form after successful sign-up
+      form.reset();
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -69,8 +68,33 @@ export const SignUpCouponForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email
+          </label>
+          <Input
+            id="email"
+            type="email"
+            {...form.register("email")}
+            className="mt-1 block w-full"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <Input
+            id="password"
+            type="password"
+            {...form.register("password")}
+            className="mt-1 block w-full"
+          />
+        </div>
+
         <CouponField form={form} />
-        <Button type="submit" className="w-full">Verify Coupon</Button>
+
+        <Button type="submit" className="w-full">Sign Up</Button>
       </form>
     </Form>
   );

@@ -51,15 +51,34 @@ const fetchUserProfile = async () => {
 };
 
 const fetchBookDetails = async (bookId: string) => {
-  // For now, return mock data instead of making API calls
-  // We'll implement proper WordPress API integration later
-  return {
-    id: bookId,
-    title: MOCK_BOOK_DATA.title,
-    subtitle: MOCK_BOOK_DATA.subtitle,
-    coverUrl: MOCK_BOOK_DATA.coverUrl,
-  };
+  try {
+    // Recupera i dettagli del libro
+    const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${bookId}`);
+    if (!bookResponse.ok) throw new Error("Failed to fetch book details");
+    const book = await bookResponse.json();
+
+    // Recupera i dettagli della copertina
+    let coverUrl = "/placeholder.svg"; // Immagine predefinita
+    if (book.acf?.copertina_libro) {
+      const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
+      if (mediaResponse.ok) {
+        const media = await mediaResponse.json();
+        coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
+      }
+    }
+
+    return {
+      id: bookId,
+      title: book.title.rendered,
+      subtitle: book.acf?.sottotitolo_per_sito || "No subtitle available",
+      coverUrl,
+    };
+  } catch (error) {
+    console.error("Error fetching book details:", error);
+    throw error;
+  }
 };
+
 
 const MyBooks = () => {
   const { toast } = useToast();
@@ -115,7 +134,7 @@ const MyBooks = () => {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">My Books</h1>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(6)].map((_, i) => (
             <Card key={i}>
               <CardContent className="p-4">
@@ -133,7 +152,7 @@ const MyBooks = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">My Books</h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {books.map((book) => (
           <Link to={`/book/${book.id}`} key={book.id}>
             <Card className="overflow-hidden hover:shadow-lg transition-shadow">
