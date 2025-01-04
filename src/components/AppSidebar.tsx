@@ -110,7 +110,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen flex-col bg-white">
       <div className="flex h-[60px] items-center border-b px-6">
         <Link to="/" className="flex items-center gap-2 font-semibold" onClick={handleMenuClick}>
-          <span className="text-xl">FlavorFit</span>
+          <span className="text-xl">Pybher</span>
         </Link>
       </div>
       <ScrollArea className="flex-1 overflow-y-auto px-3">
