@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import CompleteProfile from "@/pages/CompleteProfile";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
+import AuthCallback from "@/pages/AuthCallback";
 import Profile from "@/pages/Profile";
 import MyCoupons from "@/pages/MyCoupons";
 import MyBooks from "@/pages/MyBooks";
@@ -87,6 +88,7 @@ function App() {
           ) : (
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="*" element={<Navigate to="/auth" replace />} />
             </Routes>
           )}
