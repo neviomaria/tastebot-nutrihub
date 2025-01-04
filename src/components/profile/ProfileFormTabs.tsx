@@ -31,16 +31,23 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
     { value: "religious", label: "Religious" }
   ];
 
-  const handleNext = () => {
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
     if (currentTabIndex < tabs.length - 1) {
       setCurrentTabIndex(currentTabIndex + 1);
     }
   };
 
-  const handlePrev = () => {
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
     if (currentTabIndex > 0) {
       setCurrentTabIndex(currentTabIndex - 1);
     }
+  };
+
+  const handleTabClick = (e: React.MouseEvent, index: number) => {
+    e.preventDefault(); // Prevent form submission
+    setCurrentTabIndex(index);
   };
 
   return (
@@ -53,7 +60,7 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
               key={tab.value} 
               value={tab.value} 
               className="flex-shrink-0"
-              onClick={() => setCurrentTabIndex(index)}
+              onClick={(e) => handleTabClick(e, index)}
             >
               {tab.label}
             </TabsTrigger>

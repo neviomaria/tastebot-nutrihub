@@ -98,42 +98,6 @@ export const useProfileSubmit = () => {
         return;
       }
 
-      // Send profile data to webhook
-      try {
-        const webhookResponse = await fetch('https://brainscapebooks.com/wp-json/autonami/v1/webhook/?bwfan_autonami_webhook_id=12&bwfan_autonami_webhook_key=7ceead5e6c877988d93520e0cf2872ff', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            email: values.email || user.email,
-            profile: updateData,
-            timestamp: new Date().toISOString()
-          })
-        });
-
-        if (!webhookResponse.ok) {
-          console.error("Webhook error:", await webhookResponse.text());
-          // We don't throw here to avoid blocking the profile update
-          toast({
-            variant: "default",
-            title: "Warning",
-            description: "Profile updated but webhook notification failed",
-            duration: 5000,
-          });
-        }
-      } catch (webhookError) {
-        console.error("Webhook error:", webhookError);
-        // We don't throw here to avoid blocking the profile update
-        toast({
-          variant: "default",
-          title: "Warning",
-          description: "Profile updated but webhook notification failed",
-          duration: 5000,
-        });
-      }
-
       // Dismiss loading toast
       loadingToast.dismiss();
 
