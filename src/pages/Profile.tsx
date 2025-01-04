@@ -41,7 +41,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-blue-50 px-4 py-6 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">

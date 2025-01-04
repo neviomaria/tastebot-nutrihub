@@ -23,7 +23,7 @@ export const CheckboxField = ({ form, name, label, options }: CheckboxFieldProps
       render={() => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+          <div className="grid grid-cols-1 gap-4 mt-2">
             {options.map((option) => (
               <FormField
                 key={option}
@@ -44,13 +44,10 @@ export const CheckboxField = ({ form, name, label, options }: CheckboxFieldProps
                           onCheckedChange={(checked) => {
                             let updated;
                             if (isNoneOption && checked) {
-                              // If "None" is selected, clear all other selections
                               updated = ["None"];
                             } else if (!isNoneOption && checked) {
-                              // If another option is selected, remove "None" if present
                               updated = [...currentValue.filter(val => val !== "None"), option];
                             } else {
-                              // If unchecking an option
                               updated = currentValue.filter((value: string) => value !== option);
                             }
                             field.onChange(updated);

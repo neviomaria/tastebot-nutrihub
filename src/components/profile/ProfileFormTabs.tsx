@@ -12,45 +12,99 @@ import { ShoppingPreferencesSection } from "./sections/ShoppingPreferencesSectio
 import { ReligiousRestrictionsSection } from "./sections/ReligiousRestrictionsSection";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues } from "@/schemas/profile";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ProfileFormTabsProps {
   form: UseFormReturn<ProfileFormValues>;
 }
 
 export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
+  const tabs = [
+    { value: "profile", label: "Profile*" },
+    { value: "dietary", label: "Dietary" },
+    { value: "cooking", label: "Cooking" },
+    { value: "medical", label: "Medical" },
+    { value: "shopping", label: "Shopping" },
+    { value: "religious", label: "Religious" }
+  ];
+
+  const handleNext = () => {
+    if (currentTabIndex < tabs.length - 1) {
+      setCurrentTabIndex(currentTabIndex + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentTabIndex > 0) {
+      setCurrentTabIndex(currentTabIndex - 1);
+    }
+  };
+
   return (
     <>
-      <TabsList className="w-full overflow-x-auto flex flex-nowrap">
-        <TabsTrigger value="profile" className="flex-shrink-0">Profile*</TabsTrigger>
-        <TabsTrigger value="dietary" className="flex-shrink-0">Dietary Preferences</TabsTrigger>
-        <TabsTrigger value="cooking" className="flex-shrink-0">Cooking Preferences</TabsTrigger>
-        <TabsTrigger value="medical" className="flex-shrink-0">Medical Information</TabsTrigger>
-        <TabsTrigger value="shopping" className="flex-shrink-0">Shopping Preferences</TabsTrigger>
-        <TabsTrigger value="religious" className="flex-shrink-0">Religious or Ethical</TabsTrigger>
-      </TabsList>
+      {/* Desktop Tabs */}
+      <div className="hidden md:block">
+        <TabsList className="w-full">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value} className="flex-shrink-0">
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
 
-      <TabsContent value="profile" className="mt-6">
+      {/* Mobile Tabs */}
+      <div className="md:hidden">
+        <div className="flex items-center justify-between mb-4 bg-white rounded-lg p-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePrev}
+            disabled={currentTabIndex === 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <span className="font-medium">
+            {tabs[currentTabIndex].label}
+          </span>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleNext}
+            disabled={currentTabIndex === tabs.length - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <TabsContent value="profile" className="mt-6" hidden={currentTabIndex !== 0}>
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">* Required fields</p>
           <BasicInfoFields form={form} />
         </div>
       </TabsContent>
 
-      <TabsContent value="dietary" className="mt-6">
+      <TabsContent value="dietary" className="mt-6" hidden={currentTabIndex !== 1}>
         <div className="space-y-6">
           <DietarySection form={form} />
           <AllergiesSection form={form} />
         </div>
       </TabsContent>
 
-      <TabsContent value="cooking" className="mt-6">
+      <TabsContent value="cooking" className="mt-6" hidden={currentTabIndex !== 2}>
         <div className="space-y-6">
           <CookingPreferencesSection form={form} />
           <CuisineSection form={form} />
         </div>
       </TabsContent>
 
-      <TabsContent value="medical" className="mt-6">
+      <TabsContent value="medical" className="mt-6" hidden={currentTabIndex !== 3}>
         <div className="space-y-6">
           <HealthSection form={form} />
           <ActivitySection form={form} />
@@ -58,14 +112,14 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
         </div>
       </TabsContent>
 
-      <TabsContent value="shopping" className="mt-6">
+      <TabsContent value="shopping" className="mt-6" hidden={currentTabIndex !== 4}>
         <div className="space-y-6">
           <PlanningSection form={form} />
           <ShoppingPreferencesSection form={form} />
         </div>
       </TabsContent>
 
-      <TabsContent value="religious" className="mt-6">
+      <TabsContent value="religious" className="mt-6" hidden={currentTabIndex !== 5}>
         <ReligiousRestrictionsSection form={form} />
       </TabsContent>
     </>
