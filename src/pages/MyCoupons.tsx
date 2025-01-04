@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddCouponForm, couponSchema, type CouponFormValues } from "@/components/coupons/AddCouponForm";
 import { CouponList } from "@/components/coupons/CouponList";
+import { useQuery } from "@tanstack/react-query";
 
 interface BookAccess {
   book_id: string;
@@ -14,8 +15,6 @@ interface BookAccess {
 }
 
 const MyCoupons = () => {
-  const [bookAccess, setBookAccess] = useState<BookAccess[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const form = useForm<CouponFormValues>({
@@ -25,56 +24,35 @@ const MyCoupons = () => {
     },
   });
 
-  const fetchUserCoupons = async () => {
-    try {
+  const { data: bookAccess = [], isLoading, refetch } = useQuery({
+    queryKey: ["coupons"],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "You must be logged in to view your coupons",
-        });
-        return;
-      }
+      if (!user) throw new Error("Not authenticated");
 
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("coupon_code, book_id, book_title")
         .eq("id", user.id)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
 
       if (profile?.coupon_code && profile?.book_id && profile?.book_title) {
-        setBookAccess([{
+        return [{
           book_id: profile.book_id,
           book_title: profile.book_title,
           coupon_code: profile.coupon_code,
-        }]);
-      } else {
-        setBookAccess([]);
+        }] as BookAccess[];
       }
-    } catch (error) {
-      console.error("Error fetching coupons:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load your coupons",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserCoupons();
-  }, []);
+      
+      return [] as BookAccess[];
+    },
+  });
 
   const onSubmit = async (values: CouponFormValues) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) throw new Error("User not found");
 
       const { data, error } = await supabase.functions.invoke('verify-coupon', {
@@ -102,7 +80,7 @@ const MyCoupons = () => {
         });
 
         form.reset();
-        fetchUserCoupons();
+        refetch();
       }
     } catch (error) {
       console.error('Error:', error);
@@ -117,7 +95,6 @@ const MyCoupons = () => {
   const removeCoupon = async (couponCode: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) throw new Error("User not found");
 
       const { error } = await supabase
@@ -137,7 +114,7 @@ const MyCoupons = () => {
         description: "Coupon removed successfully",
       });
 
-      fetchUserCoupons();
+      refetch();
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -148,8 +125,18 @@ const MyCoupons = () => {
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="container max-w-2xl py-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
