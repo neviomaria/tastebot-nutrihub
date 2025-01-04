@@ -87,7 +87,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   };
 
   const handleMenuClick = () => {
-    // Close mobile sidebar when a menu item is clicked
     setOpenMobile(false);
   };
 
@@ -107,7 +106,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   );
 
   const SidebarContent = () => (
-    <div className="flex h-screen flex-col bg-white">
+    <div className="flex h-full flex-col bg-white">
       <div className="flex h-[60px] items-center border-b px-6">
         <Link to="/" className="flex items-center gap-2 font-semibold" onClick={handleMenuClick}>
           <span className="text-xl">Pybher</span>
@@ -146,7 +145,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </ScrollArea>
-      <div className="mt-auto border-t p-3">
+      <div className="sticky bottom-0 border-t bg-white p-3 mt-auto">
         <Button
           variant="ghost"
           className="w-full justify-start text-gray-500 hover:text-gray-900"
