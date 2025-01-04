@@ -70,9 +70,16 @@ export const SignUpCouponForm = () => {
         };
       }
 
-      // Dynamically construct the redirect URL based on the current domain
-      const currentDomain = window.location.origin;
-      const redirectTo = `${currentDomain}/auth/callback`;
+      // Set the redirect URL based on the environment
+      let redirectTo;
+      if (window.location.hostname === 'pybher.com') {
+        redirectTo = 'https://pybher.com/auth/callback';
+      } else if (window.location.hostname === '192.168.1.182') {
+        redirectTo = 'http://192.168.1.182:8080/auth/callback';
+      } else {
+        // Fallback for other environments (like localhost)
+        redirectTo = `${window.location.origin}/auth/callback`;
+      }
       
       console.log('Redirect URL:', redirectTo);
 
