@@ -34,11 +34,8 @@ export const SignUpCouponForm = () => {
         couponCode: values.coupon_code 
       });
 
-      // Get the redirect URL based on environment
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      const baseUrl = isDevelopment 
-        ? 'http://localhost:5173' 
-        : window.location.origin;
+      // Get the current URL and port
+      const baseUrl = window.location.origin;
       const redirectTo = `${baseUrl}/auth/callback`;
       
       console.log('Redirect URL:', redirectTo);
