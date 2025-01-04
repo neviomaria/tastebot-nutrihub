@@ -9,29 +9,6 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ title, image, cookTime, difficulty, onClick }: RecipeCardProps) {
-  // Function to transform the image URL to use 300x300 dimension
-  const getRecipeAppImage = (url: string) => {
-    if (!url) return "/placeholder.svg";
-    
-    try {
-      // Check if the URL is from WordPress
-      if (url.includes('brainscapebooks.com')) {
-        // Split the URL at the last occurrence of a dot to separate extension
-        const lastDotIndex = url.lastIndexOf('.');
-        if (lastDotIndex === -1) return url;
-        
-        const urlWithoutExtension = url.substring(0, lastDotIndex);
-        
-        // Add -1-300x300.png to the URL
-        return `${urlWithoutExtension}-1-300x300.png`;
-      }
-      return url;
-    } catch (error) {
-      console.error('Error transforming image URL:', error);
-      return "/placeholder.svg";
-    }
-  };
-
   return (
     <Card 
       className="overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-[1.02] animate-fade-up"
@@ -39,7 +16,7 @@ export function RecipeCard({ title, image, cookTime, difficulty, onClick }: Reci
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img 
-          src={getRecipeAppImage(image)} 
+          src={image || "/placeholder.svg"} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onError={(e) => {
