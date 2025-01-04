@@ -7,6 +7,15 @@ export const useAiGeneration = () => {
   const { toast } = useToast();
 
   const generateContent = async (prompt: string) => {
+    if (!prompt.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please provide a prompt for content generation.",
+      });
+      return null;
+    }
+
     try {
       setIsLoading(true);
       
@@ -14,7 +23,14 @@ export const useAiGeneration = () => {
         body: { prompt },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Failed to generate content');
+      }
+
+      if (!data?.generatedText) {
+        throw new Error('No content was generated');
+      }
 
       return data.generatedText;
     } catch (error) {
@@ -22,7 +38,7 @@ export const useAiGeneration = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to generate content. Please try again.",
+        description: error.message || "Failed to generate content. Please try again.",
       });
       return null;
     } finally {
