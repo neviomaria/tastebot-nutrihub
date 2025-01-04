@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import AuthCallback from '@/pages/AuthCallback';
@@ -16,8 +16,14 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Auth routes with and without trailing slash */}
         <Route path="/auth" element={<Auth />} />
+        <Route path="/auth/" element={<Navigate to="/auth" replace />} />
+        
+        {/* Auth callback routes with and without trailing slash */}
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/auth/callback/" element={<Navigate to="/auth/callback" replace />} />
+        
         <Route
           path="/"
           element={
