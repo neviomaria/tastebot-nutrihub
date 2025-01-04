@@ -48,8 +48,13 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
       {/* Desktop Tabs */}
       <div className="hidden md:block">
         <TabsList className="w-full">
-          {tabs.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="flex-shrink-0">
+          {tabs.map((tab, index) => (
+            <TabsTrigger 
+              key={tab.value} 
+              value={tab.value} 
+              className="flex-shrink-0"
+              onClick={() => setCurrentTabIndex(index)}
+            >
               {tab.label}
             </TabsTrigger>
           ))}
@@ -84,45 +89,45 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
       </div>
 
       <div className="max-w-full overflow-x-hidden px-1">
-        <TabsContent value="profile" className="mt-6" hidden={currentTabIndex !== 0}>
+        <div hidden={currentTabIndex !== 0} className="mt-6">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">* Required fields</p>
             <BasicInfoFields form={form} />
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="dietary" className="mt-6" hidden={currentTabIndex !== 1}>
+        <div hidden={currentTabIndex !== 1} className="mt-6">
           <div className="space-y-6">
             <DietarySection form={form} />
             <AllergiesSection form={form} />
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="cooking" className="mt-6" hidden={currentTabIndex !== 2}>
+        <div hidden={currentTabIndex !== 2} className="mt-6">
           <div className="space-y-6">
             <CookingPreferencesSection form={form} />
             <CuisineSection form={form} />
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="medical" className="mt-6" hidden={currentTabIndex !== 3}>
+        <div hidden={currentTabIndex !== 3} className="mt-6">
           <div className="space-y-6">
             <HealthSection form={form} />
             <ActivitySection form={form} />
             <MedicalSection form={form} />
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="shopping" className="mt-6" hidden={currentTabIndex !== 4}>
+        <div hidden={currentTabIndex !== 4} className="mt-6">
           <div className="space-y-6">
             <PlanningSection form={form} />
             <ShoppingPreferencesSection form={form} />
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="religious" className="mt-6" hidden={currentTabIndex !== 5}>
+        <div hidden={currentTabIndex !== 5} className="mt-6">
           <ReligiousRestrictionsSection form={form} />
-        </TabsContent>
+        </div>
       </div>
     </>
   );
