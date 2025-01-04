@@ -9,7 +9,7 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ title, image, cookTime, difficulty, onClick }: RecipeCardProps) {
-  // Function to transform the image URL to use medium dimension
+  // Function to transform the image URL to use 300x300 dimension
   const getRecipeAppImage = (url: string) => {
     if (!url) return "/placeholder.svg";
     
@@ -21,10 +21,9 @@ export function RecipeCard({ title, image, cookTime, difficulty, onClick }: Reci
         if (lastDotIndex === -1) return url;
         
         const urlWithoutExtension = url.substring(0, lastDotIndex);
-        const extension = url.substring(lastDotIndex);
         
-        // Add -medium before the extension
-        return `${urlWithoutExtension}-medium${extension}`;
+        // Add -1-300x300.png to the URL
+        return `${urlWithoutExtension}-1-300x300.png`;
       }
       return url;
     } catch (error) {
