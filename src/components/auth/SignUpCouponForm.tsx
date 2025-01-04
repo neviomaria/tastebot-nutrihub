@@ -34,17 +34,22 @@ export const SignUpCouponForm = () => {
         couponCode: values.coupon_code 
       });
 
-      // Get the current URL for redirection
-      const redirectTo = `${window.location.origin}/auth/callback`;
+      // Get the redirect URL based on environment
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const baseUrl = isDevelopment 
+        ? 'http://localhost:5173' 
+        : window.location.origin;
+      const redirectTo = `${baseUrl}/auth/callback`;
+      
       console.log('Redirect URL:', redirectTo);
 
-      // 1. Sign up the user with metadata including the coupon code
+      // Sign up the user with metadata including the coupon code
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
-            coupon_code: values.coupon_code || null, // Include coupon in metadata
+            coupon_code: values.coupon_code || null,
           },
           emailRedirectTo: redirectTo,
         },
@@ -76,13 +81,11 @@ export const SignUpCouponForm = () => {
         metadata: authData.user.user_metadata
       });
 
-      // The handle_new_user trigger will create the profile with the coupon code
       toast({
         title: "Success",
         description: "Account created! Please check your email to confirm your account.",
       });
 
-      // Clear the form after successful sign-up
       form.reset();
     } catch (error) {
       console.error('Unexpected error during sign up:', error);
