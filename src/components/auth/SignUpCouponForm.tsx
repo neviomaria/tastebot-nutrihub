@@ -34,19 +34,56 @@ export const SignUpCouponForm = () => {
         couponCode: values.coupon_code 
       });
 
+      // If a coupon code was provided, verify it first
+      let bookData = null;
+      if (values.coupon_code) {
+        const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-coupon', {
+          body: { coupon_code: values.coupon_code }
+        });
+
+        if (verifyError) {
+          console.error('Coupon verification error:', verifyError);
+          toast({
+            title: "Error",
+            description: "Invalid coupon code. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (!verifyData.success) {
+          console.error('Invalid coupon:', values.coupon_code);
+          toast({
+            title: "Error",
+            description: "Invalid coupon code. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        bookData = {
+          book_id: verifyData.book_id,
+          book_title: verifyData.book_title,
+          access_level: verifyData.access_level
+        };
+      }
+
       // Get the current URL and port, using the full hostname including IP
       const baseUrl = window.location.protocol + '//' + window.location.host;
       const redirectTo = `${baseUrl}/auth/callback`;
       
       console.log('Redirect URL:', redirectTo);
 
-      // Sign up the user with metadata including the coupon code
+      // Sign up the user with metadata including the coupon and book information
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
             coupon_code: values.coupon_code || null,
+            book_id: bookData?.book_id || null,
+            book_title: bookData?.book_title || null,
+            access_level: bookData?.access_level || null,
           },
           emailRedirectTo: redirectTo,
         },

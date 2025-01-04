@@ -11,13 +11,19 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
-
+    console.log('Starting coupon verification');
+    
     const { coupon_code } = await req.json()
     
+    if (!coupon_code) {
+      console.error('No coupon code provided');
+      return new Response(
+        JSON.stringify({ error: 'Coupon code is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    console.log('Authenticating with WordPress');
     const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/login', {
       method: 'POST',
       headers: {
@@ -31,6 +37,7 @@ Deno.serve(async (req) => {
 
     const { token } = await response.json()
 
+    console.log('Fetching books from WordPress');
     const booksResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri', {
       headers: {
         'Authorization': token,
@@ -38,15 +45,19 @@ Deno.serve(async (req) => {
     })
 
     const books = await booksResponse.json()
+    console.log(`Found ${books.length} books, searching for coupon: ${coupon_code}`);
+    
     const book = books.find((book: any) => book.acf.coupon === coupon_code)
 
     if (!book) {
+      console.error('No book found for coupon:', coupon_code);
       return new Response(
         JSON.stringify({ error: 'Invalid coupon code' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
 
+    console.log('Book found:', { id: book.id, title: book.title.rendered });
     return new Response(
       JSON.stringify({ 
         success: true,
@@ -57,6 +68,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error processing request:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
