@@ -1,4 +1,6 @@
 import { ProfileCompletionWidget } from "@/components/widgets/ProfileCompletionWidget";
+import { UserBooksWidget } from "@/components/widgets/UserBooksWidget";
+import { BookRecipesWidget } from "@/components/widgets/BookRecipesWidget";
 
 const Index = () => {
   return (
@@ -9,6 +11,8 @@ const Index = () => {
         </h1>
         <div className="grid grid-cols-1 gap-6">
           <ProfileCompletionWidget />
+          <UserBooksWidget />
+          <BookRecipesWidget />
         </div>
       </div>
     </div>
