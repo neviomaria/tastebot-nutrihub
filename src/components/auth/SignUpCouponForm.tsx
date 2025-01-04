@@ -34,8 +34,8 @@ export const SignUpCouponForm = () => {
         couponCode: values.coupon_code 
       });
 
-      // Get the current URL and port
-      const baseUrl = window.location.origin;
+      // Get the current URL and port, using the full hostname including IP
+      const baseUrl = window.location.protocol + '//' + window.location.host;
       const redirectTo = `${baseUrl}/auth/callback`;
       
       console.log('Redirect URL:', redirectTo);
