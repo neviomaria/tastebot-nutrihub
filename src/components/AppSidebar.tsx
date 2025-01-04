@@ -94,20 +94,20 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           : ""
       }`}
     >
-      <item.icon className="h-4 w-4" />
+      <item.icon className="h-4 w-4 text-primary" />
       {item.title}
     </Link>
   );
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col gap-4 bg-white">
-      <div className="flex h-[60px] items-center border-b px-6 bg-white">
+    <div className="flex h-screen flex-col bg-white">
+      <div className="flex h-[60px] items-center border-b px-6">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <span className="text-xl">FlavorFit</span>
         </Link>
       </div>
-      <ScrollArea className="flex-1 px-3">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 overflow-y-auto px-3">
+        <div className="space-y-4 py-4">
           <div className="flex flex-col gap-1">
             {menuItems.map((item) => (
               <div key={item.title}>
@@ -137,13 +137,13 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </ScrollArea>
-      <div className="border-t p-3 bg-white">
+      <div className="mt-auto border-t p-3">
         <Button
           variant="ghost"
-          className="w-full justify-start"
+          className="w-full justify-start text-gray-500 hover:text-gray-900"
           onClick={handleLogout}
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-2 h-4 w-4 text-primary" />
           Logout
         </Button>
       </div>
@@ -167,7 +167,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0 bg-white">
+        <SheetContent side="left" className="w-[300px] p-0">
           <SidebarContent />
         </SheetContent>
       </Sheet>
