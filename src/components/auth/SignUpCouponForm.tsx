@@ -34,6 +34,10 @@ export const SignUpCouponForm = () => {
         couponCode: values.coupon_code 
       });
 
+      // Get the current URL for redirection
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      console.log('Redirect URL:', redirectTo);
+
       // 1. Sign up the user with metadata including the coupon code
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
@@ -42,7 +46,7 @@ export const SignUpCouponForm = () => {
           data: {
             coupon_code: values.coupon_code || null, // Include coupon in metadata
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: redirectTo,
         },
       });
 
