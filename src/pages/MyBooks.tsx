@@ -134,7 +134,7 @@ const MyBooks = () => {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">My Books</h1>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(6)].map((_, i) => (
             <Card key={i}>
               <CardContent className="p-4">
@@ -152,7 +152,7 @@ const MyBooks = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">My Books</h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {books.map((book) => (
           <Link to={`/book/${book.id}`} key={book.id}>
             <Card className="overflow-hidden hover:shadow-lg transition-shadow">
