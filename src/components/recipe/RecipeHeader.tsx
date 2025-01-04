@@ -5,21 +5,29 @@ import { useNavigate } from "react-router-dom";
 interface RecipeHeaderProps {
   onPrevious: () => void;
   onNext: () => void;
+  mealType?: string;
 }
 
-export function RecipeHeader({ onPrevious, onNext }: RecipeHeaderProps) {
+export function RecipeHeader({ onPrevious, onNext, mealType }: RecipeHeaderProps) {
   const navigate = useNavigate();
 
   return (
     <div className="mb-6 flex items-center justify-between">
-      <Button 
-        variant="ghost" 
-        onClick={() => navigate(-1)}
-        className="flex items-center"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Recipes
-      </Button>
+      <div className="flex items-center gap-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)}
+          className="flex items-center"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Recipes
+        </Button>
+        {mealType && (
+          <span className="text-muted-foreground">
+            {mealType}
+          </span>
+        )}
+      </div>
       <div className="flex gap-2">
         <Button
           variant="outline"
