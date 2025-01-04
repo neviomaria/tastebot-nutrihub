@@ -117,7 +117,7 @@ export const useProfileSubmit = () => {
           console.error("Webhook error:", await webhookResponse.text());
           // We don't throw here to avoid blocking the profile update
           toast({
-            variant: "warning",
+            variant: "default",
             title: "Warning",
             description: "Profile updated but webhook notification failed",
             duration: 5000,
@@ -127,7 +127,7 @@ export const useProfileSubmit = () => {
         console.error("Webhook error:", webhookError);
         // We don't throw here to avoid blocking the profile update
         toast({
-          variant: "warning",
+          variant: "default",
           title: "Warning",
           description: "Profile updated but webhook notification failed",
           duration: 5000,
