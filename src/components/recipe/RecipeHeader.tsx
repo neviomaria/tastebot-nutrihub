@@ -27,7 +27,7 @@ export function RecipeHeader({ onPrevious, onNext, mealType }: RecipeHeaderProps
             variant="outline"
             size="icon"
             onClick={onPrevious}
-            className="rounded-full"
+            className="rounded-full bg-white"
           >
             <ArrowLeftCircle className="h-4 w-4" />
             <span className="sr-only">Previous recipe</span>
@@ -36,7 +36,7 @@ export function RecipeHeader({ onPrevious, onNext, mealType }: RecipeHeaderProps
             variant="outline"
             size="icon"
             onClick={onNext}
-            className="rounded-full"
+            className="rounded-full bg-white"
           >
             <ArrowRightCircle className="h-4 w-4" />
             <span className="sr-only">Next recipe</span>
@@ -44,7 +44,7 @@ export function RecipeHeader({ onPrevious, onNext, mealType }: RecipeHeaderProps
         </div>
       </div>
       {mealType && (
-        <div className="text-muted-foreground text-sm">
+        <div className="text-muted-foreground text-sm text-center">
           {mealType}
         </div>
       )}
