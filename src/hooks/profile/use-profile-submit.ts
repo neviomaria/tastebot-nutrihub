@@ -79,6 +79,7 @@ export const useProfileSubmit = () => {
         grocery_budget: values.grocery_budget || null,
       };
 
+      // Update profile in Supabase
       const { error: updateError } = await supabase
         .from("profiles")
         .update(updateData)
@@ -95,6 +96,42 @@ export const useProfileSubmit = () => {
           duration: 5000,
         });
         return;
+      }
+
+      // Send profile data to webhook
+      try {
+        const webhookResponse = await fetch('https://hook.eu1.make.com/YOUR_WEBHOOK_URL', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            email: values.email || user.email,
+            profile: updateData,
+            timestamp: new Date().toISOString()
+          })
+        });
+
+        if (!webhookResponse.ok) {
+          console.error("Webhook error:", await webhookResponse.text());
+          // We don't throw here to avoid blocking the profile update
+          toast({
+            variant: "warning",
+            title: "Warning",
+            description: "Profile updated but webhook notification failed",
+            duration: 5000,
+          });
+        }
+      } catch (webhookError) {
+        console.error("Webhook error:", webhookError);
+        // We don't throw here to avoid blocking the profile update
+        toast({
+          variant: "warning",
+          title: "Warning",
+          description: "Profile updated but webhook notification failed",
+          duration: 5000,
+        });
       }
 
       // Dismiss loading toast
