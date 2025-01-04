@@ -49,28 +49,33 @@ export const SignUpCouponForm = () => {
 
       console.log('Sign up response:', authData);
 
-      // 2. Update the profile with coupon code if one was provided
-      if (values.coupon_code && authData.user) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ coupon_code: values.coupon_code })
-          .eq('id', authData.user.id);
+      console.log('Sign up response:', authData);
 
-        if (updateError) {
-          console.error('Error saving coupon code:', updateError);
-          // We don't want to block the sign-up process if coupon saving fails
-          toast({
-            title: "Warning",
-            description: "Account created but there was an issue saving your coupon code.",
-            variant: "destructive",
-          });
-        }
-      }
+// 2. Update the profile with coupon code if one was provided
+if (values.coupon_code && authData.user) {
+  console.log('Updating profile with coupon code:', values.coupon_code);
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ coupon_code: values.coupon_code })
+    .eq('id', authData.user.id);
 
-      toast({
-        title: "Success",
-        description: "Account created successfully! Please check your email to confirm your account.",
-      });
+  if (updateError) {
+    console.error('Error saving coupon code:', updateError);
+    // We don't want to block the sign-up process if coupon saving fails
+    toast({
+      title: "Warning",
+      description: "Account created but there was an issue saving your coupon code.",
+      variant: "destructive",
+    });
+  } else {
+    console.log('Coupon code saved successfully');
+  }
+}
+
+toast({
+  title: "Success",
+  description: "Account created successfully! Please check your email to confirm your account.",
+}); 
 
       // Clear the form after successful sign-up
       form.reset();
