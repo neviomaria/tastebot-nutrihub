@@ -85,7 +85,7 @@ export const SignUpCouponForm = () => {
             coupon_code: values.coupon_code || null,
             book_id: bookData?.book_id || null,
             book_title: bookData?.book_title || null,
-            access_level: bookData?.access_level || null,
+            access_level: bookData?.access_level || "freemium", // Set default access_level to "freemium"
           },
           emailRedirectTo: redirectTo,
         },
