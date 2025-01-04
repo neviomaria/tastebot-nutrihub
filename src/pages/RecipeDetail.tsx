@@ -135,6 +135,7 @@ const RecipeDetail = () => {
       <RecipeHeader
         onPrevious={() => handleNavigation('prev')}
         onNext={() => handleNavigation('next')}
+        mealType={recipe?.acf?.meal_type}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
