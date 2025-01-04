@@ -29,16 +29,20 @@ export const SignUpCouponForm = () => {
 
   const onSubmit = async (values: SignUpFormValues) => {
     try {
-      console.log('Signing up user:', values);
+      console.log('Starting sign up process with:', { 
+        email: values.email, 
+        couponCode: values.coupon_code 
+      });
 
-      // 1. Sign up the user with additional metadata including the coupon code
+      // 1. Sign up the user with metadata including the coupon code
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
-            coupon_code: values.coupon_code || null, // Store coupon in user metadata
+            coupon_code: values.coupon_code || null, // Include coupon in metadata
           },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -46,13 +50,11 @@ export const SignUpCouponForm = () => {
         console.error('Sign up error:', authError);
         toast({
           title: "Error",
-          description: "Failed to sign up. Please try again.",
+          description: authError.message || "Failed to sign up. Please try again.",
           variant: "destructive",
         });
         return;
       }
-
-      console.log('Sign up response:', authData);
 
       if (!authData.user) {
         console.error('No user data returned');
@@ -64,17 +66,22 @@ export const SignUpCouponForm = () => {
         return;
       }
 
-      // The handle_new_user trigger will create the profile
-      // The coupon code will be saved when the user confirms their email
+      console.log('Sign up successful:', {
+        userId: authData.user.id,
+        email: authData.user.email,
+        metadata: authData.user.user_metadata
+      });
+
+      // The handle_new_user trigger will create the profile with the coupon code
       toast({
         title: "Success",
-        description: "Account created successfully! Please check your email to confirm your account.",
-      }); 
+        description: "Account created! Please check your email to confirm your account.",
+      });
 
       // Clear the form after successful sign-up
       form.reset();
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Unexpected error during sign up:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
