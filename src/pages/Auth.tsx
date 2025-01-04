@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { ViewType } from "@supabase/auth-ui-shared";
 import { SignUpCouponForm } from "@/components/auth/SignUpCouponForm";
+import { AiTest } from "@/components/AiTest";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -19,7 +20,6 @@ const AuthPage = () => {
     });
   }, [navigate]);
 
-  // Handle view changes manually since onViewChange prop is not supported
   const handleViewChange = (newView: ViewType) => {
     setView(newView);
   };
@@ -35,7 +35,6 @@ const AuthPage = () => {
         </p>
       </div>
 
-      {/* Add view toggle buttons */}
       <div className="flex justify-center space-x-4 mb-6">
         <button
           onClick={() => handleViewChange("sign_in")}
@@ -59,7 +58,6 @@ const AuthPage = () => {
         </button>
       </div>
 
-      {/* Render view-specific form */}
       {view === "sign_up" ? (
         <div className="mb-6">
           <SignUpCouponForm />
@@ -118,6 +116,11 @@ const AuthPage = () => {
           providers={[]}
         />
       )}
+
+      {/* Add the AI Test component */}
+      <div className="mt-8">
+        <AiTest />
+      </div>
     </AuthLayout>
   );
 };
