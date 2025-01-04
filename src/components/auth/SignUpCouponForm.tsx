@@ -31,10 +31,15 @@ export const SignUpCouponForm = () => {
     try {
       console.log('Signing up user:', values);
 
-      // 1. Sign up the user
+      // 1. Sign up the user with additional metadata including the coupon code
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
+        options: {
+          data: {
+            coupon_code: values.coupon_code || null, // Store coupon in user metadata
+          },
+        },
       });
 
       if (authError) {
@@ -49,33 +54,22 @@ export const SignUpCouponForm = () => {
 
       console.log('Sign up response:', authData);
 
-      console.log('Sign up response:', authData);
+      if (!authData.user) {
+        console.error('No user data returned');
+        toast({
+          title: "Error",
+          description: "Failed to create account. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-// 2. Update the profile with coupon code if one was provided
-if (values.coupon_code && authData.user) {
-  console.log('Updating profile with coupon code:', values.coupon_code);
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({ coupon_code: values.coupon_code })
-    .eq('id', authData.user.id);
-
-  if (updateError) {
-    console.error('Error saving coupon code:', updateError);
-    // We don't want to block the sign-up process if coupon saving fails
-    toast({
-      title: "Warning",
-      description: "Account created but there was an issue saving your coupon code.",
-      variant: "destructive",
-    });
-  } else {
-    console.log('Coupon code saved successfully');
-  }
-}
-
-toast({
-  title: "Success",
-  description: "Account created successfully! Please check your email to confirm your account.",
-}); 
+      // The handle_new_user trigger will create the profile
+      // The coupon code will be saved when the user confirms their email
+      toast({
+        title: "Success",
+        description: "Account created successfully! Please check your email to confirm your account.",
+      }); 
 
       // Clear the form after successful sign-up
       form.reset();
