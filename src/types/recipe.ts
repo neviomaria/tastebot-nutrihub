@@ -6,6 +6,7 @@ export interface Recipe {
     prep_time: string;
     cook_time: string;
     pasto: string;
+    servings: string;
     ingredients: Array<{
       ingredient_item: string;
     }>;
