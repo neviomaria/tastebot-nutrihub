@@ -3,11 +3,12 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Recipe {
   id: number;
@@ -50,9 +51,11 @@ const fetchRecipes = async () => {
 const BookRecipes = () => {
   const [groupedRecipes, setGroupedRecipes] = useState<GroupedRecipes>({});
   const [activeTab, setActiveTab] = useState<string>("");
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const { toast } = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Check authentication status
   const { data: session } = useQuery({
@@ -118,6 +121,31 @@ const BookRecipes = () => {
     }
   }, [recipes, id, activeTab]);
 
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const tabs = Object.keys(groupedRecipes);
+    if (currentTabIndex < tabs.length - 1) {
+      setCurrentTabIndex(currentTabIndex + 1);
+      setActiveTab(tabs[currentTabIndex + 1]);
+    }
+  };
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const tabs = Object.keys(groupedRecipes);
+    if (currentTabIndex > 0) {
+      setCurrentTabIndex(currentTabIndex - 1);
+      setActiveTab(tabs[currentTabIndex - 1]);
+    }
+  };
+
+  const handleTabClick = (value: string) => {
+    const tabs = Object.keys(groupedRecipes);
+    const index = tabs.indexOf(value);
+    setCurrentTabIndex(index);
+    setActiveTab(value);
+  };
+
   if (!session) {
     return null;
   }
@@ -142,6 +170,8 @@ const BookRecipes = () => {
     );
   }
 
+  const tabs = Object.keys(groupedRecipes);
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
@@ -157,18 +187,49 @@ const BookRecipes = () => {
         {Object.keys(groupedRecipes).length === 0 ? (
           <p className="text-gray-500">No recipes available for this book.</p>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-6 bg-card border">
-              {Object.keys(groupedRecipes).map((mealType) => (
-                <TabsTrigger
-                  key={mealType}
-                  value={mealType}
-                  className="capitalize"
+          <Tabs value={activeTab} onValueChange={handleTabClick} className="w-full">
+            {/* Desktop Tabs */}
+            <div className="hidden md:block">
+              <TabsList className="mb-6 bg-card border">
+                {tabs.map((mealType) => (
+                  <TabsTrigger
+                    key={mealType}
+                    value={mealType}
+                    className="capitalize"
+                  >
+                    {mealType}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+
+            {/* Mobile Tabs */}
+            <div className="md:hidden">
+              <div className="flex items-center justify-between mb-4 bg-white rounded-lg p-2 shadow-sm">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handlePrev}
+                  disabled={currentTabIndex === 0}
                 >
-                  {mealType}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <span className="font-medium capitalize">
+                  {tabs[currentTabIndex]}
+                </span>
+                
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleNext}
+                  disabled={currentTabIndex === tabs.length - 1}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
             {Object.entries(groupedRecipes).map(([mealType, mealRecipes]) => (
               <TabsContent key={mealType} value={mealType}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
