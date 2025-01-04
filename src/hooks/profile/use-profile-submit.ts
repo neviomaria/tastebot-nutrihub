@@ -100,7 +100,7 @@ export const useProfileSubmit = () => {
 
       // Send profile data to webhook
       try {
-        const webhookResponse = await fetch('https://hook.eu1.make.com/YOUR_WEBHOOK_URL', {
+        const webhookResponse = await fetch('https://brainscapebooks.com/wp-json/autonami/v1/webhook/?bwfan_autonami_webhook_id=12&bwfan_autonami_webhook_key=7ceead5e6c877988d93520e0cf2872ff', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
