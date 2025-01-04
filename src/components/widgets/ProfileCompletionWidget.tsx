@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useProfileData } from "@/hooks/profile/use-profile-data";
 import { useForm } from "react-hook-form";
 import { ProfileFormValues } from "@/schemas/profile";
-import { getIncompleteFields } from "@/hooks/profile/use-profile-validation";
+import { getIncompleteFields, getTotalRequiredFields } from "@/hooks/profile/use-profile-validation";
 
 export const ProfileCompletionWidget = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export const ProfileCompletionWidget = () => {
   
   const values = form.getValues();
   const incompleteFields = getIncompleteFields(values);
-  const totalFields = 16; // Total number of required fields
+  const totalFields = getTotalRequiredFields(values);
   const completedFields = totalFields - incompleteFields.length;
   const percentage = Math.round((completedFields / totalFields) * 100);
   
