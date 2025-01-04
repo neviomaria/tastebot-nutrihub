@@ -73,6 +73,8 @@ export const AvatarField = ({ form }: AvatarFieldProps) => {
         title: "Error",
         description: "Failed to upload profile picture",
       });
+      // Set avatar_url to null on error
+      form.setValue('avatar_url', null);
     } finally {
       setUploading(false);
     }
@@ -88,7 +90,7 @@ export const AvatarField = ({ form }: AvatarFieldProps) => {
           <FormControl>
             <div className="flex items-center gap-4">
               <ProfileHeader
-                avatarUrl={field.value}
+                avatarUrl={field.value || undefined}
                 firstName={form.watch("first_name")}
                 lastName={form.watch("last_name")}
               />
@@ -99,7 +101,7 @@ export const AvatarField = ({ form }: AvatarFieldProps) => {
                   onChange={handleFileUpload}
                   disabled={uploading}
                 />
-                <input type="hidden" {...field} />
+                <input type="hidden" {...field} value={field.value || ''} />
               </div>
             </div>
           </FormControl>

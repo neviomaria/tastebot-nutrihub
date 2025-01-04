@@ -121,7 +121,7 @@ export const profileSchema = z.object({
   first_name: z.string().min(2, "First name must be at least 2 characters"),
   last_name: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  avatar_url: z.string().optional(),
+  avatar_url: z.string().nullable().optional(),
   country: z.string().min(2, "Country must be at least 2 characters"),
   
   // All other fields are optional
