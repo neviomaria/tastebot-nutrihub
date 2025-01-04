@@ -20,7 +20,7 @@ export function RecipeDetails({ recipe }: RecipeDetailsProps) {
       <RecipeMetadata
         prepTime={recipe.acf.prep_time}
         cookTime={recipe.acf.cook_time}
-        servings={recipe.acf.pasto}
+        servings={recipe.acf.servings}
       />
 
       <RecipeContent
