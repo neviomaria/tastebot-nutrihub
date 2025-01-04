@@ -70,9 +70,8 @@ export const SignUpCouponForm = () => {
         };
       }
 
-      // Get the current URL and port, using the full hostname including IP
-      const baseUrl = window.location.protocol + '//' + window.location.host;
-      const redirectTo = `${baseUrl}/auth/callback`;
+      // Use the correct domain for the callback URL
+      const redirectTo = 'https://pybher.com/auth/callback';
       
       console.log('Redirect URL:', redirectTo);
 
