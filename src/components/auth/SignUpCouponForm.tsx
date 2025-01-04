@@ -70,8 +70,9 @@ export const SignUpCouponForm = () => {
         };
       }
 
-      // Use the correct domain for the callback URL
-      const redirectTo = 'https://pybher.com/auth/callback';
+      // Dynamically construct the redirect URL based on the current domain
+      const currentDomain = window.location.origin;
+      const redirectTo = `${currentDomain}/auth/callback`;
       
       console.log('Redirect URL:', redirectTo);
 
