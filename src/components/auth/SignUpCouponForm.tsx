@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -28,18 +27,7 @@ export const SignUpCouponForm = () => {
     },
   });
 
-  const isSecureConnection = window.location.protocol === 'https:';
-
   const onSubmit = async (values: SignUpFormValues) => {
-    if (!isSecureConnection) {
-      toast({
-        title: "Security Warning",
-        description: "Cannot submit credentials over an insecure connection. Please use HTTPS.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       console.log('Starting sign up process with:', { 
         email: values.email, 
@@ -108,14 +96,6 @@ export const SignUpCouponForm = () => {
 
   return (
     <Form {...form}>
-      {!isSecureConnection && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>
-            Warning: This form is being served over an insecure connection (HTTP). 
-            For security reasons, please use HTTPS to submit sensitive information.
-          </AlertDescription>
-        </Alert>
-      )}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -143,11 +123,7 @@ export const SignUpCouponForm = () => {
 
         <CouponField form={form} />
 
-        <Button 
-          type="submit" 
-          className="w-full"
-          disabled={!isSecureConnection}
-        >
+        <Button type="submit" className="w-full">
           Sign Up
         </Button>
       </form>
