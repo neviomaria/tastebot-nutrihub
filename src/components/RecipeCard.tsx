@@ -12,15 +12,25 @@ export function RecipeCard({ title, image, cookTime, difficulty, onClick }: Reci
   // Function to transform the image URL to use recipe-app dimension
   const getRecipeAppImage = (url: string) => {
     if (!url) return "/placeholder.svg";
-    // Check if the URL is from WordPress
-    if (url.includes('brainscapebooks.com')) {
-      // Split the URL at the file extension
-      const urlParts = url.split('.');
-      const extension = urlParts.pop(); // Get the file extension
-      // Add -recipe-app before the extension
-      return `${urlParts.join('.')}-recipe-app.${extension}`;
+    
+    try {
+      // Check if the URL is from WordPress
+      if (url.includes('brainscapebooks.com')) {
+        // Split the URL at the last occurrence of a dot to separate extension
+        const lastDotIndex = url.lastIndexOf('.');
+        if (lastDotIndex === -1) return url;
+        
+        const urlWithoutExtension = url.substring(0, lastDotIndex);
+        const extension = url.substring(lastDotIndex);
+        
+        // Add -recipe-app before the extension
+        return `${urlWithoutExtension}-recipe-app${extension}`;
+      }
+      return url;
+    } catch (error) {
+      console.error('Error transforming image URL:', error);
+      return "/placeholder.svg";
     }
-    return url;
   };
 
   return (
@@ -34,6 +44,7 @@ export function RecipeCard({ title, image, cookTime, difficulty, onClick }: Reci
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onError={(e) => {
+            console.log('Image failed to load:', image);
             e.currentTarget.src = "/placeholder.svg";
           }}
         />
