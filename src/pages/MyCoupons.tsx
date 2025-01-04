@@ -38,15 +38,16 @@ const MyCoupons = () => {
 
       if (error) throw error;
 
+      // Only return the coupon data if all required fields are present
       if (profile?.coupon_code && profile?.book_id && profile?.book_title) {
         return [{
           book_id: profile.book_id,
           book_title: profile.book_title,
           coupon_code: profile.coupon_code,
-        }] as BookAccess[];
+        }];
       }
       
-      return [] as BookAccess[];
+      return [];
     },
   });
 
