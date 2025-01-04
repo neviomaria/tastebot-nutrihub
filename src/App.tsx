@@ -1,95 +1,98 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Index from '@/pages/Index';
-import Auth from '@/pages/Auth';
-import AuthCallback from '@/pages/AuthCallback';
-import Profile from '@/pages/Profile';
-import CompleteProfile from '@/pages/CompleteProfile';
-import BookDetail from '@/pages/BookDetail';
-import BookRecipes from '@/pages/BookRecipes';
-import MyCoupons from '@/pages/MyCoupons';
-import MyBooks from '@/pages/MyBooks';
-import RecipeDetail from '@/pages/RecipeDetail';
-import { ProtectedRoutes } from '@/components/auth/ProtectedRoutes';
-import './App.css';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { ProtectedRoutes } from "@/components/auth/ProtectedRoutes";
+import { useAuthState } from "@/hooks/use-auth-state";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import CompleteProfile from "@/pages/CompleteProfile";
+import Index from "@/pages/Index";
+import Auth from "@/pages/Auth";
+import Profile from "@/pages/Profile";
+import MyCoupons from "@/pages/MyCoupons";
+import MyBooks from "@/pages/MyBooks";
+import BookDetail from "@/pages/BookDetail";
+import BookRecipes from "@/pages/BookRecipes";
+import RecipeDetail from "@/pages/RecipeDetail";
+import { AppSidebar } from "@/components/AppSidebar";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+function AuthenticatedApp() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkProfileCompletion = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.first_name || !profile?.last_name) {
+        navigate('/complete-profile');
+      }
+    };
+
+    checkProfileCompletion();
+  }, [navigate]);
+
+  return (
+    <AppSidebar>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Navigate to="/" replace />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/my-coupons" element={<MyCoupons />} />
+        <Route path="/my-books" element={<MyBooks />} />
+        <Route path="/book/:id" element={<BookDetail />} />
+        <Route path="/book/:id/recipes" element={<BookRecipes />} />
+        <Route path="/recipe/:id" element={<RecipeDetail />} />
+      </Routes>
+    </AppSidebar>
+  );
+}
 
 function App() {
+  const { isAuthenticated } = useAuthState();
+
+  // Show nothing while checking auth state
+  if (isAuthenticated === null) {
+    return null;
+  }
+
   return (
-    <Router>
-      <Routes>
-        {/* Auth routes with and without trailing slash */}
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/auth/" element={<Navigate to="/auth" replace />} />
-        
-        {/* Auth callback routes with and without trailing slash */}
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/auth/callback/" element={<Navigate to="/auth/callback" replace />} />
-        
-        <Route
-          path="/"
-          element={
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          {isAuthenticated ? (
             <ProtectedRoutes>
-              <Index />
+              <AuthenticatedApp />
             </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoutes>
-              <Profile />
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/complete-profile"
-          element={
-            <ProtectedRoutes>
-              <CompleteProfile />
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/book/:id"
-          element={
-            <ProtectedRoutes>
-              <BookDetail />
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/book/:id/recipes"
-          element={
-            <ProtectedRoutes>
-              <BookRecipes />
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/my-coupons"
-          element={
-            <ProtectedRoutes>
-              <MyCoupons />
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/my-books"
-          element={
-            <ProtectedRoutes>
-              <MyBooks />
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/recipe/:id"
-          element={
-            <ProtectedRoutes>
-              <RecipeDetail />
-            </ProtectedRoutes>
-          }
-        />
-      </Routes>
-    </Router>
+          ) : (
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="*" element={<Navigate to="/auth" replace />} />
+            </Routes>
+          )}
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
