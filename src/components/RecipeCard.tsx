@@ -9,6 +9,20 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ title, image, cookTime, difficulty, onClick }: RecipeCardProps) {
+  // Function to transform the image URL to use recipe-app dimension
+  const getRecipeAppImage = (url: string) => {
+    if (!url) return "/placeholder.svg";
+    // Check if the URL is from WordPress
+    if (url.includes('brainscapebooks.com')) {
+      // Split the URL at the file extension
+      const urlParts = url.split('.');
+      const extension = urlParts.pop(); // Get the file extension
+      // Add -recipe-app before the extension
+      return `${urlParts.join('.')}-recipe-app.${extension}`;
+    }
+    return url;
+  };
+
   return (
     <Card 
       className="overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-[1.02] animate-fade-up"
@@ -16,7 +30,7 @@ export function RecipeCard({ title, image, cookTime, difficulty, onClick }: Reci
     >
       <div className="aspect-[4/3] overflow-hidden">
         <img 
-          src={image} 
+          src={getRecipeAppImage(image)} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           onError={(e) => {
