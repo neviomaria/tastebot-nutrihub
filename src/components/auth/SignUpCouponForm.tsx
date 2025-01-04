@@ -31,13 +31,14 @@ export const SignUpCouponForm = () => {
     try {
       console.log('Signing up user:', values);
 
-      const { data, error } = await supabase.auth.signUp({
+      // 1. Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
       });
 
-      if (error) {
-        console.error('Sign up error:', error);
+      if (authError) {
+        console.error('Sign up error:', authError);
         toast({
           title: "Error",
           description: "Failed to sign up. Please try again.",
@@ -46,7 +47,25 @@ export const SignUpCouponForm = () => {
         return;
       }
 
-      console.log('Sign up response:', data);
+      console.log('Sign up response:', authData);
+
+      // 2. Update the profile with coupon code if one was provided
+      if (values.coupon_code && authData.user) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ coupon_code: values.coupon_code })
+          .eq('id', authData.user.id);
+
+        if (updateError) {
+          console.error('Error saving coupon code:', updateError);
+          // We don't want to block the sign-up process if coupon saving fails
+          toast({
+            title: "Warning",
+            description: "Account created but there was an issue saving your coupon code.",
+            variant: "destructive",
+          });
+        }
+      }
 
       toast({
         title: "Success",
