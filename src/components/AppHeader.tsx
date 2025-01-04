@@ -21,7 +21,7 @@ export const AppHeader = () => {
   });
 
   return (
-    <div className="flex items-center justify-end gap-3 p-4">
+    <div className="sticky top-0 z-50 bg-white border-b flex items-center justify-end gap-3 p-4 shadow-sm">
       <span className="text-sm font-medium">
         {profile?.first_name} {profile?.last_name}
       </span>
