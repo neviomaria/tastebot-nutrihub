@@ -8,7 +8,7 @@ export function RecipeContent({ ingredients, instructions }: RecipeContentProps)
     <div className="space-y-8">
       <div>
         <h2 className="text-xl font-semibold mb-4">Ingredients</h2>
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-2 pl-5 list-disc">
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 pl-5 list-disc">
           {ingredients.map((ingredient, index) => (
             <li key={index}>{ingredient.ingredient_item}</li>
           ))}
