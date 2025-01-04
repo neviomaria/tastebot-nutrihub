@@ -23,6 +23,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const [userBooks, setUserBooks] = useState<UserBook[]>([]);
   const location = useLocation();
+  const [openMobile, setOpenMobile] = useState(false);
 
   const baseMenuItems: MenuItem[] = [
     { title: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -85,9 +86,15 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const handleMenuClick = () => {
+    // Close mobile sidebar when a menu item is clicked
+    setOpenMobile(false);
+  };
+
   const MenuLink = ({ item }: { item: MenuItem }) => (
     <Link
       to={item.path}
+      onClick={handleMenuClick}
       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ${
         location.pathname === item.path
           ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
@@ -102,7 +109,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const SidebarContent = () => (
     <div className="flex h-screen flex-col bg-white">
       <div className="flex h-[60px] items-center border-b px-6">
-        <Link to="/" className="flex items-center gap-2 font-semibold">
+        <Link to="/" className="flex items-center gap-2 font-semibold" onClick={handleMenuClick}>
           <span className="text-xl">FlavorFit</span>
         </Link>
       </div>
@@ -118,12 +125,14 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                       <div key={book.book_id} className="space-y-1">
                         <Link
                           to={`/book/${book.book_id}`}
+                          onClick={handleMenuClick}
                           className="block rounded-lg px-3 py-2 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
                         >
                           {book.book_title}
                         </Link>
                         <Link
                           to={`/book/${book.book_id}/recipes`}
+                          onClick={handleMenuClick}
                           className="block rounded-lg px-3 py-2 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ml-4"
                         >
                           Book Recipes
@@ -152,11 +161,11 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex">
-      <div className="hidden border-r bg-white lg:block w-[300px]">
+      <div className="hidden fixed top-0 left-0 h-screen border-r bg-white lg:block w-[300px]">
         <SidebarContent />
       </div>
 
-      <Sheet>
+      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetTrigger asChild>
           <Button
             variant="ghost"
@@ -172,7 +181,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <main className="flex-1">
+      <main className="flex-1 lg:ml-[300px]">
         <AppHeader />
         {children}
       </main>
