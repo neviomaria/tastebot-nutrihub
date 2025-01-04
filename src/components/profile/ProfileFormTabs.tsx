@@ -58,7 +58,7 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
 
       {/* Mobile Tabs */}
       <div className="md:hidden">
-        <div className="flex items-center justify-between mb-4 bg-white rounded-lg p-2">
+        <div className="flex items-center justify-between mb-4 bg-white rounded-lg p-2 shadow-sm">
           <Button
             variant="ghost"
             size="icon"
@@ -83,45 +83,47 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
         </div>
       </div>
 
-      <TabsContent value="profile" className="mt-6" hidden={currentTabIndex !== 0}>
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">* Required fields</p>
-          <BasicInfoFields form={form} />
-        </div>
-      </TabsContent>
+      <div className="max-w-full overflow-x-hidden px-1">
+        <TabsContent value="profile" className="mt-6" hidden={currentTabIndex !== 0}>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">* Required fields</p>
+            <BasicInfoFields form={form} />
+          </div>
+        </TabsContent>
 
-      <TabsContent value="dietary" className="mt-6" hidden={currentTabIndex !== 1}>
-        <div className="space-y-6">
-          <DietarySection form={form} />
-          <AllergiesSection form={form} />
-        </div>
-      </TabsContent>
+        <TabsContent value="dietary" className="mt-6" hidden={currentTabIndex !== 1}>
+          <div className="space-y-6">
+            <DietarySection form={form} />
+            <AllergiesSection form={form} />
+          </div>
+        </TabsContent>
 
-      <TabsContent value="cooking" className="mt-6" hidden={currentTabIndex !== 2}>
-        <div className="space-y-6">
-          <CookingPreferencesSection form={form} />
-          <CuisineSection form={form} />
-        </div>
-      </TabsContent>
+        <TabsContent value="cooking" className="mt-6" hidden={currentTabIndex !== 2}>
+          <div className="space-y-6">
+            <CookingPreferencesSection form={form} />
+            <CuisineSection form={form} />
+          </div>
+        </TabsContent>
 
-      <TabsContent value="medical" className="mt-6" hidden={currentTabIndex !== 3}>
-        <div className="space-y-6">
-          <HealthSection form={form} />
-          <ActivitySection form={form} />
-          <MedicalSection form={form} />
-        </div>
-      </TabsContent>
+        <TabsContent value="medical" className="mt-6" hidden={currentTabIndex !== 3}>
+          <div className="space-y-6">
+            <HealthSection form={form} />
+            <ActivitySection form={form} />
+            <MedicalSection form={form} />
+          </div>
+        </TabsContent>
 
-      <TabsContent value="shopping" className="mt-6" hidden={currentTabIndex !== 4}>
-        <div className="space-y-6">
-          <PlanningSection form={form} />
-          <ShoppingPreferencesSection form={form} />
-        </div>
-      </TabsContent>
+        <TabsContent value="shopping" className="mt-6" hidden={currentTabIndex !== 4}>
+          <div className="space-y-6">
+            <PlanningSection form={form} />
+            <ShoppingPreferencesSection form={form} />
+          </div>
+        </TabsContent>
 
-      <TabsContent value="religious" className="mt-6" hidden={currentTabIndex !== 5}>
-        <ReligiousRestrictionsSection form={form} />
-      </TabsContent>
+        <TabsContent value="religious" className="mt-6" hidden={currentTabIndex !== 5}>
+          <ReligiousRestrictionsSection form={form} />
+        </TabsContent>
+      </div>
     </>
   );
 };
