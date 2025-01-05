@@ -5,7 +5,7 @@ import { useProfileData } from "@/hooks/profile/use-profile-data";
 import { useForm } from "react-hook-form";
 import { ProfileFormValues } from "@/schemas/profile";
 import { getIncompleteFields, getTotalRequiredFields } from "@/hooks/profile/use-profile-validation";
-import { ChartPie, Info, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export const ProfileCompletionWidget = () => {
   const navigate = useNavigate();
@@ -28,18 +28,14 @@ export const ProfileCompletionWidget = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Column - Profile Completion */}
           <div className="flex flex-col items-center space-y-6">
-            <div className="flex items-center gap-2">
-              <ChartPie className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Profile Completion</h2>
-            </div>
+            <h2 className="text-xl font-semibold">Profile Completion</h2>
             
             {/* Circular Progress */}
             <div className="relative w-40 h-40">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 {/* Background circle */}
                 <circle
-                  className="text-muted/20"
-                  strokeWidth="8"
+                  className="text-muted stroke-[8]"
                   stroke="currentColor"
                   fill="transparent"
                   r="45"
@@ -48,8 +44,7 @@ export const ProfileCompletionWidget = () => {
                 />
                 {/* Progress circle */}
                 <circle
-                  className="text-primary transition-all duration-1000 ease-in-out"
-                  strokeWidth="8"
+                  className="text-primary stroke-[8] transition-all duration-1000 ease-in-out"
                   strokeLinecap="round"
                   stroke="currentColor"
                   fill="transparent"
@@ -64,7 +59,7 @@ export const ProfileCompletionWidget = () => {
               </svg>
               {/* Percentage text */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-primary">{percentage}%</span>
+                <span className="text-4xl font-bold text-primary">{percentage}%</span>
                 <span className="text-sm text-muted-foreground">Complete</span>
               </div>
             </div>
@@ -77,10 +72,7 @@ export const ProfileCompletionWidget = () => {
           {/* Right Column - Missing Information */}
           <div className="flex flex-col justify-between">
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-medium">Missing Information</h3>
-              </div>
+              <h3 className="text-lg font-medium">Missing Information</h3>
               
               <div className="space-y-2">
                 {incompleteFields.slice(0, 4).map((field, index) => (
