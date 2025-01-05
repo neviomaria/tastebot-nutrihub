@@ -120,7 +120,7 @@ export function AvailableBooksWidget() {
               <CarouselItem key={book.id} className="md:basis-1/2 lg:basis-1/3">
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
-                    <div className="grid grid-cols-[1fr,1.5fr] gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr,1.5fr] gap-4">
                       <div className="relative">
                         <img
                           src={bookCovers[book.id] || "/placeholder.svg"}
@@ -133,7 +133,7 @@ export function AvailableBooksWidget() {
                           }}
                         />
                       </div>
-                      <div className="py-4 pr-4 flex flex-col">
+                      <div className="py-4 px-4 md:pr-4 md:pl-0 flex flex-col">
                         <h2 className="text-lg font-semibold mb-4 line-clamp-2">{book.title.rendered}</h2>
                         {book.acf?.sottotitolo_per_sito && (
                           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">

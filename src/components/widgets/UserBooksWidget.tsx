@@ -83,7 +83,7 @@ export function UserBooksWidget() {
         {profile?.book_id && profile?.book_title ? (
           <Card className="overflow-hidden">
             <CardContent className="p-0">
-              <div className="grid grid-cols-[1fr,1.5fr] gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr,1.5fr] gap-4">
                 <div className="relative">
                   <img
                     src={bookCover || "/placeholder.svg"}
@@ -96,7 +96,7 @@ export function UserBooksWidget() {
                     }}
                   />
                 </div>
-                <div className="py-4 pr-4 flex flex-col">
+                <div className="py-4 px-4 md:pr-4 md:pl-0 flex flex-col">
                   <h2 className="text-lg font-semibold mb-2 line-clamp-2">{profile.book_title}</h2>
                   <div className="mt-auto space-y-2">
                     <Button 
