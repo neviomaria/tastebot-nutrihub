@@ -68,17 +68,17 @@ export function UserBooksWidget() {
                 </div>
                 <div className="py-4 pr-4 flex flex-col">
                   <h2 className="text-lg font-semibold mb-4 line-clamp-2">{profile.book_title}</h2>
-                  <div className="mt-auto space-y-4">
+                  <div className="mt-auto space-y-2">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-between"
+                      className="w-full justify-between bg-gradient-to-r from-[#F5F5F7] to-[#FFFFFF] hover:from-[#EAEAEC] hover:to-[#F5F5F7]"
                       onClick={() => navigate(`/book/${profile.book_id}`)}
                     >
                       View Details
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                     <Button 
-                      className="w-full justify-between"
+                      className="w-full justify-between bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]"
                       onClick={() => navigate(`/book/${profile.book_id}/recipes`)}
                     >
                       View Recipes

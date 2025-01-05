@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ const BookDetail = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -159,7 +160,7 @@ const BookDetail = () => {
                     <p className="text-muted-foreground mb-4">
                       Get access to this book's exclusive content and recipes
                     </p>
-                    <Button className="w-full">
+                    <Button className="w-full bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]">
                       Purchase Access
                     </Button>
                   </div>
@@ -177,7 +178,10 @@ const BookDetail = () => {
                       />
                     )}
                     <div className="mt-6">
-                      <Button variant="secondary" className="w-full">
+                      <Button 
+                        onClick={() => navigate(`/book/${id}/recipes`)}
+                        className="w-full bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]"
+                      >
                         View Book Recipes
                       </Button>
                     </div>
