@@ -32,8 +32,8 @@ export function UserBooksWidget() {
       <CardContent>
         {profile?.book_title ? (
           <div className="space-y-3">
-            <h3 className="font-medium mb-3">{profile.book_title}</h3>
-            <div className="space-y-3">
+            <h3 className="font-medium mb-4">{profile.book_title}</h3>
+            <div className="space-y-4">
               <Button 
                 variant="outline" 
                 className="w-full justify-between"
