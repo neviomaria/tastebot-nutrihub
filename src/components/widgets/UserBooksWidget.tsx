@@ -8,19 +8,27 @@ import { BookOpen, ChevronRight } from "lucide-react";
 export function UserBooksWidget() {
   const navigate = useNavigate();
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      if (!user) {
+        console.log('No user found');
+        return null;
+      }
 
+      console.log('Fetching profile for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('book_id, book_title')
         .eq('id', user.id)
         .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      console.log('Profile data:', data);
       return data;
     }
   });
@@ -45,6 +53,24 @@ export function UserBooksWidget() {
     enabled: !!profile?.book_id
   });
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            My Books
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            <div className="h-48 bg-gray-200 rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -54,7 +80,7 @@ export function UserBooksWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {profile?.book_title ? (
+        {profile?.book_id && profile?.book_title ? (
           <Card className="overflow-hidden">
             <CardContent className="p-0">
               <div className="grid grid-cols-[1fr,1.5fr] gap-4">
@@ -71,7 +97,7 @@ export function UserBooksWidget() {
                   />
                 </div>
                 <div className="py-4 pr-4 flex flex-col">
-                  <h2 className="text-lg font-semibold mb-4 line-clamp-2">{profile.book_title}</h2>
+                  <h2 className="text-lg font-semibold mb-2 line-clamp-2">{profile.book_title}</h2>
                   <div className="mt-auto space-y-2">
                     <Button 
                       variant="outline" 
