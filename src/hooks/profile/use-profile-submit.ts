@@ -26,6 +26,7 @@ export const useProfileSubmit = () => {
           title: "Error",
           description: "You must be logged in to complete your profile",
           duration: 5000,
+          className: "bg-gradient-to-r from-red-500/80 to-pink-500/80 text-white border-none",
         });
         return;
       }
@@ -34,6 +35,7 @@ export const useProfileSubmit = () => {
       const loadingToast = toast({
         title: "Saving...",
         description: "Your profile is being updated",
+        className: "bg-gradient-to-r from-blue-500/80 to-purple-500/80 text-white border-none",
       });
 
       console.log("Updating profile for user:", user.id);
@@ -104,18 +106,20 @@ export const useProfileSubmit = () => {
       // Get incomplete fields
       const incompleteFields = getIncompleteFields(values);
       
-      // Show success message with incomplete fields info
+      // Show simplified success message
       if (incompleteFields.length > 0) {
         toast({
-          title: "Profile saved successfully!",
-          description: `Your profile has been updated. To complete your profile, consider adding: ${incompleteFields.join(", ")}`,
-          duration: 6000,
+          title: "Profile Updated",
+          description: "Your profile has been saved. Some optional information is still missing.",
+          duration: 4000,
+          className: "bg-gradient-to-r from-emerald-500/80 to-teal-500/80 text-white border-none",
         });
       } else {
         toast({
-          title: "Profile saved successfully!",
-          description: "Your profile is complete with all optional information filled in!",
-          duration: 5000,
+          title: "Profile Complete!",
+          description: "All information has been saved successfully.",
+          duration: 4000,
+          className: "bg-gradient-to-r from-emerald-500/80 to-teal-500/80 text-white border-none",
         });
       }
 
@@ -131,6 +135,7 @@ export const useProfileSubmit = () => {
         title: "Error",
         description: "Failed to update profile. Please try again.",
         duration: 5000,
+        className: "bg-gradient-to-r from-red-500/80 to-pink-500/80 text-white border-none",
       });
     }
   };
