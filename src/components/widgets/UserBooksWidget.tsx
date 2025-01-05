@@ -11,46 +11,66 @@ export function UserBooksWidget() {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found');
-        return null;
-      }
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('No user found in UserBooksWidget');
+          return null;
+        }
 
-      console.log('Fetching profile for user:', user.id);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('book_id, book_title')
-        .eq('id', user.id)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching profile:', error);
+        console.log('Fetching profile for user:', user.id);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('book_id, book_title')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching profile:', error);
+          throw error;
+        }
+
+        console.log('Profile data retrieved:', data);
+        return data;
+      } catch (error) {
+        console.error('Error in profile fetch:', error);
         throw error;
       }
-      console.log('Profile data:', data);
-      return data;
-    }
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    retry: 1
   });
 
   const { data: bookCover } = useQuery({
     queryKey: ['bookCover', profile?.book_id],
     queryFn: async () => {
-      const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${profile?.book_id}`);
-      if (!bookResponse.ok) throw new Error("Failed to fetch book details");
-      const book = await bookResponse.json();
-
-      let coverUrl = "/placeholder.svg";
-      if (book.acf?.copertina_libro) {
-        const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
-        if (mediaResponse.ok) {
-          const media = await mediaResponse.json();
-          coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
+      try {
+        console.log('Fetching book cover for book_id:', profile?.book_id);
+        const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${profile?.book_id}`);
+        if (!bookResponse.ok) {
+          console.error('Failed to fetch book details:', bookResponse.statusText);
+          throw new Error("Failed to fetch book details");
         }
+        const book = await bookResponse.json();
+        console.log('Book data retrieved:', book);
+
+        let coverUrl = "/placeholder.svg";
+        if (book.acf?.copertina_libro) {
+          const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
+          if (mediaResponse.ok) {
+            const media = await mediaResponse.json();
+            coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
+            console.log('Cover URL found:', coverUrl);
+          }
+        }
+        return coverUrl;
+      } catch (error) {
+        console.error('Error fetching book cover:', error);
+        return "/placeholder.svg";
       }
-      return coverUrl;
     },
-    enabled: !!profile?.book_id
+    enabled: !!profile?.book_id,
+    staleTime: 1000 * 60 * 30 // Cache for 30 minutes
   });
 
   if (isLoading) {
