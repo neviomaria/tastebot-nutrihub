@@ -4,8 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useProfileData } from "@/hooks/profile/use-profile-data";
 import { useForm } from "react-hook-form";
 import { ProfileFormValues } from "@/schemas/profile";
-import { getIncompleteFields, getProfileCompletion } from "@/hooks/profile/use-profile-validation";
-import { ArrowRight, AlertCircle } from "lucide-react";
+import { getProfileCompletion } from "@/hooks/profile/use-profile-validation";
+import { ArrowRight } from "lucide-react";
 
 export const ProfileCompletionWidget = () => {
   const navigate = useNavigate();
@@ -14,19 +14,6 @@ export const ProfileCompletionWidget = () => {
   useProfileData(form);
   
   const values = form.getValues();
-  const incompleteFields = getIncompleteFields(values).filter(field => {
-    const fieldKey = field.toLowerCase().replace(/ /g, '_');
-    const value = values[fieldKey as keyof ProfileFormValues];
-    
-    // Handle array fields
-    if (Array.isArray(value)) {
-      return value.length === 0;
-    }
-    
-    // Handle all other fields
-    return !value;
-  });
-  
   const percentage = getProfileCompletion(values);
   
   const circumference = 2 * Math.PI * 45;
@@ -73,47 +60,21 @@ export const ProfileCompletionWidget = () => {
                 <span className="text-sm text-muted-foreground mt-1">Complete</span>
               </div>
             </div>
-
-            <p className="text-center text-muted-foreground text-sm max-w-[280px]">
-              Complete your profile to unlock personalized recipe recommendations
-            </p>
           </div>
 
-          {/* Right Column - Missing Information */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertCircle className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-medium">Missing Information</h3>
-            </div>
-            
-            <div className="space-y-3 mb-6 bg-purple-50/50 p-4 rounded-lg">
-              {incompleteFields.slice(0, 4).map((field, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 text-sm text-muted-foreground animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary/70" />
-                  {field}
-                </div>
-              ))}
-              {incompleteFields.length > 4 && (
-                <div 
-                  className="text-sm text-primary/80 font-medium animate-fade-in pl-3.5"
-                  style={{ animationDelay: '400ms' }}
-                >
-                  And {incompleteFields.length - 4} more fields to complete...
-                </div>
-              )}
-            </div>
-
+          {/* Right Column - Call to Action */}
+          <div className="flex flex-col items-center justify-center">
             <Button
               onClick={() => navigate("/profile")}
-              className="w-full bg-primary hover:bg-primary-hover text-white group transition-all duration-300"
+              className="w-full bg-primary hover:bg-primary-hover text-white group transition-all duration-300 mb-4"
             >
               Complete Profile
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
+            
+            <p className="text-center text-muted-foreground text-sm max-w-[280px]">
+              Complete your profile to unlock personalized recipe recommendations
+            </p>
           </div>
         </div>
       </CardContent>
