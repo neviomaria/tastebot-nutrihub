@@ -11,9 +11,13 @@ export function UserBooksWidget() {
   const { data: profile } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       const { data, error } = await supabase
         .from('profiles')
         .select('book_id, book_title')
+        .eq('id', user.id)
         .single();
       
       if (error) throw error;
