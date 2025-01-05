@@ -16,12 +16,15 @@ export const ProfileCompletionWidget = () => {
   const values = form.getValues();
   const incompleteFields = getIncompleteFields(values).filter(field => {
     const fieldKey = field.toLowerCase().replace(/ /g, '_');
-    // Special handling for arrays
-    if (Array.isArray(values[fieldKey as keyof ProfileFormValues])) {
-      return !values[fieldKey as keyof ProfileFormValues]?.length;
+    const value = values[fieldKey as keyof ProfileFormValues];
+    
+    // Handle array fields
+    if (Array.isArray(value)) {
+      return !value.length;
     }
-    // Handle regular fields
-    return !values[fieldKey as keyof ProfileFormValues];
+    
+    // Handle all other fields
+    return !value;
   });
   
   const percentage = getProfileCompletion(values);
