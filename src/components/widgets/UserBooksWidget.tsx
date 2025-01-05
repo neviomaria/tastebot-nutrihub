@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ChevronRight } from "lucide-react";
 
 export function UserBooksWidget() {
   const navigate = useNavigate();
@@ -31,14 +31,23 @@ export function UserBooksWidget() {
       </CardHeader>
       <CardContent>
         {profile?.book_title ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">{profile.book_title}</h3>
+          <div className="space-y-3">
+            <h3 className="font-medium mb-3">{profile.book_title}</h3>
+            <div className="space-y-3">
               <Button 
-                variant="ghost" 
+                variant="outline" 
+                className="w-full justify-between"
                 onClick={() => navigate(`/book/${profile.book_id}`)}
               >
-                View Book
+                View Details
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button 
+                className="w-full justify-between"
+                onClick={() => navigate(`/book/${profile.book_id}/recipes`)}
+              >
+                View Recipes
+                <BookOpen className="h-4 w-4" />
               </Button>
             </div>
           </div>

@@ -155,8 +155,8 @@ const MyBooks = () => {
                   />
                 </div>
                 <div className="py-4 pr-4 flex flex-col">
-                  <h2 className="text-lg font-semibold mb-2 line-clamp-2">{book.title}</h2>
-                  <div className="mt-auto space-y-2">
+                  <h2 className="text-lg font-semibold mb-4 line-clamp-2">{book.title}</h2>
+                  <div className="mt-auto space-y-3">
                     <Link to={`/book/${book.id}`}>
                       <Button variant="outline" className="w-full justify-between">
                         View Details
