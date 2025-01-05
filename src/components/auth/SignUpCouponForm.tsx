@@ -76,7 +76,7 @@ export const SignUpCouponForm = () => {
         bookData = {
           book_id: verifyData.book_id,
           book_title: verifyData.book_title,
-          access_level: verifyData.access_level
+          access_level: "freemium" // Always set to freemium regardless of coupon
         };
       }
 
@@ -102,7 +102,7 @@ export const SignUpCouponForm = () => {
             coupon_code: values.coupon_code || null,
             book_id: bookData?.book_id || null,
             book_title: bookData?.book_title || null,
-            access_level: bookData?.access_level || "freemium", // Set default access_level to "freemium"
+            access_level: "freemium", // Always set to freemium for new users
           },
           emailRedirectTo: redirectTo,
         },
