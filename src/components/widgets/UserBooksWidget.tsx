@@ -21,6 +21,26 @@ export function UserBooksWidget() {
     }
   });
 
+  const { data: bookCover } = useQuery({
+    queryKey: ['bookCover', profile?.book_id],
+    queryFn: async () => {
+      const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${profile?.book_id}`);
+      if (!bookResponse.ok) throw new Error("Failed to fetch book details");
+      const book = await bookResponse.json();
+
+      let coverUrl = "/placeholder.svg";
+      if (book.acf?.copertina_libro) {
+        const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
+        if (mediaResponse.ok) {
+          const media = await mediaResponse.json();
+          coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
+        }
+      }
+      return coverUrl;
+    },
+    enabled: !!profile?.book_id
+  });
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -36,11 +56,12 @@ export function UserBooksWidget() {
               <div className="grid grid-cols-[1fr,1.5fr] gap-4">
                 <div className="relative">
                   <img
-                    src="https://brainscapebooks.com/wp-content/uploads/2024/01/Copertina-Pybher-1.jpg"
+                    src={bookCover || "/placeholder.svg"}
                     alt={profile.book_title}
                     className="w-full h-full object-cover aspect-[3/4]"
                     loading="lazy"
                     onError={(e) => {
+                      console.log('Image failed to load:', bookCover);
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />
