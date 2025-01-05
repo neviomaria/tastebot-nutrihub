@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useProfileData } from "@/hooks/profile/use-profile-data";
 import { useForm } from "react-hook-form";
 import { ProfileFormValues } from "@/schemas/profile";
-import { getIncompleteFields, getTotalRequiredFields } from "@/hooks/profile/use-profile-validation";
+import { getIncompleteFields, getProfileCompletion } from "@/hooks/profile/use-profile-validation";
 import { ArrowRight } from "lucide-react";
 
 export const ProfileCompletionWidget = () => {
@@ -15,9 +15,7 @@ export const ProfileCompletionWidget = () => {
   
   const values = form.getValues();
   const incompleteFields = getIncompleteFields(values);
-  const totalFields = getTotalRequiredFields(values);
-  const completedFields = totalFields - incompleteFields.length;
-  const percentage = Math.round((completedFields / totalFields) * 100);
+  const percentage = getProfileCompletion(values);
   
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -35,7 +33,7 @@ export const ProfileCompletionWidget = () => {
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                 {/* Background circle */}
                 <circle
-                  className="text-muted stroke-[8]"
+                  className="text-muted/20 stroke-[8]"
                   stroke="currentColor"
                   fill="transparent"
                   r="45"
@@ -78,10 +76,9 @@ export const ProfileCompletionWidget = () => {
                 {incompleteFields.slice(0, 4).map((field, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-2 text-sm text-muted-foreground animate-fade-in"
+                    className="text-sm text-muted-foreground animate-fade-in pl-3.5"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary/70" />
                     {field}
                   </div>
                 ))}
