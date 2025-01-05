@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useSearchParams } from "react-router-dom";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -18,15 +19,24 @@ type SignUpValues = z.infer<typeof signUpSchema>;
 export const SignUpCouponForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: "",
       password: "",
-      coupon_code: "",
+      coupon_code: searchParams.get("coupon") || "", // Auto-populate from URL
     },
   });
+
+  // Update coupon code when URL parameter changes
+  useEffect(() => {
+    const couponFromUrl = searchParams.get("coupon");
+    if (couponFromUrl) {
+      form.setValue("coupon_code", couponFromUrl);
+    }
+  }, [searchParams, form]);
 
   const onSubmit = async (values: SignUpValues) => {
     try {
