@@ -18,6 +18,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -64,9 +67,6 @@ export default {
           DEFAULT: "#FFFFFF",
           foreground: "#1A1A1A",
         },
-      },
-      fontFamily: {
-        sans: ['Inter var', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-primary': 'linear-gradient(135deg, #F5F5F7 0%, #FFFFFF 100%)',

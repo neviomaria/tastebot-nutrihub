@@ -1,10 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Navigate } from "react-router-dom";
+import { BookOpen, ChevronRight } from "lucide-react";
 
 interface Book {
   title: string;
@@ -12,22 +13,6 @@ interface Book {
   coverUrl: string;
   id: string;
 }
-
-interface WordPressBook {
-  title: {
-    rendered: string;
-  };
-  acf: {
-    sottotitolo_per_sito: string;
-  };
-}
-
-// Temporary mock data until WordPress API is properly configured
-const MOCK_BOOK_DATA = {
-  title: "Il Metodo BrainFood",
-  subtitle: "Nutri il tuo cervello",
-  coverUrl: "https://picsum.photos/400/600", // Temporary placeholder image
-};
 
 const fetchUserProfile = async () => {
   try {
@@ -52,13 +37,11 @@ const fetchUserProfile = async () => {
 
 const fetchBookDetails = async (bookId: string) => {
   try {
-    // Recupera i dettagli del libro
     const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${bookId}`);
     if (!bookResponse.ok) throw new Error("Failed to fetch book details");
     const book = await bookResponse.json();
 
-    // Recupera i dettagli della copertina
-    let coverUrl = "/placeholder.svg"; // Immagine predefinita
+    let coverUrl = "/placeholder.svg";
     if (book.acf?.copertina_libro) {
       const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
       if (mediaResponse.ok) {
@@ -79,16 +62,14 @@ const fetchBookDetails = async (bookId: string) => {
   }
 };
 
-
 const MyBooks = () => {
   const { toast } = useToast();
 
-  // Query for user profile
   const { data: profile, isLoading: isLoadingProfile, error: profileError } = useQuery({
     queryKey: ['profile'],
     queryFn: fetchUserProfile,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 1,
     meta: {
       onError: (error: any) => {
@@ -102,18 +83,16 @@ const MyBooks = () => {
     }
   });
 
-  // If there's an authentication error, redirect to login
   if (profileError?.message?.includes('No active session')) {
     return <Navigate to="/auth" replace />;
   }
 
-  // Query for book details
   const { data: bookDetails, isLoading: isLoadingBook } = useQuery({
     queryKey: ['book', profile?.book_id],
     queryFn: () => fetchBookDetails(profile?.book_id || ''),
     enabled: !!profile?.book_id,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     retry: 1,
     meta: {
       onError: (error) => {
@@ -133,14 +112,21 @@ const MyBooks = () => {
   if (isLoading) {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">My Books</h1>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <Skeleton className="aspect-[3/4] w-full mb-4" />
-                <Skeleton className="h-4 w-3/4 mb-2" />
-                <Skeleton className="h-3 w-1/2" />
+        <h1 className="text-3xl font-bold mb-8">My Books</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="grid grid-cols-[1fr,1.5fr] gap-4">
+                  <Skeleton className="aspect-[3/4] w-full" />
+                  <div className="py-4 pr-4 space-y-4">
+                    <Skeleton className="h-6 w-3/4" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-9 w-full" />
+                      <Skeleton className="h-9 w-full" />
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -151,28 +137,43 @@ const MyBooks = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">My Books</h1>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <h1 className="text-3xl font-bold mb-8">My Books</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {books.map((book) => (
-          <Link to={`/book/${book.id}`} key={book.id}>
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-              <CardContent className="p-4">
-                <div className="aspect-[3/4] relative mb-4">
+          <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <CardContent className="p-0">
+              <div className="grid grid-cols-[1fr,1.5fr] gap-4">
+                <div className="relative">
                   <img
                     src={book.coverUrl}
                     alt={book.title}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-cover aspect-[3/4]"
                     loading="lazy"
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />
                 </div>
-                <h2 className="text-sm font-semibold mb-1 line-clamp-2">{book.title}</h2>
-                <p className="text-xs text-gray-600 line-clamp-2">{book.subtitle}</p>
-              </CardContent>
-            </Card>
-          </Link>
+                <div className="py-4 pr-4 flex flex-col">
+                  <h2 className="text-lg font-semibold mb-2 line-clamp-2">{book.title}</h2>
+                  <div className="mt-auto space-y-2">
+                    <Link to={`/book/${book.id}`}>
+                      <Button variant="outline" className="w-full justify-between">
+                        View Details
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link to={`/book/${book.id}/recipes`}>
+                      <Button className="w-full justify-between">
+                        View Recipes
+                        <BookOpen className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
