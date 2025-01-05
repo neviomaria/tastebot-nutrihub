@@ -31,26 +31,43 @@ export function UserBooksWidget() {
       </CardHeader>
       <CardContent>
         {profile?.book_title ? (
-          <div className="space-y-3">
-            <h3 className="font-medium mb-4">{profile.book_title}</h3>
-            <div className="space-y-4">
-              <Button 
-                variant="outline" 
-                className="w-full justify-between"
-                onClick={() => navigate(`/book/${profile.book_id}`)}
-              >
-                View Details
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button 
-                className="w-full justify-between"
-                onClick={() => navigate(`/book/${profile.book_id}/recipes`)}
-              >
-                View Recipes
-                <BookOpen className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <Card className="overflow-hidden">
+            <CardContent className="p-0">
+              <div className="grid grid-cols-[1fr,1.5fr] gap-4">
+                <div className="relative">
+                  <img
+                    src="https://brainscapebooks.com/wp-content/uploads/2024/01/Copertina-Pybher-1.jpg"
+                    alt={profile.book_title}
+                    className="w-full h-full object-cover aspect-[3/4]"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
+                  />
+                </div>
+                <div className="py-4 pr-4 flex flex-col">
+                  <h2 className="text-lg font-semibold mb-4 line-clamp-2">{profile.book_title}</h2>
+                  <div className="mt-auto space-y-4">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-between"
+                      onClick={() => navigate(`/book/${profile.book_id}`)}
+                    >
+                      View Details
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      className="w-full justify-between"
+                      onClick={() => navigate(`/book/${profile.book_id}/recipes`)}
+                    >
+                      View Recipes
+                      <BookOpen className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <p className="text-muted-foreground">No books available</p>
         )}
