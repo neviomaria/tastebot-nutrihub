@@ -18,7 +18,7 @@ export function UserBooksWidget() {
         .from('profiles')
         .select('book_id, book_title')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
