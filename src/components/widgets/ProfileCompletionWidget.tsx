@@ -14,7 +14,16 @@ export const ProfileCompletionWidget = () => {
   useProfileData(form);
   
   const values = form.getValues();
-  const incompleteFields = getIncompleteFields(values);
+  const incompleteFields = getIncompleteFields(values).filter(field => {
+    const fieldKey = field.toLowerCase().replace(/ /g, '_');
+    // Special handling for arrays
+    if (Array.isArray(values[fieldKey as keyof ProfileFormValues])) {
+      return !values[fieldKey as keyof ProfileFormValues]?.length;
+    }
+    // Handle regular fields
+    return !values[fieldKey as keyof ProfileFormValues];
+  });
+  
   const percentage = getProfileCompletion(values);
   
   const circumference = 2 * Math.PI * 45;
