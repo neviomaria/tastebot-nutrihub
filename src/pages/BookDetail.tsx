@@ -5,12 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 interface Book {
   title: string;
   subtitle: string;
   coverUrl: string;
   content?: string;
+  isRegistered: boolean;
 }
 
 interface WordPressBook {
@@ -22,6 +24,7 @@ interface WordPressBook {
   };
   acf: {
     sottotitolo_per_sito: string;
+    copertina_libro?: string;
   };
 }
 
@@ -31,41 +34,50 @@ const BookDetail = () => {
   const { toast } = useToast();
   const { id } = useParams();
 
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('book_id')
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   useEffect(() => {
     const fetchBookDetails = async () => {
       try {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("book_id")
-          .single();
-
-        if (profile?.book_id) {
+        // Fetch book details from WordPress
+        const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${id}`);
+        const bookData: WordPressBook = await bookResponse.json();
+        
+        // Fetch cover image if available
+        let coverUrl = '/placeholder.svg';
+        if (bookData.acf?.copertina_libro) {
           try {
-            // Fetch book details from WordPress
-            const bookResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri/1896');
-            const bookData: WordPressBook = await bookResponse.json();
-            
-            // Fetch cover image from WordPress
-            const mediaResponse = await fetch('https://brainscapebooks.com/wp-json/wp/v2/media/2571');
+            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${bookData.acf.copertina_libro}`);
             const mediaData = await mediaResponse.json();
-            
-            setBook({
-              title: bookData.title.rendered,
-              subtitle: bookData.acf.sottotitolo_per_sito,
-              coverUrl: mediaData.guid.rendered,
-              content: bookData.content.rendered,
-            });
+            coverUrl = mediaData.media_details?.sizes?.["cover-app"]?.source_url || mediaData.source_url;
           } catch (error) {
-            console.error("Error fetching book details:", error);
-            toast({
-              title: "Error",
-              description: "Failed to load book details",
-              variant: "destructive",
-            });
+            console.error("Error fetching cover image:", error);
           }
         }
+
+        // Check if this book is registered to the user
+        const isRegistered = profile?.book_id === id;
+        
+        setBook({
+          title: bookData.title.rendered,
+          subtitle: bookData.acf.sottotitolo_per_sito,
+          coverUrl,
+          content: bookData.content.rendered,
+          isRegistered
+        });
       } catch (error) {
-        console.error("Error fetching book:", error);
+        console.error("Error fetching book details:", error);
         toast({
           title: "Error",
           description: "Failed to load book details",
@@ -76,8 +88,10 @@ const BookDetail = () => {
       }
     };
 
-    fetchBookDetails();
-  }, [toast, id]);
+    if (id) {
+      fetchBookDetails();
+    }
+  }, [toast, id, profile?.book_id]);
 
   if (loading) {
     return (
@@ -107,10 +121,10 @@ const BookDetail = () => {
       <div className="p-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-2xl font-bold mb-4">Book not found</h1>
-          <Link to="/my-books">
+          <Link to="/">
             <Button>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to My Books
+              Back to Dashboard
             </Button>
           </Link>
         </div>
@@ -121,10 +135,10 @@ const BookDetail = () => {
   return (
     <div className="p-6">
       <div className="max-w-4xl mx-auto">
-        <Link to="/my-books">
+        <Link to="/">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to My Books
+            Back to Dashboard
           </Button>
         </Link>
         
@@ -140,15 +154,44 @@ const BookDetail = () => {
                     e.currentTarget.src = "/placeholder.svg";
                   }}
                 />
+                {!book.isRegistered && (
+                  <div className="mt-6 text-center">
+                    <p className="text-muted-foreground mb-4">
+                      Get access to this book's exclusive content and recipes
+                    </p>
+                    <Button className="w-full">
+                      Purchase Access
+                    </Button>
+                  </div>
+                )}
               </div>
               <div>
                 <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
                 <p className="text-xl text-gray-600 mb-6">{book.subtitle}</p>
-                {book.content && (
-                  <div 
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: book.content }}
-                  />
+                {book.isRegistered ? (
+                  <>
+                    {book.content && (
+                      <div 
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: book.content }}
+                      />
+                    )}
+                    <div className="mt-6">
+                      <Button variant="secondary" className="w-full">
+                        View Book Recipes
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="prose max-w-none">
+                    <p>Purchase this book to unlock:</p>
+                    <ul>
+                      <li>Exclusive recipes</li>
+                      <li>Detailed instructions</li>
+                      <li>Cooking tips and tricks</li>
+                      <li>Meal planning suggestions</li>
+                    </ul>
+                  </div>
                 )}
               </div>
             </div>

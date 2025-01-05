@@ -15,8 +15,8 @@ const Index = () => {
           <UserBooksWidget />
         </div>
         <div className="grid grid-cols-1 gap-6">
-          <AvailableBooksWidget />
           <BookRecipesWidget />
+          <AvailableBooksWidget />
         </div>
       </div>
     </div>

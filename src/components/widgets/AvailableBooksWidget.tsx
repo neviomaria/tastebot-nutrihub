@@ -104,7 +104,7 @@ export function AvailableBooksWidget() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BookOpen className="h-5 w-5" />
-          Available Books
+          Discover More Culinary Adventures
         </CardTitle>
       </CardHeader>
       <CardContent>
