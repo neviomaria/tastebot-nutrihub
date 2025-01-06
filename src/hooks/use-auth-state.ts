@@ -32,12 +32,11 @@ export const useAuthState = () => {
           return;
         }
 
-        // Verify the session is still valid with a separate call
+        // Verify the session is still valid
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
           console.error("User verification error:", userError);
-          // If there's an error verifying the user, consider them not authenticated
           setIsAuthenticated(false);
           // Clear the invalid session
           await supabase.auth.signOut();
@@ -56,10 +55,15 @@ export const useAuthState = () => {
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (!mounted) return;
+        
         setIsAuthenticated(false);
         
         // Clear any potentially invalid session
-        await supabase.auth.signOut();
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutError) {
+          console.error("Error during sign out:", signOutError);
+        }
         
         toast({
           variant: "destructive",
@@ -82,6 +86,7 @@ export const useAuthState = () => {
 
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
+        localStorage.removeItem('supabase.auth.token');
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
