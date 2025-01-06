@@ -65,6 +65,7 @@ export function BookRecipesWidget() {
                     image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
                     cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                     difficulty="Easy"
+                    recipeId={recipe.id}
                     onClick={() => navigate(`/recipe/${recipe.id}`)}
                   />
                 </CarouselItem>
