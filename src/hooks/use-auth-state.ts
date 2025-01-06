@@ -80,7 +80,7 @@ export const useAuthState = () => {
       
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         toast({
           title: "Signed out",
