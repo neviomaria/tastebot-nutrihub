@@ -1,6 +1,7 @@
 import { Recipe } from "@/types/recipe";
 import { RecipeMetadata } from "./RecipeMetadata";
 import { RecipeContent } from "./RecipeContent";
+import { FavoriteButton } from "./FavoriteButton";
 
 interface RecipeDetailsProps {
   recipe: Recipe;
@@ -9,12 +10,15 @@ interface RecipeDetailsProps {
 export function RecipeDetails({ recipe }: RecipeDetailsProps) {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
-        <div 
-          className="text-gray-600" 
-          dangerouslySetInnerHTML={{ __html: recipe.content }} 
-        />
+      <div className="flex justify-between items-start">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">{recipe.title}</h1>
+          <div 
+            className="text-gray-600" 
+            dangerouslySetInnerHTML={{ __html: recipe.content }} 
+          />
+        </div>
+        <FavoriteButton recipeId={recipe.id} size="default" variant="default" />
       </div>
 
       <RecipeMetadata
