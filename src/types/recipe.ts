@@ -22,7 +22,7 @@ export interface Recipe {
       post_title: string;
     }>;
     nutrition_facts: Array<{
-      nutrition_item: string;
+      instructions_step: string;
     }>;
   };
 }

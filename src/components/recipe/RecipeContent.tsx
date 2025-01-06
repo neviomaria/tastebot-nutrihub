@@ -1,7 +1,7 @@
 interface RecipeContentProps {
   ingredients: Array<{ ingredient_item: string }>;
   instructions: Array<{ instructions_step: string }>;
-  nutritionFacts?: Array<{ nutrition_item: string }>;
+  nutritionFacts?: Array<{ instructions_step: string }>;
 }
 
 export function RecipeContent({ ingredients, instructions, nutritionFacts }: RecipeContentProps) {
@@ -30,7 +30,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts }: Rec
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {nutritionFacts.map((fact, index) => (
                 <li key={index} className="flex items-center">
-                  <span className="text-gray-600">{fact.nutrition_item}</span>
+                  <span className="text-gray-600">{fact.instructions_step}</span>
                 </li>
               ))}
             </ul>
