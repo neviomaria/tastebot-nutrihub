@@ -1,41 +1,48 @@
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/hooks/use-auth-state";
+import { useAuthState } from "@/hooks/use-auth-state";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function useFavorites() {
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuthState();
   const [favorites, setFavorites] = useState<number[]>([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchFavorites();
-    } else {
-      setFavorites([]);
-      setIsLoadingFavorites(false);
-    }
-  }, [user]);
+    const fetchUserAndFavorites = async () => {
+      if (!isAuthenticated) {
+        setFavorites([]);
+        setIsLoadingFavorites(false);
+        return;
+      }
 
-  const fetchFavorites = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('recipe_id')
-        .eq('user_id', user?.id);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setFavorites([]);
+          return;
+        }
 
-      if (error) throw error;
+        const { data, error } = await supabase
+          .from('favorites')
+          .select('recipe_id')
+          .eq('user_id', user.id);
 
-      setFavorites(data.map(f => f.recipe_id));
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
-    } finally {
-      setIsLoadingFavorites(false);
-    }
-  };
+        if (error) throw error;
+
+        setFavorites(data.map(f => f.recipe_id));
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+      } finally {
+        setIsLoadingFavorites(false);
+      }
+    };
+
+    fetchUserAndFavorites();
+  }, [isAuthenticated]);
 
   const toggleFavorite = useCallback(async (recipeId: number) => {
-    if (!user) {
+    if (!isAuthenticated) {
       toast.error("Please sign in to save favorites");
       return;
     }
@@ -43,6 +50,7 @@ export function useFavorites() {
     try {
       setIsLoadingFavorites(true);
 
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
       // First, ensure the recipe exists in our database
@@ -116,7 +124,7 @@ export function useFavorites() {
     } finally {
       setIsLoadingFavorites(false);
     }
-  }, [favorites, user]);
+  }, [favorites, isAuthenticated]);
 
   return { favorites, isLoadingFavorites, toggleFavorite };
 }
