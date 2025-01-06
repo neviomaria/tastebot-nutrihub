@@ -26,6 +26,41 @@ export function useFavorites() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
+      // First, ensure the recipe exists in our database
+      const { data: existingRecipe } = await supabase
+        .from('recipes')
+        .select('id')
+        .eq('id', recipeId)
+        .single();
+
+      if (!existingRecipe) {
+        // If recipe doesn't exist, fetch it from WordPress and create it
+        const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes`);
+        if (!response.ok) throw new Error('Failed to fetch recipes');
+        const recipes = await response.json();
+        const recipe = recipes.find((r: any) => r.id === recipeId);
+        
+        if (!recipe) throw new Error('Recipe not found');
+
+        // Insert the recipe into our database
+        const { error: insertError } = await supabase
+          .from('recipes')
+          .insert({
+            id: recipe.id,
+            title: recipe.title,
+            description: recipe.content,
+            ingredients: recipe.acf.ingredients?.map((i: any) => i.ingredient_item) || [],
+            instructions: recipe.acf.instructions?.map((i: any) => i.instructions_step) || [],
+            prep_time: recipe.acf.prep_time,
+            cook_time: recipe.acf.cook_time,
+            servings: parseInt(recipe.acf.servings) || null,
+            meal_type: recipe.acf.pasto,
+            user_id: user.id
+          });
+
+        if (insertError) throw insertError;
+      }
+
       const isFavorited = favorites?.includes(recipeId);
 
       if (isFavorited) {
