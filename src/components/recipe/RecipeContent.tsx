@@ -79,10 +79,10 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
   return (
     <div className="space-y-8">
       <div>
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Ingredients</h2>
-          <div className="flex items-center gap-2">
-            <label htmlFor="servings" className="text-sm text-gray-600">
+          <div className="bg-white px-4 py-2 rounded-lg shadow-sm flex items-center gap-2">
+            <label htmlFor="servings" className="text-sm text-gray-600 whitespace-nowrap">
               Adjust servings:
             </label>
             <Input
@@ -104,7 +104,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
             );
             return (
               <li key={index} className="flex items-center gap-2">
-                <Icon className="w-5 h-5 text-primary" />
+                <Icon className="w-5 h-5 text-sidebar-text" />
                 <span>{scaledIngredient}</span>
               </li>
             );
@@ -127,7 +127,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
               const Icon = getNutritionIcon(fact.instructions_step);
               return (
                 <li key={index} className="flex items-center gap-2">
-                  <Icon className="w-5 h-5 text-primary" />
+                  <Icon className="w-5 h-5 text-sidebar-text" />
                   <span className="text-gray-600">{fact.instructions_step}</span>
                 </li>
               );
