@@ -1,4 +1,4 @@
-import { Beef, Egg, Brain, Banana, Milk, LeafyGreen, Heart, Gauge, Carrot, Fish, Wheat, Salt, Cookie, Oil } from "lucide-react";
+import { Beef, Egg, Brain, Banana, Milk, LeafyGreen, Heart, Gauge, Carrot, Fish, Wheat } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 interface RecipeContentProps {
@@ -15,9 +15,9 @@ const getIngredientIcon = (ingredient: string): LucideIcon => {
   if (lowerIngredient.includes('carrot') || lowerIngredient.includes('vegetable')) return Carrot;
   if (lowerIngredient.includes('fish') || lowerIngredient.includes('salmon') || lowerIngredient.includes('tuna')) return Fish;
   if (lowerIngredient.includes('flour') || lowerIngredient.includes('bread') || lowerIngredient.includes('pasta')) return Wheat;
-  if (lowerIngredient.includes('salt')) return Salt;
-  if (lowerIngredient.includes('sugar') || lowerIngredient.includes('honey')) return Cookie;
-  if (lowerIngredient.includes('oil')) return Oil;
+  if (lowerIngredient.includes('salt') || lowerIngredient.includes('seasoning')) return Gauge;
+  if (lowerIngredient.includes('sugar') || lowerIngredient.includes('honey')) return Banana;
+  if (lowerIngredient.includes('oil') || lowerIngredient.includes('butter')) return Milk;
   return LeafyGreen; // default icon for other ingredients
 };
 
