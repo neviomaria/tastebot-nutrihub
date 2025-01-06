@@ -1,4 +1,4 @@
-import { Beef, Egg, Brain, Banana, Milk, LeafyGreen, Heart, Gauge } from "lucide-react";
+import { Beef, Egg, Brain, Banana, Milk, LeafyGreen, Heart, Gauge, Carrot, Fish, Wheat, Salt, Cookie, Oil } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 interface RecipeContentProps {
@@ -6,6 +6,20 @@ interface RecipeContentProps {
   instructions: Array<{ instructions_step: string }>;
   nutritionFacts?: Array<{ instructions_step: string }>;
 }
+
+const getIngredientIcon = (ingredient: string): LucideIcon => {
+  const lowerIngredient = ingredient.toLowerCase();
+  if (lowerIngredient.includes('chicken') || lowerIngredient.includes('beef') || lowerIngredient.includes('meat')) return Beef;
+  if (lowerIngredient.includes('egg')) return Egg;
+  if (lowerIngredient.includes('milk') || lowerIngredient.includes('cream') || lowerIngredient.includes('cheese')) return Milk;
+  if (lowerIngredient.includes('carrot') || lowerIngredient.includes('vegetable')) return Carrot;
+  if (lowerIngredient.includes('fish') || lowerIngredient.includes('salmon') || lowerIngredient.includes('tuna')) return Fish;
+  if (lowerIngredient.includes('flour') || lowerIngredient.includes('bread') || lowerIngredient.includes('pasta')) return Wheat;
+  if (lowerIngredient.includes('salt')) return Salt;
+  if (lowerIngredient.includes('sugar') || lowerIngredient.includes('honey')) return Cookie;
+  if (lowerIngredient.includes('oil')) return Oil;
+  return LeafyGreen; // default icon for other ingredients
+};
 
 const getNutritionIcon = (fact: string): LucideIcon => {
   const lowerFact = fact.toLowerCase();
@@ -24,10 +38,16 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts }: Rec
     <div className="space-y-8">
       <div>
         <h2 className="text-xl font-semibold mb-4">Ingredients</h2>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 pl-5 list-disc">
-          {ingredients.map((ingredient, index) => (
-            <li key={index}>{ingredient.ingredient_item}</li>
-          ))}
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 pl-5">
+          {ingredients.map((ingredient, index) => {
+            const Icon = getIngredientIcon(ingredient.ingredient_item);
+            return (
+              <li key={index} className="flex items-center gap-2">
+                <Icon className="w-5 h-5 text-gray-600" />
+                <span>{ingredient.ingredient_item}</span>
+              </li>
+            );
+          })}
         </ul>
       </div>
       <div>
