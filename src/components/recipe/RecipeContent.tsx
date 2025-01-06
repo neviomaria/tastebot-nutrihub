@@ -43,7 +43,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts }: Rec
             const Icon = getIngredientIcon(ingredient.ingredient_item);
             return (
               <li key={index} className="flex items-center gap-2">
-                <Icon className="w-5 h-5 text-gray-600" />
+                <Icon className="w-5 h-5 text-primary" />
                 <span>{ingredient.ingredient_item}</span>
               </li>
             );
@@ -61,13 +61,13 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts }: Rec
       {nutritionFacts && nutritionFacts.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold mb-4">Nutrition Facts per Serving</h2>
-          <div className="bg-gray-50 p-6 rounded-lg">
+          <div className="bg-white p-6 rounded-lg shadow-sm">
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {nutritionFacts.map((fact, index) => {
                 const Icon = getNutritionIcon(fact.instructions_step);
                 return (
                   <li key={index} className="flex items-center gap-2">
-                    <Icon className="w-5 h-5 text-gray-600" />
+                    <Icon className="w-5 h-5 text-primary" />
                     <span className="text-gray-600">{fact.instructions_step}</span>
                   </li>
                 );
