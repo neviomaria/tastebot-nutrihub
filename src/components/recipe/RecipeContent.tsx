@@ -1,5 +1,5 @@
-import { Beef, Egg, Grain, Banana, Milk, LeafyGreen, Heart, Salt } from "lucide-react";
-import { IconType } from "lucide-react";
+import { Beef, Egg, Brain, Banana, Milk, LeafyGreen, Heart, Gauge } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 interface RecipeContentProps {
   ingredients: Array<{ ingredient_item: string }>;
@@ -7,15 +7,15 @@ interface RecipeContentProps {
   nutritionFacts?: Array<{ instructions_step: string }>;
 }
 
-const getNutritionIcon = (fact: string): IconType => {
+const getNutritionIcon = (fact: string): LucideIcon => {
   const lowerFact = fact.toLowerCase();
   if (lowerFact.includes('protein')) return Egg;
-  if (lowerFact.includes('carb')) return Grain;
+  if (lowerFact.includes('carb')) return Brain;
   if (lowerFact.includes('calor')) return Banana;
   if (lowerFact.includes('fat')) return Milk;
   if (lowerFact.includes('fiber')) return LeafyGreen;
   if (lowerFact.includes('cholesterol')) return Heart;
-  if (lowerFact.includes('sodium')) return Salt;
+  if (lowerFact.includes('sodium')) return Gauge;
   return Beef; // default icon
 };
 
