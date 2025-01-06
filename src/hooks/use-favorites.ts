@@ -27,11 +27,13 @@ export function useFavorites() {
       if (!user) throw new Error("User not authenticated");
 
       // First, ensure the recipe exists in our database
-      const { data: existingRecipe } = await supabase
+      const { data: existingRecipe, error: queryError } = await supabase
         .from('recipes')
         .select('id')
         .eq('id', recipeId)
-        .single();
+        .maybeSingle();
+
+      if (queryError) throw queryError;
 
       if (!existingRecipe) {
         // If recipe doesn't exist, fetch it from WordPress and create it
