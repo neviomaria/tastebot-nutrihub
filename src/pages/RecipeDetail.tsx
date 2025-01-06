@@ -131,7 +131,7 @@ const RecipeDetail = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen p-6">
       <RecipeHeader
         onPrevious={() => handleNavigation('prev')}
         onNext={() => handleNavigation('next')}
@@ -139,10 +139,12 @@ const RecipeDetail = () => {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <RecipeImage
-          imageUrl={recipe.acf.recipe_image?.url}
-          title={recipe.title}
-        />
+        <div className="relative">
+          <RecipeImage
+            imageUrl={recipe.acf.recipe_image?.url}
+            title={recipe.title}
+          />
+        </div>
         <RecipeDetails recipe={recipe} />
       </div>
     </div>
