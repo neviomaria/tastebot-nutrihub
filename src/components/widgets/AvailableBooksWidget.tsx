@@ -18,6 +18,7 @@ interface Book {
   acf: {
     copertina_libro?: string;
     sottotitolo_per_sito?: string;
+    cookbook?: string;
   };
 }
 
@@ -44,8 +45,11 @@ export function AvailableBooksWidget() {
       if (!response.ok) throw new Error('Failed to fetch books');
       const allBooks: Book[] = await response.json();
       
-      // Filter out the user's owned book
-      return allBooks.filter(book => book.id.toString() !== profile?.book_id);
+      // Filter cookbooks and exclude user's owned book
+      return allBooks.filter(book => 
+        book.acf?.cookbook === 'Yes' && 
+        book.id.toString() !== profile?.book_id
+      );
     },
     enabled: !!profile,
   });
