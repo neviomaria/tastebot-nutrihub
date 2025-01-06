@@ -5,7 +5,7 @@ interface RecipeImageProps {
 
 export function RecipeImage({ imageUrl, title }: RecipeImageProps) {
   return (
-    <div className="relative">
+    <div className="relative md:sticky md:top-6">
       {imageUrl && (
         <div className="aspect-[3/4] w-full rounded-lg overflow-hidden">
           <img
