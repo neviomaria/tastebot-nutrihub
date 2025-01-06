@@ -21,5 +21,8 @@ export interface Recipe {
       ID: number;
       post_title: string;
     }>;
+    nutrition_facts: Array<{
+      nutrition_item: string;
+    }>;
   };
 }

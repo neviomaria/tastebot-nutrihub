@@ -26,6 +26,7 @@ export function RecipeDetails({ recipe }: RecipeDetailsProps) {
       <RecipeContent
         ingredients={recipe.acf.ingredients || []}
         instructions={recipe.acf.instructions || []}
+        nutritionFacts={recipe.acf.nutrition_facts || []}
       />
     </div>
   );
