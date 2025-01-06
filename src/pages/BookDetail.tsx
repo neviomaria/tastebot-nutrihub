@@ -6,13 +6,19 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { BookPurchaseButtons } from "@/components/book/BookPurchaseButtons";
 
 interface Book {
   title: string;
   subtitle: string;
   coverUrl: string;
-  content?: string;
+  description?: string;
   isRegistered: boolean;
+  purchaseLinks?: {
+    kindle?: string;
+    paperback?: string;
+    hardcover?: string;
+  };
 }
 
 interface WordPressBook {
@@ -25,6 +31,10 @@ interface WordPressBook {
   acf: {
     sottotitolo_per_sito: string;
     copertina_libro?: string;
+    descrizione_breve_libro?: string;
+    link_kindle?: string;
+    link_ppb?: string;
+    link_copertina_rigida?: string;
   };
 }
 
@@ -74,8 +84,13 @@ const BookDetail = () => {
           title: bookData.title.rendered,
           subtitle: bookData.acf.sottotitolo_per_sito,
           coverUrl,
-          content: bookData.content.rendered,
-          isRegistered
+          description: bookData.acf.descrizione_breve_libro,
+          isRegistered,
+          purchaseLinks: {
+            kindle: bookData.acf.link_kindle,
+            paperback: bookData.acf.link_ppb,
+            hardcover: bookData.acf.link_copertina_rigida,
+          }
         });
       } catch (error) {
         console.error("Error fetching book details:", error);
@@ -171,11 +186,10 @@ const BookDetail = () => {
                 <p className="text-xl text-gray-600 mb-6">{book.subtitle}</p>
                 {book.isRegistered ? (
                   <>
-                    {book.content && (
-                      <div 
-                        className="prose max-w-none"
-                        dangerouslySetInnerHTML={{ __html: book.content }}
-                      />
+                    {book.description && (
+                      <div className="prose max-w-none mb-6">
+                        <p>{book.description}</p>
+                      </div>
                     )}
                     <div className="mt-6">
                       <Button 
@@ -187,18 +201,34 @@ const BookDetail = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="prose max-w-none">
-                    <p>Purchase this book to unlock:</p>
-                    <ul>
-                      <li>Exclusive recipes</li>
-                      <li>Detailed instructions</li>
-                      <li>Cooking tips and tricks</li>
-                      <li>Meal planning suggestions</li>
-                    </ul>
-                  </div>
+                  <>
+                    <div className="prose max-w-none mb-6">
+                      {book.description ? (
+                        <p>{book.description}</p>
+                      ) : (
+                        <>
+                          <p>Purchase this book to unlock:</p>
+                          <ul>
+                            <li>Exclusive recipes</li>
+                            <li>Detailed instructions</li>
+                            <li>Cooking tips and tricks</li>
+                            <li>Meal planning suggestions</li>
+                          </ul>
+                        </>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
+            
+            {book.purchaseLinks && (
+              <BookPurchaseButtons
+                kindleLink={book.purchaseLinks.kindle}
+                paperbackLink={book.purchaseLinks.paperback}
+                hardcoverLink={book.purchaseLinks.hardcover}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
