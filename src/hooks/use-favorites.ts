@@ -1,29 +1,48 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/hooks/use-auth-state";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useFavorites() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
 
-  const { data: favorites, isLoading: isLoadingFavorites } = useQuery({
-    queryKey: ['favorites'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+  useEffect(() => {
+    if (user) {
+      fetchFavorites();
+    } else {
+      setFavorites([]);
+      setIsLoadingFavorites(false);
+    }
+  }, [user]);
 
+  const fetchFavorites = async () => {
+    try {
       const { data, error } = await supabase
         .from('favorites')
-        .select('recipe_id');
+        .select('recipe_id')
+        .eq('user_id', user?.id);
 
       if (error) throw error;
-      return data.map(f => f.recipe_id);
-    }
-  });
 
-  const { mutate: toggleFavorite } = useMutation({
-    mutationFn: async (recipeId: number) => {
-      const { data: { user } } = await supabase.auth.getUser();
+      setFavorites(data.map(f => f.recipe_id));
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    } finally {
+      setIsLoadingFavorites(false);
+    }
+  };
+
+  const toggleFavorite = useCallback(async (recipeId: number) => {
+    if (!user) {
+      toast.error("Please sign in to save favorites");
+      return;
+    }
+
+    try {
+      setIsLoadingFavorites(true);
+
       if (!user) throw new Error("User not authenticated");
 
       // First, ensure the recipe exists in our database
@@ -37,35 +56,35 @@ export function useFavorites() {
 
       if (!existingRecipe) {
         // If recipe doesn't exist, fetch it from WordPress and create it
-        const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes`);
-        if (!response.ok) throw new Error('Failed to fetch recipes');
-        const recipes = await response.json();
-        const recipe = recipes.find((r: any) => r.id === recipeId);
-        
-        if (!recipe) throw new Error('Recipe not found');
+        try {
+          const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/recipe/${recipeId}`);
+          if (!response.ok) throw new Error('Failed to fetch recipe from WordPress');
+          
+          const wpRecipe = await response.json();
+          
+          const { error: insertError } = await supabase
+            .from('recipes')
+            .insert({
+              id: recipeId,
+              title: wpRecipe.title.rendered,
+              description: wpRecipe.content.rendered,
+              ingredients: wpRecipe.acf.ingredients || [],
+              instructions: wpRecipe.acf.instructions || [],
+              prep_time: wpRecipe.acf.prep_time,
+              cook_time: wpRecipe.acf.cook_time,
+              servings: wpRecipe.acf.servings,
+              meal_type: wpRecipe.acf.meal_type,
+            });
 
-        // Insert the recipe into our database
-        const { error: insertError } = await supabase
-          .from('recipes')
-          .insert({
-            id: recipe.id,
-            title: recipe.title,
-            description: recipe.content,
-            ingredients: recipe.acf.ingredients?.map((i: any) => i.ingredient_item) || [],
-            instructions: recipe.acf.instructions?.map((i: any) => i.instructions_step) || [],
-            prep_time: recipe.acf.prep_time,
-            cook_time: recipe.acf.cook_time,
-            servings: parseInt(recipe.acf.servings) || null,
-            meal_type: recipe.acf.pasto,
-            user_id: user.id
-          });
-
-        if (insertError) throw insertError;
+          if (insertError) throw insertError;
+        } catch (error) {
+          console.error('Error creating recipe:', error);
+          throw new Error('Failed to create recipe in database');
+        }
       }
 
-      const isFavorited = favorites?.includes(recipeId);
-
-      if (isFavorited) {
+      if (favorites.includes(recipeId)) {
+        // Remove from favorites
         const { error } = await supabase
           .from('favorites')
           .delete()
@@ -73,37 +92,31 @@ export function useFavorites() {
           .eq('recipe_id', recipeId);
 
         if (error) throw error;
+
+        setFavorites(prev => prev.filter(id => id !== recipeId));
+        toast.success("Recipe removed from favorites", {
+          style: { background: '#F2FCE2', borderColor: '#86efac' },
+        });
       } else {
+        // Add to favorites
         const { error } = await supabase
           .from('favorites')
           .insert({ user_id: user.id, recipe_id: recipeId });
 
         if (error) throw error;
-      }
-    },
-    onSuccess: (_, recipeId) => {
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
-      const isFavorited = favorites?.includes(recipeId);
-      toast({
-        title: isFavorited ? "Removed from favorites" : "Added to favorites",
-        description: isFavorited ? "Recipe removed from your favorites" : "Recipe added to your favorites",
-      });
-    },
-    meta: {
-      errorHandler: (error: Error) => {
-        console.error('Error toggling favorite:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to update favorites. Please try again.",
+
+        setFavorites(prev => [...prev, recipeId]);
+        toast.success("Recipe added to favorites", {
+          style: { background: '#F2FCE2', borderColor: '#86efac' },
         });
       }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error("Failed to update favorites");
+    } finally {
+      setIsLoadingFavorites(false);
     }
-  });
+  }, [favorites, user]);
 
-  return {
-    favorites: favorites || [],
-    isLoadingFavorites,
-    toggleFavorite,
-  };
+  return { favorites, isLoadingFavorites, toggleFavorite };
 }
