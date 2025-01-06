@@ -2,11 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoutes } from "@/components/auth/ProtectedRoutes";
 import { useAuthState } from "@/hooks/use-auth-state";
-import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import CompleteProfile from "@/pages/CompleteProfile";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
@@ -29,27 +27,6 @@ const queryClient = new QueryClient({
 });
 
 function AuthenticatedApp() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkProfileCompletion = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name, last_name')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile?.first_name || !profile?.last_name) {
-        navigate('/complete-profile');
-      }
-    };
-
-    checkProfileCompletion();
-  }, [navigate]);
-
   return (
     <AppSidebar>
       <Routes>
@@ -67,7 +44,7 @@ function AuthenticatedApp() {
   );
 }
 
-function App() {
+function RouterApp() {
   const { isAuthenticated } = useAuthState();
 
   // Show nothing while checking auth state
@@ -76,22 +53,30 @@ function App() {
   }
 
   return (
+    <>
+      {isAuthenticated ? (
+        <ProtectedRoutes>
+          <AuthenticatedApp />
+        </ProtectedRoutes>
+      ) : (
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+      )}
+    </>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          {isAuthenticated ? (
-            <ProtectedRoutes>
-              <AuthenticatedApp />
-            </ProtectedRoutes>
-          ) : (
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="*" element={<Navigate to="/auth" replace />} />
-            </Routes>
-          )}
+          <RouterApp />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
