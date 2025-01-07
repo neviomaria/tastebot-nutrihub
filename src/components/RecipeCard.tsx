@@ -24,6 +24,8 @@ export function RecipeCard({ title, image, cookTime, difficulty, recipeId, onCli
           src={image || "/placeholder.svg"} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          loading="lazy"
           onError={(e) => {
             console.log('Image failed to load:', image);
             e.currentTarget.src = "/placeholder.svg";

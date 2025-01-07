@@ -12,6 +12,8 @@ export function RecipeImage({ imageUrl, title }: RecipeImageProps) {
             src={imageUrl}
             alt={title}
             className="w-full h-full object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            loading="lazy"
             onError={(e) => {
               e.currentTarget.src = "/placeholder.svg";
             }}
