@@ -19,6 +19,9 @@ interface Recipe {
     cook_time: string;
     recipe_image: {
       url: string;
+      sizes: {
+        'recipe-app': string;
+      };
     };
   };
 }
@@ -62,7 +65,7 @@ export function BookRecipesWidget() {
                 <CarouselItem key={recipe.id} className="md:basis-1/2 lg:basis-1/3">
                   <RecipeCard
                     title={recipe.title}
-                    image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
+                    image={recipe.acf.recipe_image?.sizes?.['recipe-app'] || recipe.acf.recipe_image?.url || '/placeholder.svg'}
                     cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                     difficulty="Easy"
                     recipeId={recipe.id}

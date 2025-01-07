@@ -11,6 +11,13 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ title, image, cookTime, difficulty, recipeId, onClick }: RecipeCardProps) {
+  const getRecipeAppImage = (url: string) => {
+    if (!url) return "/placeholder.svg";
+    const urlParts = url.split('.');
+    const extension = urlParts.pop();
+    return `${urlParts.join('.')}-300x300.${extension}`;
+  };
+
   return (
     <Card 
       className="overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-[1.02] animate-fade-up group relative"
@@ -21,10 +28,9 @@ export function RecipeCard({ title, image, cookTime, difficulty, recipeId, onCli
       </div>
       <div className="aspect-[4/3] overflow-hidden">
         <img 
-          src={image || "/placeholder.svg"} 
+          src={getRecipeAppImage(image)} 
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading="lazy"
           onError={(e) => {
             console.log('Image failed to load:', image);
