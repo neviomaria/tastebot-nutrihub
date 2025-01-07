@@ -41,6 +41,11 @@ export function BookRecipesWidget() {
     }
   });
 
+  const getRecipeImage = (recipe: Recipe) => {
+    if (!recipe.acf.recipe_image) return '/placeholder.svg';
+    return recipe.acf.recipe_image.url;
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -65,7 +70,7 @@ export function BookRecipesWidget() {
                 <CarouselItem key={recipe.id} className="md:basis-1/2 lg:basis-1/3">
                   <RecipeCard
                     title={recipe.title}
-                    image={recipe.acf.recipe_image?.sizes?.['recipe-app'] || recipe.acf.recipe_image?.url || '/placeholder.svg'}
+                    image={getRecipeImage(recipe)}
                     cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                     difficulty="Easy"
                     recipeId={recipe.id}
