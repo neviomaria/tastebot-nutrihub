@@ -16,9 +16,6 @@ export function RecipeCard({ title, image, cookTime, difficulty, recipeId, onCli
       className="overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-[1.02] animate-fade-up group relative"
       onClick={onClick}
     >
-      <div className="absolute top-2 right-2 z-10">
-        <FavoriteButton recipeId={recipeId} />
-      </div>
       <div className="aspect-[4/3] overflow-hidden">
         <img 
           src={image}
@@ -32,7 +29,10 @@ export function RecipeCard({ title, image, cookTime, difficulty, recipeId, onCli
         />
       </div>
       <CardHeader className="p-4">
-        <h3 className="font-semibold text-lg text-recipe-500">{title}</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-lg text-recipe-500">{title}</h3>
+          <FavoriteButton recipeId={recipeId} />
+        </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span>{cookTime}</span>
           <span>•</span>
