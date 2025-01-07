@@ -41,6 +41,32 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
           return;
         }
 
+        // Check if user has completed their profile
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, country')
+          .eq('id', user.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Profile check error:", profileError);
+          return;
+        }
+
+        // If profile is incomplete and user is not already on the complete-profile page
+        if ((!profile?.first_name || !profile?.last_name || !profile?.country) && 
+            location.pathname !== '/complete-profile') {
+          if (mounted) {
+            toast({
+              title: "Profile Incomplete",
+              description: "Please complete your profile information.",
+              duration: 5000,
+            });
+            navigate('/complete-profile', { replace: true });
+          }
+          return;
+        }
+
       } catch (error) {
         console.error("Auth check error:", error);
         if (mounted) {
