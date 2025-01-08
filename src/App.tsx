@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { ProtectedRoutes } from '@/components/auth/ProtectedRoutes';
 import { AuthLayout } from '@/components/auth/AuthLayout';
@@ -18,8 +18,8 @@ function App() {
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route element={<ProtectedRoutes />}>
-          <Route element={<AuthLayout />}>
+        <Route element={<ProtectedRoutes><Outlet /></ProtectedRoutes>}>
+          <Route element={<AuthLayout><Outlet /></AuthLayout>}>
             <Route path="/" element={<Index />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/complete-profile" element={<CompleteProfile />} />
