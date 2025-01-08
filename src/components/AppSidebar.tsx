@@ -35,41 +35,71 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
   const [menuItems] = useState<MenuItem[]>(baseMenuItems);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserBooks = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("No user found");
 
-        const { data: profile, error } = await supabase
+        // Fetch book from profile
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("book_id, book_title")
           .eq("id", user.id)
           .single();
 
-        if (error) {
-          console.error("Error fetching profile:", error);
-          throw error;
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          throw profileError;
         }
 
+        // Fetch books from user_coupons
+        const { data: userCoupons, error: couponsError } = await supabase
+          .from("user_coupons")
+          .select("book_id, book_title")
+          .eq("user_id", user.id);
+
+        if (couponsError) {
+          console.error("Error fetching user coupons:", couponsError);
+          throw couponsError;
+        }
+
+        // Combine books from both sources, avoiding duplicates
+        let allBooks: UserBook[] = [];
+        
+        // Add profile book if it exists
         if (profile?.book_id && profile?.book_title) {
-          setUserBooks([{ 
+          allBooks.push({
             book_id: profile.book_id,
             book_title: profile.book_title
-          }]);
-        } else {
-          setUserBooks([]);
+          });
         }
+
+        // Add books from user_coupons, avoiding duplicates
+        if (userCoupons) {
+          userCoupons.forEach(coupon => {
+            if (!allBooks.some(book => book.book_id === coupon.book_id)) {
+              allBooks.push({
+                book_id: coupon.book_id,
+                book_title: coupon.book_title
+              });
+            }
+          });
+        }
+
+        console.log("All user books:", allBooks);
+        setUserBooks(allBooks);
+
       } catch (error) {
-        console.error("Error in fetchUserProfile:", error);
+        console.error("Error in fetchUserBooks:", error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to load user profile",
+          description: "Failed to load user books",
         });
       }
     };
 
-    fetchUserProfile();
+    fetchUserBooks();
   }, [toast]);
 
   const handleLogout = async () => {
