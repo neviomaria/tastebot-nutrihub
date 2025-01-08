@@ -44,6 +44,10 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
 
   const createRecipeInDatabase = async () => {
     try {
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session found');
+
       // Fetch all recipes first
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
@@ -57,7 +61,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
         throw new Error('Recipe not found');
       }
 
-      // Insert recipe into Supabase recipes table
+      // Insert recipe into Supabase recipes table with user_id
       const { error: insertError } = await supabase
         .from('recipes')
         .upsert({
@@ -70,6 +74,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           cook_time: recipeData.acf.cook_time,
           servings: recipeData.acf.servings,
           meal_type: recipeData.acf.pasto,
+          user_id: session.user.id // Add the user_id here
         });
 
       if (insertError) {
