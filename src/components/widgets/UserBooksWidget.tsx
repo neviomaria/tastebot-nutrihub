@@ -1,10 +1,10 @@
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { BooksList } from "../books/BooksList";
+import { EmptyBooksList } from "../books/EmptyBooksList";
 
 interface BookAccess {
   book_id: string;
@@ -12,7 +12,6 @@ interface BookAccess {
 }
 
 export function UserBooksWidget() {
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const { data: books = [], isLoading, error } = useQuery({
@@ -59,7 +58,6 @@ export function UserBooksWidget() {
           });
         }
         if (userCoupons) {
-          // Add books from coupons, avoiding duplicates
           userCoupons.forEach(coupon => {
             if (!allBooks.some(book => book.book_id === coupon.book_id)) {
               allBooks.push({
@@ -153,51 +151,9 @@ export function UserBooksWidget() {
       </CardHeader>
       <CardContent>
         {books.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {books.map((book, index) => (
-              <Card key={book.book_id} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <img
-                      src={isLoadingCovers ? "/placeholder.svg" : (bookCovers[index] || "/placeholder.svg")}
-                      alt={book.book_title}
-                      className="w-full h-full object-cover aspect-[3/4]"
-                      loading="lazy"
-                      onError={(e) => {
-                        console.log('Image failed to load:', bookCovers[index]);
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
-                  </div>
-                  <div className="py-4 px-4 flex flex-col">
-                    <h2 className="text-lg font-semibold mb-2 line-clamp-2">{book.book_title}</h2>
-                    <div className="mt-auto space-y-2">
-                      <Button 
-                        variant="outline" 
-                        className="w-full justify-between bg-gradient-to-r from-[#F5F5F7] to-[#FFFFFF] hover:from-[#EAEAEC] hover:to-[#F5F5F7]"
-                        onClick={() => navigate(`/book/${book.book_id}`)}
-                      >
-                        View Details
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        className="w-full justify-between bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]"
-                        onClick={() => navigate(`/book/${book.book_id}/recipes`)}
-                      >
-                        View Recipes
-                        <BookOpen className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <BooksList books={books} bookCovers={bookCovers} />
         ) : (
-          <div className="text-center py-8">
-            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No books available</p>
-          </div>
+          <EmptyBooksList />
         )}
       </CardContent>
     </Card>
