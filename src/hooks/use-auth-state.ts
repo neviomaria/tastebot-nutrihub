@@ -8,6 +8,30 @@ export const useAuthState = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const handleSignOut = async () => {
+    try {
+      // Clear any stored session data first
+      localStorage.removeItem('supabase.auth.token');
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        // Even if there's an error, we want to clear the auth state
+        setIsAuthenticated(false);
+        navigate('/auth');
+        return;
+      }
+
+      setIsAuthenticated(false);
+      navigate('/auth');
+    } catch (error) {
+      console.error("Error during sign out:", error);
+      // Force clear auth state even on error
+      setIsAuthenticated(false);
+      navigate('/auth');
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -20,7 +44,11 @@ export const useAuthState = () => {
         
         if (sessionError) {
           console.error("Session error:", sessionError);
-          throw sessionError;
+          if (mounted) {
+            setIsAuthenticated(false);
+            handleSignOut();
+          }
+          return;
         }
 
         if (!mounted) return;
@@ -37,41 +65,33 @@ export const useAuthState = () => {
         
         if (userError) {
           console.error("User verification error:", userError);
-          setIsAuthenticated(false);
-          // Clear the invalid session
-          await supabase.auth.signOut();
+          if (mounted) {
+            setIsAuthenticated(false);
+            handleSignOut();
+          }
           return;
         }
 
         if (!user) {
           console.log("No user found in session");
-          setIsAuthenticated(false);
+          if (mounted) {
+            setIsAuthenticated(false);
+            handleSignOut();
+          }
           return;
         }
 
         console.log("Session initialized with user:", user.email);
-        setIsAuthenticated(true);
+        if (mounted) {
+          setIsAuthenticated(true);
+        }
 
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (!mounted) return;
         
         setIsAuthenticated(false);
-        
-        // Clear any potentially invalid session
-        try {
-          await supabase.auth.signOut();
-        } catch (signOutError) {
-          console.error("Error during sign out:", signOutError);
-        }
-        
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "Please sign in again.",
-        });
-        
-        navigate('/auth');
+        handleSignOut();
       }
     };
 
@@ -84,22 +104,22 @@ export const useAuthState = () => {
       
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(false);
         localStorage.removeItem('supabase.auth.token');
-        toast({
-          title: "Signed out",
-          description: "You have been signed out successfully.",
-        });
-        navigate('/auth');
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-        setIsAuthenticated(true);
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_OUT') {
           toast({
-            title: "Signed in",
-            description: "Welcome back!",
+            title: "Signed out",
+            description: "You have been signed out successfully.",
           });
+          navigate('/auth');
         }
+      } else if (event === 'SIGNED_IN') {
+        setIsAuthenticated(true);
+        toast({
+          title: "Signed in",
+          description: "Welcome back!",
+        });
       }
     });
 

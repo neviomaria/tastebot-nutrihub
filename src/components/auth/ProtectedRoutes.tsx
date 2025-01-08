@@ -9,6 +9,11 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
   const [isChecking, setIsChecking] = useState(true);
   const { toast } = useToast();
 
+  const handleAuthError = () => {
+    localStorage.removeItem('supabase.auth.token');
+    navigate('/auth', { replace: true, state: { from: location.pathname } });
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -19,14 +24,14 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
         if (error) {
           console.error("Session check error:", error);
           if (mounted) {
-            navigate('/auth', { replace: true, state: { from: location.pathname } });
+            handleAuthError();
           }
           return;
         }
 
         if (!session) {
           if (mounted) {
-            navigate('/auth', { replace: true, state: { from: location.pathname } });
+            handleAuthError();
           }
           return;
         }
@@ -36,7 +41,7 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
         if (userError || !user) {
           console.error("User verification error:", userError);
           if (mounted) {
-            navigate('/auth', { replace: true, state: { from: location.pathname } });
+            handleAuthError();
           }
           return;
         }
@@ -50,6 +55,9 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
 
         if (profileError) {
           console.error("Profile check error:", profileError);
+          if (mounted) {
+            handleAuthError();
+          }
           return;
         }
 
@@ -75,7 +83,7 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
             title: "Authentication Error",
             description: "Please try logging in again.",
           });
-          navigate('/auth', { replace: true, state: { from: location.pathname } });
+          handleAuthError();
         }
       } finally {
         if (mounted) {
