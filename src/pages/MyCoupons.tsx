@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddCouponForm, couponSchema, type CouponFormValues } from "@/components/coupons/AddCouponForm";
 import { CouponList } from "@/components/coupons/CouponList";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface BookAccess {
   book_id: string;
@@ -16,6 +16,7 @@ interface BookAccess {
 
 const MyCoupons = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const form = useForm<CouponFormValues>({
     resolver: zodResolver(couponSchema),
@@ -30,24 +31,14 @@ const MyCoupons = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("coupon_code, book_id, book_title")
-        .eq("id", user.id)
-        .single();
+      const { data, error } = await supabase
+        .from("user_coupons")
+        .select("book_id, book_title, coupon_code")
+        .eq("user_id", user.id);
 
       if (error) throw error;
-
-      // Only return the coupon data if all required fields are present
-      if (profile?.coupon_code && profile?.book_id && profile?.book_title) {
-        return [{
-          book_id: profile.book_id,
-          book_title: profile.book_title,
-          coupon_code: profile.coupon_code,
-        }];
-      }
       
-      return [];
+      return data as BookAccess[];
     },
   });
 
@@ -63,17 +54,33 @@ const MyCoupons = () => {
       if (error) throw error;
 
       if (data.success) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
+        // Check if coupon already exists for this user
+        const { data: existingCoupon } = await supabase
+          .from('user_coupons')
+          .select('coupon_code')
+          .eq('user_id', user.id)
+          .eq('coupon_code', values.coupon_code)
+          .single();
+
+        if (existingCoupon) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "You have already added this coupon code",
+          });
+          return;
+        }
+
+        const { error: insertError } = await supabase
+          .from('user_coupons')
+          .insert({
+            user_id: user.id,
             coupon_code: values.coupon_code,
             book_id: data.book_id,
-            book_title: data.book_title,
-            access_level: data.access_level
-          })
-          .eq('id', user.id);
+            book_title: data.book_title
+          });
 
-        if (updateError) throw updateError;
+        if (insertError) throw insertError;
 
         toast({
           title: "Success",
@@ -99,14 +106,10 @@ const MyCoupons = () => {
       if (!user) throw new Error("User not found");
 
       const { error } = await supabase
-        .from('profiles')
-        .update({
-          coupon_code: null,
-          book_id: null,
-          book_title: null,
-          access_level: null
-        })
-        .eq('id', user.id);
+        .from('user_coupons')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('coupon_code', couponCode);
 
       if (error) throw error;
 

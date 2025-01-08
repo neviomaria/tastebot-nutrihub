@@ -26,11 +26,10 @@ export const SignUpCouponForm = () => {
     defaultValues: {
       email: "",
       password: "",
-      coupon_code: searchParams.get("coupon") || "", // Auto-populate from URL
+      coupon_code: searchParams.get("coupon") || "",
     },
   });
 
-  // Update coupon code when URL parameter changes
   useEffect(() => {
     const couponFromUrl = searchParams.get("coupon");
     if (couponFromUrl) {
@@ -46,7 +45,6 @@ export const SignUpCouponForm = () => {
         couponCode: values.coupon_code 
       });
 
-      // If a coupon code was provided, verify it first
       let bookData = null;
       if (values.coupon_code) {
         const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-coupon', {
@@ -75,34 +73,27 @@ export const SignUpCouponForm = () => {
 
         bookData = {
           book_id: verifyData.book_id,
-          book_title: verifyData.book_title,
-          access_level: "freemium" // Always set to freemium regardless of coupon
+          book_title: verifyData.book_title
         };
       }
 
-      // Set the redirect URL based on the environment
       let redirectTo;
       if (window.location.hostname === 'pybher.com') {
         redirectTo = 'https://pybher.com/auth/callback';
       } else if (window.location.hostname === '192.168.1.182') {
         redirectTo = 'http://192.168.1.182:8080/auth/callback';
       } else {
-        // Fallback for other environments (like localhost)
         redirectTo = `${window.location.origin}/auth/callback`;
       }
       
       console.log('Redirect URL:', redirectTo);
 
-      // Sign up the user with metadata including the coupon and book information
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
-            coupon_code: values.coupon_code || null,
-            book_id: bookData?.book_id || null,
-            book_title: bookData?.book_title || null,
-            access_level: "freemium", // Always set to freemium for new users
+            access_level: "freemium",
           },
           emailRedirectTo: redirectTo,
         },
@@ -116,6 +107,23 @@ export const SignUpCouponForm = () => {
           variant: "destructive",
         });
         return;
+      }
+
+      // If we have a valid coupon, add it to user_coupons table
+      if (bookData && authData.user) {
+        const { error: couponError } = await supabase
+          .from('user_coupons')
+          .insert({
+            user_id: authData.user.id,
+            coupon_code: values.coupon_code,
+            book_id: bookData.book_id,
+            book_title: bookData.book_title
+          });
+
+        if (couponError) {
+          console.error("Error saving coupon:", couponError);
+          // Don't return here, we still want to complete signup
+        }
       }
 
       console.log("Signup successful:", authData);
