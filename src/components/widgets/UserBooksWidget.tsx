@@ -5,35 +5,63 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, ChevronRight } from "lucide-react";
 
+interface BookAccess {
+  book_id: string;
+  book_title: string;
+}
+
 export function UserBooksWidget() {
   const navigate = useNavigate();
 
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile'],
+  const { data: books = [], isLoading } = useQuery({
+    queryKey: ['userBooks'],
     queryFn: async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           console.log('No user found in UserBooksWidget');
-          return null;
+          return [];
         }
 
-        console.log('Fetching profile for user:', user.id);
-        const { data, error } = await supabase
+        console.log('Fetching books for user:', user.id);
+        
+        // Fetch profile book
+        const { data: profile } = await supabase
           .from('profiles')
           .select('book_id, book_title')
           .eq('id', user.id)
           .single();
-        
-        if (error) {
-          console.error('Error fetching profile:', error);
-          throw error;
+
+        // Fetch additional books from user_coupons
+        const { data: userCoupons } = await supabase
+          .from('user_coupons')
+          .select('book_id, book_title')
+          .eq('user_id', user.id);
+
+        // Combine books, ensuring no duplicates
+        let allBooks: BookAccess[] = [];
+        if (profile?.book_id) {
+          allBooks.push({
+            book_id: profile.book_id,
+            book_title: profile.book_title || ''
+          });
+        }
+        if (userCoupons) {
+          // Add books from coupons, avoiding duplicates
+          userCoupons.forEach(coupon => {
+            if (!allBooks.some(book => book.book_id === coupon.book_id)) {
+              allBooks.push({
+                book_id: coupon.book_id,
+                book_title: coupon.book_title
+              });
+            }
+          });
         }
 
-        console.log('Profile data retrieved:', data);
-        return data;
+        console.log('All books retrieved:', allBooks);
+        return allBooks;
       } catch (error) {
-        console.error('Error in profile fetch:', error);
+        console.error('Error in books fetch:', error);
         throw error;
       }
     },
@@ -42,34 +70,33 @@ export function UserBooksWidget() {
   });
 
   const { data: bookCover } = useQuery({
-    queryKey: ['bookCover', profile?.book_id],
+    queryKey: ['bookCover', books.map(book => book.book_id)],
     queryFn: async () => {
       try {
-        console.log('Fetching book cover for book_id:', profile?.book_id);
-        const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${profile?.book_id}`);
-        if (!bookResponse.ok) {
-          console.error('Failed to fetch book details:', bookResponse.statusText);
-          throw new Error("Failed to fetch book details");
-        }
-        const book = await bookResponse.json();
-        console.log('Book data retrieved:', book);
-
-        let coverUrl = "/placeholder.svg";
-        if (book.acf?.copertina_libro) {
-          const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
-          if (mediaResponse.ok) {
-            const media = await mediaResponse.json();
-            coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
-            console.log('Cover URL found:', coverUrl);
+        const coverUrls = await Promise.all(books.map(async (book) => {
+          const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.book_id}`);
+          if (!bookResponse.ok) {
+            console.error('Failed to fetch book details:', bookResponse.statusText);
+            return "/placeholder.svg";
           }
-        }
-        return coverUrl;
+          const bookData = await bookResponse.json();
+          let coverUrl = "/placeholder.svg";
+          if (bookData.acf?.copertina_libro) {
+            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${bookData.acf.copertina_libro}`);
+            if (mediaResponse.ok) {
+              const media = await mediaResponse.json();
+              coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
+            }
+          }
+          return coverUrl;
+        }));
+        return coverUrls;
       } catch (error) {
-        console.error('Error fetching book cover:', error);
-        return "/placeholder.svg";
+        console.error('Error fetching book covers:', error);
+        return books.map(() => "/placeholder.svg");
       }
     },
-    enabled: !!profile?.book_id,
+    enabled: books.length > 0,
     staleTime: 1000 * 60 * 30 // Cache for 30 minutes
   });
 
@@ -100,45 +127,47 @@ export function UserBooksWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {profile?.book_id && profile?.book_title ? (
-          <Card className="overflow-hidden">
-            <CardContent className="p-0">
-              <div className="grid grid-cols-1 md:grid-cols-[1fr,1.5fr] gap-4">
-                <div className="relative">
-                  <img
-                    src={bookCover || "/placeholder.svg"}
-                    alt={profile.book_title}
-                    className="w-full h-full object-cover aspect-[3/4]"
-                    loading="lazy"
-                    onError={(e) => {
-                      console.log('Image failed to load:', bookCover);
-                      e.currentTarget.src = "/placeholder.svg";
-                    }}
-                  />
-                </div>
-                <div className="py-4 px-4 md:pr-4 md:pl-0 flex flex-col">
-                  <h2 className="text-lg font-semibold mb-2 line-clamp-2">{profile.book_title}</h2>
-                  <div className="mt-auto space-y-2">
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-between bg-gradient-to-r from-[#F5F5F7] to-[#FFFFFF] hover:from-[#EAEAEC] hover:to-[#F5F5F7]"
-                      onClick={() => navigate(`/book/${profile.book_id}`)}
-                    >
-                      View Details
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      className="w-full justify-between bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]"
-                      onClick={() => navigate(`/book/${profile.book_id}/recipes`)}
-                    >
-                      View Recipes
-                      <BookOpen className="h-4 w-4" />
-                    </Button>
+        {books.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {books.map((book, index) => (
+              <Card key={book.book_id} className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="relative">
+                    <img
+                      src={bookCover[index] || "/placeholder.svg"}
+                      alt={book.book_title}
+                      className="w-full h-full object-cover aspect-[3/4]"
+                      loading="lazy"
+                      onError={(e) => {
+                        console.log('Image failed to load:', bookCover[index]);
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="py-4 px-4 flex flex-col">
+                    <h2 className="text-lg font-semibold mb-2 line-clamp-2">{book.book_title}</h2>
+                    <div className="mt-auto space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-between bg-gradient-to-r from-[#F5F5F7] to-[#FFFFFF] hover:from-[#EAEAEC] hover:to-[#F5F5F7]"
+                        onClick={() => navigate(`/book/${book.book_id}`)}
+                      >
+                        View Details
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        className="w-full justify-between bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]"
+                        onClick={() => navigate(`/book/${book.book_id}/recipes`)}
+                      >
+                        View Recipes
+                        <BookOpen className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-8">
             <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

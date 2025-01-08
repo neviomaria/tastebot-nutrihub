@@ -25,20 +25,40 @@ const MyCoupons = () => {
     },
   });
 
-  const { data: bookAccess = [], isLoading, refetch } = useQuery({
+  // Fetch both profile coupon and user_coupons
+  const { data: allBookAccess = [], isLoading, refetch } = useQuery({
     queryKey: ["coupons"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
+      // Fetch profile coupon
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("book_id, book_title, coupon_code")
+        .eq("id", user.id)
+        .single();
+
+      // Fetch additional coupons
+      const { data: userCoupons } = await supabase
         .from("user_coupons")
         .select("book_id, book_title, coupon_code")
         .eq("user_id", user.id);
 
-      if (error) throw error;
-      
-      return data as BookAccess[];
+      // Combine coupons, ensuring profile coupon is included if it exists
+      let allCoupons: BookAccess[] = [];
+      if (profile?.coupon_code) {
+        allCoupons.push({
+          book_id: profile.book_id || '',
+          book_title: profile.book_title || '',
+          coupon_code: profile.coupon_code
+        });
+      }
+      if (userCoupons) {
+        allCoupons = [...allCoupons, ...userCoupons];
+      }
+
+      return allCoupons;
     },
   });
 
@@ -47,15 +67,22 @@ const MyCoupons = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
 
-      // Check if coupon already exists for this user
-      const { data: existingCoupon } = await supabase
+      // Check if coupon already exists for this user (in both tables)
+      const { data: existingProfileCoupon } = await supabase
+        .from('profiles')
+        .select('coupon_code')
+        .eq('id', user.id)
+        .eq('coupon_code', values.coupon_code)
+        .single();
+
+      const { data: existingUserCoupon } = await supabase
         .from('user_coupons')
         .select('coupon_code')
         .eq('user_id', user.id)
         .eq('coupon_code', values.coupon_code)
         .single();
 
-      if (existingCoupon) {
+      if (existingProfileCoupon || existingUserCoupon) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -107,13 +134,35 @@ const MyCoupons = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
 
-      const { error } = await supabase
-        .from('user_coupons')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('coupon_code', couponCode);
+      // Check if this is the profile coupon
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('coupon_code')
+        .eq('id', user.id)
+        .single();
 
-      if (error) throw error;
+      if (profile?.coupon_code === couponCode) {
+        // Update profile to remove coupon
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            coupon_code: null,
+            book_id: null,
+            book_title: null
+          })
+          .eq('id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Remove from user_coupons
+        const { error } = await supabase
+          .from('user_coupons')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('coupon_code', couponCode);
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Success",
@@ -153,7 +202,7 @@ const MyCoupons = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <AddCouponForm form={form} onSubmit={onSubmit} />
-          <CouponList bookAccess={bookAccess} onRemoveCoupon={removeCoupon} />
+          <CouponList bookAccess={allBookAccess} onRemoveCoupon={removeCoupon} />
         </CardContent>
       </Card>
     </div>
