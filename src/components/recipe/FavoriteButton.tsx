@@ -15,7 +15,6 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Check if recipe is favorited on component mount
   useEffect(() => {
     checkFavoriteStatus();
   }, []);
@@ -45,12 +44,18 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
 
   const createRecipeInDatabase = async () => {
     try {
-      // Fetch recipe from WordPress using the correct endpoint
-      const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${recipeId}`);
+      // Fetch all recipes first
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
-        throw new Error('Failed to fetch recipe from WordPress');
+        throw new Error('Failed to fetch recipes from WordPress');
       }
-      const recipeData = await response.json();
+      const recipes = await response.json();
+      
+      // Find the specific recipe we want
+      const recipeData = recipes.find((recipe: any) => recipe.id === recipeId);
+      if (!recipeData) {
+        throw new Error('Recipe not found');
+      }
 
       // Insert recipe into Supabase recipes table
       const { error: insertError } = await supabase
