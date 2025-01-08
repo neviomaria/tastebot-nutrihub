@@ -23,17 +23,19 @@ function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route element={<ProtectedRoutes />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/complete-profile" element={<CompleteProfile />} />
-            <Route path="/my-books" element={<MyBooks />} />
-            <Route path="/my-coupons" element={<MyCoupons />} />
-            <Route path="/book/:id" element={<BookDetail />} />
-            <Route path="/book/:id/recipes" element={<BookRecipes />} />
-            <Route path="/recipe/:id" element={<RecipeDetail />} />
-            <Route path="/favorite-recipes" element={<FavoriteRecipes />} />
-          </Route>
+          <Route element={<ProtectedRoutes>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/complete-profile" element={<CompleteProfile />} />
+              <Route path="/my-books" element={<MyBooks />} />
+              <Route path="/my-coupons" element={<MyCoupons />} />
+              <Route path="/book/:id" element={<BookDetail />} />
+              <Route path="/book/:id/recipes" element={<BookRecipes />} />
+              <Route path="/recipe/:id" element={<RecipeDetail />} />
+              <Route path="/favorite-recipes" element={<FavoriteRecipes />} />
+            </Routes>
+          </ProtectedRoutes>} />
         </Routes>
       </Router>
       <Toaster />
