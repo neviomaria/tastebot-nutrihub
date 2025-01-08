@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +16,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
   const { toast } = useToast();
 
   // Check if recipe is favorited on component mount
-  useState(() => {
+  useEffect(() => {
     checkFavoriteStatus();
   }, []);
 
