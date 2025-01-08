@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-import ProtectedRoutes from '@/components/auth/ProtectedRoutes';
-import AuthLayout from '@/components/auth/AuthLayout';
+import { ProtectedRoutes } from '@/components/auth/ProtectedRoutes';
+import { AuthLayout } from '@/components/auth/AuthLayout';
 import Auth from '@/pages/Auth';
 import AuthCallback from '@/pages/AuthCallback';
 import Index from '@/pages/Index';

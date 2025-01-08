@@ -5,7 +5,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { ViewType } from "@supabase/auth-ui-shared";
-import { SignUpCouponForm } from "@/components/auth/SignUpCouponForm";
+import SignUpCouponForm from "@/components/auth/SignUpCouponForm";
 
 const AuthPage = () => {
   const navigate = useNavigate();
