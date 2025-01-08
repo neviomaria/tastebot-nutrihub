@@ -6,15 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronRight } from "lucide-react";
+import { UserBook, Book } from "@/types/book";
 
-interface Book {
-  title: string;
-  subtitle: string;
-  coverUrl: string;
-  id: string;
-}
-
-const fetchUserBooks = async () => {
+const fetchUserBooks = async (): Promise<UserBook[]> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -44,25 +38,27 @@ const fetchUserBooks = async () => {
     }
 
     // Combine books, ensuring no duplicates
-    let allBooks = new Set();
+    const allBooks: UserBook[] = [];
     
-    if (profile?.book_id) {
-      allBooks.add({
-        id: profile.book_id,
-        title: profile.book_title || '',
+    if (profile?.book_id && profile?.book_title) {
+      allBooks.push({
+        book_id: profile.book_id,
+        book_title: profile.book_title
       });
     }
 
     if (userCoupons) {
       userCoupons.forEach(coupon => {
-        allBooks.add({
-          id: coupon.book_id,
-          title: coupon.book_title,
-        });
+        if (!allBooks.some(book => book.book_id === coupon.book_id)) {
+          allBooks.push({
+            book_id: coupon.book_id,
+            book_title: coupon.book_title
+          });
+        }
       });
     }
 
-    return Array.from(allBooks);
+    return allBooks;
   } catch (error) {
     console.error("Error fetching books:", error);
     throw error;
@@ -91,11 +87,20 @@ const MyBooks = () => {
   });
 
   const { data: bookDetails = [], isLoading: isLoadingBooks } = useQuery({
-    queryKey: ['bookDetails', books.map(book => book.id)],
+    queryKey: ['bookDetails', books.map(book => book.book_id)],
     queryFn: async () => {
       return Promise.all(books.map(async (book) => {
+        if (!book.book_id) {
+          console.warn('Book ID is undefined, skipping fetch');
+          return {
+            ...book,
+            subtitle: '',
+            coverUrl: '/placeholder.svg'
+          };
+        }
+
         try {
-          const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.id}`);
+          const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.book_id}`);
           if (!bookResponse.ok) {
             console.error('Failed to fetch book details:', bookResponse.statusText);
             return {
@@ -117,14 +122,16 @@ const MyBooks = () => {
           }
 
           return {
-            ...book,
+            id: book.book_id,
+            title: book.book_title,
             subtitle: bookData.acf?.sottotitolo_per_sito || '',
             coverUrl
           };
         } catch (error) {
           console.error('Error fetching book details:', error);
           return {
-            ...book,
+            id: book.book_id,
+            title: book.book_title,
             subtitle: '',
             coverUrl: '/placeholder.svg'
           };
@@ -172,13 +179,13 @@ const MyBooks = () => {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-8">My Books</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {bookDetails.map((book) => (
+        {bookDetails.map((book: Book) => (
           <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <CardContent className="p-0">
               <div className="grid grid-cols-[1fr,1.5fr] gap-4">
                 <div className="relative">
                   <img
-                    src={book.coverUrl}
+                    src={book.coverUrl || '/placeholder.svg'}
                     alt={book.title}
                     className="w-full h-full object-cover aspect-[3/4]"
                     loading="lazy"
