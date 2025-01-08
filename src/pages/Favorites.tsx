@@ -61,7 +61,12 @@ const Favorites = () => {
           {favorites.map((favorite) => (
             <RecipeCard
               key={favorite.recipe_id}
-              recipe={favorite.recipes}
+              title={favorite.recipes.title}
+              image={`/recipes/${favorite.recipes.id}.jpg`}
+              cookTime={favorite.recipes.cook_time}
+              difficulty="Medium"
+              recipeId={favorite.recipes.id}
+              onClick={() => {/* TODO: Implement recipe click handler */}}
             />
           ))}
         </div>
