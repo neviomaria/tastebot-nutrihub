@@ -1,188 +1,100 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useSearchParams } from "react-router-dom";
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-const signUpSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  coupon_code: z.string().optional(),
-});
+interface CouponFormData {
+  couponCode: string;
+}
 
-type SignUpValues = z.infer<typeof signUpSchema>;
-
-export const SignUpCouponForm = () => {
-  const [isLoading, setIsLoading] = useState(false);
+export default function SignUpCouponForm() {
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<CouponFormData>();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  const form = useForm<SignUpValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      coupon_code: searchParams.get("coupon") || "", // Auto-populate from URL
-    },
-  });
-
-  // Update coupon code when URL parameter changes
-  useEffect(() => {
-    const couponFromUrl = searchParams.get("coupon");
-    if (couponFromUrl) {
-      form.setValue("coupon_code", couponFromUrl);
-    }
-  }, [searchParams, form]);
-
-  const onSubmit = async (values: SignUpValues) => {
+  const onSubmit = async (data: CouponFormData) => {
     try {
-      setIsLoading(true);
-      console.log("Starting signup with values:", {
-        email: values.email,
-        couponCode: values.coupon_code 
-      });
-
-      // If a coupon code was provided, verify it first
-      let bookData = null;
-      if (values.coupon_code) {
-        const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-coupon', {
-          body: { coupon_code: values.coupon_code }
-        });
-
-        if (verifyError) {
-          console.error('Coupon verification error:', verifyError);
-          toast({
-            title: "Error",
-            description: "Invalid coupon code. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (!verifyData?.success) {
-          console.error('Invalid coupon:', values.coupon_code);
-          toast({
-            title: "Error",
-            description: "Invalid coupon code. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        bookData = {
-          book_id: verifyData.book_id,
-          book_title: verifyData.book_title,
-          access_level: "freemium" // Always set to freemium regardless of coupon
-        };
-      }
-
-      // Set the redirect URL based on the environment
-      let redirectTo;
-      if (window.location.hostname === 'pybher.com') {
-        redirectTo = 'https://pybher.com/auth/callback';
-      } else if (window.location.hostname === '192.168.1.182') {
-        redirectTo = 'http://192.168.1.182:8080/auth/callback';
-      } else {
-        // Fallback for other environments (like localhost)
-        redirectTo = `${window.location.origin}/auth/callback`;
-      }
-      
-      console.log('Redirect URL:', redirectTo);
-
-      // Sign up the user with metadata including the coupon and book information
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            coupon_code: values.coupon_code || null,
-            book_id: bookData?.book_id || null,
-            book_title: bookData?.book_title || null,
-            access_level: "freemium", // Always set to freemium for new users
-          },
-          emailRedirectTo: redirectTo,
-        },
-      });
-
-      if (authError) {
-        console.error("Signup error:", authError);
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) {
         toast({
-          title: "Error",
-          description: authError.message,
           variant: "destructive",
+          title: "Error",
+          description: "You must be logged in to add coupons",
         });
         return;
       }
 
-      console.log("Signup successful:", authData);
-      toast({
-        title: "Success",
-        description: "Please check your email to confirm your account.",
+      // Verify the coupon
+      const { data: verificationData, error: verificationError } = await supabase.functions.invoke('verify-coupon', {
+        body: { couponCode: data.couponCode },
       });
 
-    } catch (error) {
-      console.error("Unexpected error:", error);
+      if (verificationError || !verificationData?.isValid) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Coupon",
+          description: "The coupon code you entered is not valid",
+        });
+        return;
+      }
+
+      // Save the coupon to the user_coupons table
+      const { error: insertError } = await supabase
+        .from('user_coupons')
+        .insert({
+          user_id: user.id,
+          coupon_code: data.couponCode,
+          book_id: verificationData.bookId,
+          book_title: verificationData.bookTitle,
+        });
+
+      if (insertError) {
+        if (insertError.code === '23505') { // Unique violation
+          toast({
+            variant: "destructive",
+            title: "Duplicate Coupon",
+            description: "You have already used this coupon code",
+          });
+          return;
+        }
+        throw insertError;
+      }
+
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
+        title: "Success",
+        description: "Coupon added successfully",
       });
-    } finally {
-      setIsLoading(false);
+      
+      reset();
+      navigate('/my-books');
+    } catch (error) {
+      console.error('Error adding coupon:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add coupon. Please try again.",
+      });
     }
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <Input
-          type="email"
-          placeholder="Email"
-          {...form.register("email")}
+          {...register('couponCode', { required: 'Coupon code is required' })}
+          placeholder="Enter your coupon code"
           className="w-full"
         />
-        {form.formState.errors.email && (
-          <p className="text-sm text-red-500 mt-1">
-            {form.formState.errors.email.message}
-          </p>
+        {errors.couponCode && (
+          <p className="text-red-500 text-sm mt-1">{errors.couponCode.message}</p>
         )}
       </div>
-
-      <div>
-        <Input
-          type="password"
-          placeholder="Password"
-          {...form.register("password")}
-          className="w-full"
-        />
-        {form.formState.errors.password && (
-          <p className="text-sm text-red-500 mt-1">
-            {form.formState.errors.password.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <Input
-          type="text"
-          placeholder="Coupon Code (Optional)"
-          {...form.register("coupon_code")}
-          className="w-full"
-        />
-        {form.formState.errors.coupon_code && (
-          <p className="text-sm text-red-500 mt-1">
-            {form.formState.errors.coupon_code.message}
-          </p>
-        )}
-      </div>
-
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Creating account..." : "Sign Up"}
+      <Button type="submit" className="w-full">
+        Add Coupon
       </Button>
     </form>
   );
-};
+}
