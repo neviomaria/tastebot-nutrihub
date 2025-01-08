@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { RecipeCard } from '@/components/RecipeCard';
+import RecipeCard from '@/components/RecipeCard';
 import { useToast } from '@/components/ui/use-toast';
 
 const Favorites = () => {
@@ -61,12 +61,7 @@ const Favorites = () => {
           {favorites.map((favorite) => (
             <RecipeCard
               key={favorite.recipe_id}
-              title={favorite.recipes.title}
-              image={`/recipes/${favorite.recipes.id}.jpg`}
-              cookTime={favorite.recipes.cook_time}
-              difficulty="Medium"
-              recipeId={favorite.recipes.id}
-              onClick={() => {/* TODO: Implement recipe click handler */}}
+              recipe={favorite.recipes}
             />
           ))}
         </div>
