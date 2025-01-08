@@ -182,33 +182,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_coupons: {
-        Row: {
-          book_id: string
-          book_title: string
-          coupon_code: string
-          created_at: string | null
-          id: string
-          user_id: string
-        }
-        Insert: {
-          book_id: string
-          book_title: string
-          coupon_code: string
-          created_at?: string | null
-          id?: string
-          user_id: string
-        }
-        Update: {
-          book_id?: string
-          book_title?: string
-          coupon_code?: string
-          created_at?: string | null
-          id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
