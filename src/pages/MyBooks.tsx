@@ -89,11 +89,12 @@ const MyBooks = () => {
   const { data: bookDetails = [], isLoading: isLoadingBooks } = useQuery({
     queryKey: ['bookDetails', books.map(book => book.book_id)],
     queryFn: async () => {
-      return Promise.all(books.map(async (book) => {
+      const details: Book[] = await Promise.all(books.map(async (book) => {
         if (!book.book_id) {
           console.warn('Book ID is undefined, skipping fetch');
           return {
-            ...book,
+            id: '',
+            title: book.book_title || '',
             subtitle: '',
             coverUrl: '/placeholder.svg'
           };
@@ -104,7 +105,8 @@ const MyBooks = () => {
           if (!bookResponse.ok) {
             console.error('Failed to fetch book details:', bookResponse.statusText);
             return {
-              ...book,
+              id: book.book_id,
+              title: book.book_title,
               subtitle: '',
               coverUrl: '/placeholder.svg'
             };
@@ -137,6 +139,7 @@ const MyBooks = () => {
           };
         }
       }));
+      return details;
     },
     enabled: books.length > 0,
     staleTime: 30 * 60 * 1000,
