@@ -25,12 +25,17 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) return;
 
-      const { data: favorites } = await supabase
+      const { data: favorites, error } = await supabase
         .from('favorites')
         .select('*')
         .eq('recipe_id', recipeId)
         .eq('user_id', session.session.user.id)
-        .single();
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking favorite status:', error);
+        return;
+      }
 
       setIsFavorite(!!favorites);
     } catch (error) {
