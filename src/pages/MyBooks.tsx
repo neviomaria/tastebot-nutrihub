@@ -14,7 +14,7 @@ interface Book {
   id: string;
 }
 
-const fetchUserProfile = async () => {
+const fetchUserBooks = async () => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -22,42 +22,49 @@ const fetchUserProfile = async () => {
       throw new Error('No active session');
     }
 
-    const { data: profile, error } = await supabase
+    // Fetch profile book
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("book_id, book_title")
       .single();
 
-    if (error) throw error;
-    return profile;
-  } catch (error) {
-    console.error("Error fetching profile:", error);
-    throw error;
-  }
-};
-
-const fetchBookDetails = async (bookId: string) => {
-  try {
-    const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${bookId}`);
-    if (!bookResponse.ok) throw new Error("Failed to fetch book details");
-    const book = await bookResponse.json();
-
-    let coverUrl = "/placeholder.svg";
-    if (book.acf?.copertina_libro) {
-      const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
-      if (mediaResponse.ok) {
-        const media = await mediaResponse.json();
-        coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
-      }
+    if (profileError) {
+      console.error("Error fetching profile:", profileError);
+      throw profileError;
     }
 
-    return {
-      id: bookId,
-      title: book.title.rendered,
-      subtitle: book.acf?.sottotitolo_per_sito || "No subtitle available",
-      coverUrl,
-    };
+    // Fetch additional books from user_coupons
+    const { data: userCoupons, error: couponsError } = await supabase
+      .from("user_coupons")
+      .select("book_id, book_title");
+
+    if (couponsError) {
+      console.error("Error fetching user coupons:", couponsError);
+      throw couponsError;
+    }
+
+    // Combine books, ensuring no duplicates
+    let allBooks = new Set();
+    
+    if (profile?.book_id) {
+      allBooks.add({
+        id: profile.book_id,
+        title: profile.book_title || '',
+      });
+    }
+
+    if (userCoupons) {
+      userCoupons.forEach(coupon => {
+        allBooks.add({
+          id: coupon.book_id,
+          title: coupon.book_title,
+        });
+      });
+    }
+
+    return Array.from(allBooks);
   } catch (error) {
-    console.error("Error fetching book details:", error);
+    console.error("Error fetching books:", error);
     throw error;
   }
 };
@@ -65,49 +72,75 @@ const fetchBookDetails = async (bookId: string) => {
 const MyBooks = () => {
   const { toast } = useToast();
 
-  const { data: profile, isLoading: isLoadingProfile, error: profileError } = useQuery({
-    queryKey: ['profile'],
-    queryFn: fetchUserProfile,
+  const { data: books = [], isLoading: isLoadingProfile, error: profileError } = useQuery({
+    queryKey: ['userBooks'],
+    queryFn: fetchUserBooks,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 1,
     meta: {
       onError: (error: any) => {
-        console.error("Profile fetch error:", error);
+        console.error("Books fetch error:", error);
         toast({
           title: "Error",
-          description: "Unable to load profile. Please try logging in again.",
+          description: "Unable to load books. Please try logging in again.",
           variant: "destructive",
         });
       }
     }
+  });
+
+  const { data: bookDetails = [], isLoading: isLoadingBooks } = useQuery({
+    queryKey: ['bookDetails', books.map(book => book.id)],
+    queryFn: async () => {
+      return Promise.all(books.map(async (book) => {
+        try {
+          const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.id}`);
+          if (!bookResponse.ok) {
+            console.error('Failed to fetch book details:', bookResponse.statusText);
+            return {
+              ...book,
+              subtitle: '',
+              coverUrl: '/placeholder.svg'
+            };
+          }
+          
+          const bookData = await bookResponse.json();
+          let coverUrl = '/placeholder.svg';
+
+          if (bookData.acf?.copertina_libro) {
+            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${bookData.acf.copertina_libro}`);
+            if (mediaResponse.ok) {
+              const media = await mediaResponse.json();
+              coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || '/placeholder.svg';
+            }
+          }
+
+          return {
+            ...book,
+            subtitle: bookData.acf?.sottotitolo_per_sito || '',
+            coverUrl
+          };
+        } catch (error) {
+          console.error('Error fetching book details:', error);
+          return {
+            ...book,
+            subtitle: '',
+            coverUrl: '/placeholder.svg'
+          };
+        }
+      }));
+    },
+    enabled: books.length > 0,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   if (profileError?.message?.includes('No active session')) {
     return <Navigate to="/auth" replace />;
   }
 
-  const { data: bookDetails, isLoading: isLoadingBook } = useQuery({
-    queryKey: ['book', profile?.book_id],
-    queryFn: () => fetchBookDetails(profile?.book_id || ''),
-    enabled: !!profile?.book_id,
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
-    retry: 1,
-    meta: {
-      onError: (error) => {
-        console.error("Book details fetch error:", error);
-        toast({
-          title: "Error",
-          description: "Unable to load book details. Please try again later.",
-          variant: "destructive",
-        });
-      }
-    }
-  });
-
-  const isLoading = isLoadingProfile || isLoadingBook;
-  const books = bookDetails ? [bookDetails] : [];
+  const isLoading = isLoadingProfile || isLoadingBooks;
 
   if (isLoading) {
     return (
@@ -139,7 +172,7 @@ const MyBooks = () => {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-8">My Books</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {books.map((book) => (
+        {bookDetails.map((book) => (
           <Card key={book.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <CardContent className="p-0">
               <div className="grid grid-cols-[1fr,1.5fr] gap-4">
