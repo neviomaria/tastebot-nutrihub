@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, ChevronRight } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface BookAccess {
   book_id: string;
@@ -12,8 +13,9 @@ interface BookAccess {
 
 export function UserBooksWidget() {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const { data: books = [], isLoading } = useQuery({
+  const { data: books = [], isLoading, error } = useQuery({
     queryKey: ['userBooks'],
     queryFn: async () => {
       try {
@@ -26,17 +28,27 @@ export function UserBooksWidget() {
         console.log('Fetching books for user:', user.id);
         
         // Fetch profile book
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('book_id, book_title')
           .eq('id', user.id)
           .single();
 
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          throw profileError;
+        }
+
         // Fetch additional books from user_coupons
-        const { data: userCoupons } = await supabase
+        const { data: userCoupons, error: couponsError } = await supabase
           .from('user_coupons')
           .select('book_id, book_title')
           .eq('user_id', user.id);
+
+        if (couponsError) {
+          console.error('Error fetching coupons:', couponsError);
+          throw couponsError;
+        }
 
         // Combine books, ensuring no duplicates
         let allBooks: BookAccess[] = [];
@@ -65,30 +77,34 @@ export function UserBooksWidget() {
         throw error;
       }
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     retry: 1
   });
 
-  const { data: bookCover } = useQuery({
-    queryKey: ['bookCover', books.map(book => book.book_id)],
+  const { data: bookCovers = [], isLoading: isLoadingCovers } = useQuery({
+    queryKey: ['bookCovers', books.map(book => book.book_id)],
     queryFn: async () => {
       try {
         const coverUrls = await Promise.all(books.map(async (book) => {
-          const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.book_id}`);
-          if (!bookResponse.ok) {
-            console.error('Failed to fetch book details:', bookResponse.statusText);
+          try {
+            const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.book_id}`);
+            if (!bookResponse.ok) {
+              console.error('Failed to fetch book details:', bookResponse.statusText);
+              return "/placeholder.svg";
+            }
+            const bookData = await bookResponse.json();
+            if (!bookData.acf?.copertina_libro) {
+              return "/placeholder.svg";
+            }
+            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${bookData.acf.copertina_libro}`);
+            if (!mediaResponse.ok) {
+              return "/placeholder.svg";
+            }
+            const media = await mediaResponse.json();
+            return media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || "/placeholder.svg";
+          } catch (error) {
+            console.error('Error fetching book cover:', error);
             return "/placeholder.svg";
           }
-          const bookData = await bookResponse.json();
-          let coverUrl = "/placeholder.svg";
-          if (bookData.acf?.copertina_libro) {
-            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${bookData.acf.copertina_libro}`);
-            if (mediaResponse.ok) {
-              const media = await mediaResponse.json();
-              coverUrl = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || coverUrl;
-            }
-          }
-          return coverUrl;
         }));
         return coverUrls;
       } catch (error) {
@@ -99,6 +115,15 @@ export function UserBooksWidget() {
     enabled: books.length > 0,
     staleTime: 1000 * 60 * 30 // Cache for 30 minutes
   });
+
+  if (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to load books. Please try again later."
+    });
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -134,12 +159,12 @@ export function UserBooksWidget() {
                 <CardContent className="p-0">
                   <div className="relative">
                     <img
-                      src={bookCover[index] || "/placeholder.svg"}
+                      src={isLoadingCovers ? "/placeholder.svg" : (bookCovers[index] || "/placeholder.svg")}
                       alt={book.book_title}
                       className="w-full h-full object-cover aspect-[3/4]"
                       loading="lazy"
                       onError={(e) => {
-                        console.log('Image failed to load:', bookCover[index]);
+                        console.log('Image failed to load:', bookCovers[index]);
                         e.currentTarget.src = "/placeholder.svg";
                       }}
                     />
