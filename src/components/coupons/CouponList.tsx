@@ -22,7 +22,7 @@ export const CouponList = ({ bookAccess, onRemoveCoupon }: CouponListProps) => {
         <div className="space-y-4">
           {bookAccess.map((access) => (
             <div
-              key={access.book_id}
+              key={access.coupon_code}
               className="flex items-center justify-between p-4 border rounded-lg"
             >
               <div>

@@ -47,6 +47,24 @@ const MyCoupons = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not found");
 
+      // Check if coupon already exists for this user
+      const { data: existingCoupon } = await supabase
+        .from('user_coupons')
+        .select('coupon_code')
+        .eq('user_id', user.id)
+        .eq('coupon_code', values.coupon_code)
+        .single();
+
+      if (existingCoupon) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "You have already added this coupon code",
+        });
+        return;
+      }
+
+      // Verify coupon with WordPress
       const { data, error } = await supabase.functions.invoke('verify-coupon', {
         body: { coupon_code: values.coupon_code }
       });
@@ -54,23 +72,7 @@ const MyCoupons = () => {
       if (error) throw error;
 
       if (data.success) {
-        // Check if coupon already exists for this user
-        const { data: existingCoupon } = await supabase
-          .from('user_coupons')
-          .select('coupon_code')
-          .eq('user_id', user.id)
-          .eq('coupon_code', values.coupon_code)
-          .single();
-
-        if (existingCoupon) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "You have already added this coupon code",
-          });
-          return;
-        }
-
+        // Insert new coupon
         const { error: insertError } = await supabase
           .from('user_coupons')
           .insert({
