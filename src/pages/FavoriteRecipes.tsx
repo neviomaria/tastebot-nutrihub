@@ -44,7 +44,7 @@ const FavoriteRecipes = () => {
       }
       return response.json() as Promise<WordPressRecipe[]>;
     },
-    enabled: isAuthenticated
+    enabled: isAuthenticated === true // This ensures enabled is always a boolean
   });
 
   useEffect(() => {
