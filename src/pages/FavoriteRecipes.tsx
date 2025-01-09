@@ -134,8 +134,12 @@ const FavoriteRecipes = () => {
           {recipes.map((recipe) => (
             <RecipeCard
               key={recipe.id}
-              recipe={recipe}
-              showFavoriteButton={true}
+              title={recipe.title}
+              image={recipe.image_url || '/placeholder.svg'}
+              cookTime={`Prep: ${recipe.prep_time || 'N/A'} | Cook: ${recipe.cook_time || 'N/A'}`}
+              difficulty="Easy"
+              recipeId={recipe.id}
+              onClick={() => navigate(`/recipe/${recipe.id}`)}
             />
           ))}
         </div>
