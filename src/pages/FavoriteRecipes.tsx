@@ -49,16 +49,11 @@ const FavoriteRecipes = () => {
       }
       return response.json() as Promise<WordPressRecipe[]>;
     },
-    enabled: isAuthenticated === true,
+    enabled: !!isAuthenticated,
     retry: false
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/auth");
-      return;
-    }
-
     const fetchFavorites = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -104,14 +99,10 @@ const FavoriteRecipes = () => {
       }
     };
 
-    if (wpRecipes) {
+    if (wpRecipes && isAuthenticated) {
       fetchFavorites();
     }
-  }, [isAuthenticated, navigate, wpRecipes]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
+  }, [isAuthenticated, wpRecipes]);
 
   if (isLoading) {
     return (
