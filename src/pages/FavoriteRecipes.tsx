@@ -4,6 +4,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { RecipeCard } from "@/components/RecipeCard";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+interface WordPressRecipe {
+  id: number;
+  title: string;
+  acf: {
+    recipe_image: {
+      url: string;
+    };
+    prep_time: string;
+    cook_time: string;
+  };
+}
 
 interface FavoriteRecipe {
   id: number;
@@ -21,9 +34,22 @@ const FavoriteRecipes = () => {
   const { isAuthenticated } = useAuthState();
   const navigate = useNavigate();
 
+  // Fetch WordPress recipes
+  const { data: wpRecipes } = useQuery({
+    queryKey: ['wordpress-recipes'],
+    queryFn: async () => {
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch WordPress recipes');
+      }
+      return response.json() as Promise<WordPressRecipe[]>;
+    },
+    enabled: isAuthenticated
+  });
+
   useEffect(() => {
     const fetchFavoriteRecipes = async () => {
-      if (!isAuthenticated) {
+      if (!isAuthenticated || !wpRecipes) {
         setIsLoading(false);
         return;
       }
@@ -47,13 +73,17 @@ const FavoriteRecipes = () => {
 
         if (error) throw error;
 
-        // Transform the data to match the FavoriteRecipe interface
-        const recipes = favorites?.map(fav => ({
-          id: fav.recipes.id,
-          title: fav.recipes.title,
-          prep_time: fav.recipes.prep_time || "N/A",
-          cook_time: fav.recipes.cook_time || "N/A",
-        })) || [];
+        // Transform the data and merge with WordPress data
+        const recipes = favorites?.map(fav => {
+          const wpRecipe = wpRecipes.find(wp => wp.id === fav.recipes.id);
+          return {
+            id: fav.recipes.id,
+            title: fav.recipes.title,
+            prep_time: fav.recipes.prep_time || "N/A",
+            cook_time: fav.recipes.cook_time || "N/A",
+            recipe_image: wpRecipe?.acf.recipe_image
+          };
+        }) || [];
 
         setFavoriteRecipes(recipes);
       } catch (error) {
@@ -64,7 +94,7 @@ const FavoriteRecipes = () => {
     };
 
     fetchFavoriteRecipes();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, wpRecipes]);
 
   if (isLoading) {
     return (
@@ -106,7 +136,7 @@ const FavoriteRecipes = () => {
                 key={recipe.id}
                 title={recipe.title}
                 image={recipe.recipe_image?.url || "/placeholder.svg"}
-                cookTime={recipe.cook_time}
+                cookTime={`Prep: ${recipe.prep_time} | Cook: ${recipe.cook_time}`}
                 difficulty="N/A"
                 recipeId={recipe.id}
                 onClick={() => navigate(`/recipe/${recipe.id}`)}
