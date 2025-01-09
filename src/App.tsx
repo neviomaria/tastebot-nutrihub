@@ -41,6 +41,7 @@ function AuthenticatedApp() {
         <Route path="/book/:id/recipes" element={<BookRecipes />} />
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/favorite-recipes" element={<FavoriteRecipes />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppSidebar>
   );
