@@ -34,7 +34,7 @@ const FavoriteRecipes = () => {
   const { isAuthenticated } = useAuthState();
   const navigate = useNavigate();
 
-  // Fetch WordPress recipes
+  // Only fetch WordPress recipes if user is authenticated
   const { data: wpRecipes } = useQuery({
     queryKey: ['wordpress-recipes'],
     queryFn: async () => {
@@ -44,7 +44,8 @@ const FavoriteRecipes = () => {
       }
       return response.json() as Promise<WordPressRecipe[]>;
     },
-    enabled: isAuthenticated === true // This ensures enabled is always a boolean
+    enabled: isAuthenticated === true, // Explicitly convert to boolean
+    retry: false // Don't retry on failure to avoid unnecessary network requests
   });
 
   useEffect(() => {
@@ -56,7 +57,10 @@ const FavoriteRecipes = () => {
 
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          setIsLoading(false);
+          return;
+        }
 
         const { data: favorites, error } = await supabase
           .from('favorites')
@@ -73,7 +77,7 @@ const FavoriteRecipes = () => {
 
         if (error) throw error;
 
-        // Transform the data and merge with WordPress data
+        // Transform and merge data with WordPress recipes
         const recipes = favorites?.map(fav => {
           const wpRecipe = wpRecipes.find(wp => wp.id === fav.recipes.id);
           return {
