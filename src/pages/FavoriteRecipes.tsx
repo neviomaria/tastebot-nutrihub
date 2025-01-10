@@ -19,6 +19,7 @@ interface WordPressRecipe {
     cook_time?: string;
     total_time?: string;
     servings?: number;
+    difficulty?: string;
   };
 }
 
@@ -31,6 +32,7 @@ interface Recipe {
   cook_time?: string;
   total_time?: string;
   servings?: number;
+  difficulty?: string;
 }
 
 const FavoriteRecipes = () => {
@@ -39,7 +41,6 @@ const FavoriteRecipes = () => {
   const { isAuthenticated } = useAuthState();
   const navigate = useNavigate();
 
-  // Only fetch WordPress recipes if user is authenticated
   const { data: wpRecipes } = useQuery({
     queryKey: ['wordpress-recipes'],
     queryFn: async () => {
@@ -77,21 +78,21 @@ const FavoriteRecipes = () => {
         if (error) throw error;
 
         // Transform and merge data with WordPress recipes
-        const recipes = favorites?.map(fav => {
-          const wpRecipe = wpRecipes?.find(wp => wp.id === fav.recipes.id);
+        const mergedRecipes = favorites?.map(fav => {
+          const wpRecipe = wpRecipes?.find(wp => wp.id === fav.recipe_id);
           return {
             id: fav.recipes.id,
             title: fav.recipes.title,
             description: fav.recipes.description,
-            image_url: wpRecipe?.featured_media_url,
-            prep_time: wpRecipe?.acf?.prep_time,
-            cook_time: wpRecipe?.acf?.cook_time,
-            total_time: wpRecipe?.acf?.total_time,
+            image_url: wpRecipe?.featured_media_url || '/placeholder.svg',
+            prep_time: wpRecipe?.acf?.prep_time || 'N/A',
+            cook_time: wpRecipe?.acf?.cook_time || 'N/A',
+            difficulty: wpRecipe?.acf?.difficulty || 'Easy',
             servings: wpRecipe?.acf?.servings
           };
         }) || [];
 
-        setRecipes(recipes);
+        setRecipes(mergedRecipes);
       } catch (error) {
         console.error('Error fetching favorites:', error);
       } finally {
@@ -127,8 +128,8 @@ const FavoriteRecipes = () => {
               key={recipe.id}
               title={recipe.title}
               image={recipe.image_url || '/placeholder.svg'}
-              cookTime={`Prep: ${recipe.prep_time || 'N/A'} | Cook: ${recipe.cook_time || 'N/A'}`}
-              difficulty="Easy"
+              cookTime={`Prep: ${recipe.prep_time} | Cook: ${recipe.cook_time}`}
+              difficulty={recipe.difficulty || 'Easy'}
               recipeId={recipe.id}
               onClick={() => navigate(`/recipe/${recipe.id}`)}
             />
