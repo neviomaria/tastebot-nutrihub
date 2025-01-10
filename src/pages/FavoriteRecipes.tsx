@@ -4,36 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { RecipeCard } from "@/components/RecipeCard";
-
-interface WordPressRecipe {
-  id: number;
-  title: {
-    rendered: string;
-  };
-  content: {
-    rendered: string;
-  };
-  featured_media_url?: string;
-  acf: {
-    prep_time?: string;
-    cook_time?: string;
-    total_time?: string;
-    servings?: number;
-    difficulty?: string;
-  };
-}
-
-interface Recipe {
-  id: number;
-  title: string;
-  description: string;
-  image_url?: string;
-  prep_time?: string;
-  cook_time?: string;
-  total_time?: string;
-  servings?: number;
-  difficulty?: string;
-}
+import { Recipe } from "@/types/recipe";
 
 const FavoriteRecipes = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -44,11 +15,11 @@ const FavoriteRecipes = () => {
   const { data: wpRecipes } = useQuery({
     queryKey: ['wordpress-recipes'],
     queryFn: async () => {
-      const response = await fetch('https://brainscapebooks.com/wp-json/wp/v2/recipes?per_page=100');
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
         throw new Error('Failed to fetch WordPress recipes');
       }
-      return response.json() as Promise<WordPressRecipe[]>;
+      return response.json() as Promise<Recipe[]>;
     },
     enabled: !!isAuthenticated,
     retry: false
@@ -65,34 +36,19 @@ const FavoriteRecipes = () => {
 
         const { data: favorites, error } = await supabase
           .from('favorites')
-          .select(`
-            recipe_id,
-            recipes (
-              id,
-              title,
-              description
-            )
-          `)
+          .select('recipe_id')
           .eq('user_id', user.id);
 
         if (error) throw error;
 
-        // Transform and merge data with WordPress recipes
-        const mergedRecipes = favorites?.map(fav => {
-          const wpRecipe = wpRecipes?.find(wp => wp.id === fav.recipe_id);
-          return {
-            id: fav.recipes.id,
-            title: fav.recipes.title,
-            description: fav.recipes.description,
-            image_url: wpRecipe?.featured_media_url || '/placeholder.svg',
-            prep_time: wpRecipe?.acf?.prep_time || 'N/A',
-            cook_time: wpRecipe?.acf?.cook_time || 'N/A',
-            difficulty: wpRecipe?.acf?.difficulty || 'Easy',
-            servings: wpRecipe?.acf?.servings
-          };
-        }) || [];
+        if (wpRecipes && favorites) {
+          const favoriteRecipes = favorites.map(fav => {
+            const recipe = wpRecipes.find(wp => wp.id === fav.recipe_id);
+            return recipe;
+          }).filter((recipe): recipe is Recipe => !!recipe);
 
-        setRecipes(mergedRecipes);
+          setRecipes(favoriteRecipes);
+        }
       } catch (error) {
         console.error('Error fetching favorites:', error);
       } finally {
@@ -127,9 +83,9 @@ const FavoriteRecipes = () => {
             <RecipeCard
               key={recipe.id}
               title={recipe.title}
-              image={recipe.image_url || '/placeholder.svg'}
-              cookTime={`Prep: ${recipe.prep_time} | Cook: ${recipe.cook_time}`}
-              difficulty={recipe.difficulty || 'Easy'}
+              image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
+              cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
+              difficulty={recipe.acf.pasto || 'Easy'}
               recipeId={recipe.id}
               onClick={() => navigate(`/recipe/${recipe.id}`)}
             />
