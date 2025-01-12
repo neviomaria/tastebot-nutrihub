@@ -63,13 +63,15 @@ export function useFavorites() {
       if (queryError) throw queryError;
 
       if (!existingRecipe) {
-        // If recipe doesn't exist, fetch it from WordPress and create it
+        // If recipe doesn't exist, fetch all recipes and find the one we need
         try {
-          // Using the correct WordPress API endpoint
-          const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${recipeId}`);
-          if (!response.ok) throw new Error('Failed to fetch recipe from WordPress');
+          const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+          if (!response.ok) throw new Error('Failed to fetch recipes from WordPress');
           
-          const wpRecipe = await response.json();
+          const recipes = await response.json();
+          const wpRecipe = recipes.find((recipe: any) => recipe.id === recipeId);
+          
+          if (!wpRecipe) throw new Error('Recipe not found');
           
           const { error: insertError } = await supabase
             .from('recipes')
