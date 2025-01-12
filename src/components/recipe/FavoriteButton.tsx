@@ -47,46 +47,55 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Fetch recipe data from WordPress
-      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      // Fetch only the specific recipe we need
+      const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${recipeId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch recipes from WordPress');
+        console.error('WordPress API response:', await response.text());
+        throw new Error('Failed to fetch recipe from WordPress');
       }
-      const recipes = await response.json();
       
-      // Find the specific recipe
-      const recipeData = recipes.find((recipe: any) => recipe.id === recipeId);
+      const recipeData = await response.json();
+      console.log('Recipe data from WordPress:', recipeData);
+
       if (!recipeData) {
         throw new Error('Recipe not found');
       }
 
-      // Transform ingredients and instructions arrays
-      const ingredients = recipeData.acf.ingredients?.map((item: any) => 
-        typeof item.ingredient_item === 'string' ? item.ingredient_item : ''
-      ).filter(Boolean) || [];
+      // Transform ingredients and instructions arrays with type checking
+      const ingredients = Array.isArray(recipeData.acf.ingredients) 
+        ? recipeData.acf.ingredients
+            .map((item: any) => item?.ingredient_item)
+            .filter((item: any): item is string => typeof item === 'string')
+        : [];
 
-      const instructions = recipeData.acf.instructions?.map((item: any) => 
-        typeof item.instructions_step === 'string' ? item.instructions_step : ''
-      ).filter(Boolean) || [];
+      const instructions = Array.isArray(recipeData.acf.instructions)
+        ? recipeData.acf.instructions
+            .map((item: any) => item?.instructions_step)
+            .filter((item: any): item is string => typeof item === 'string')
+        : [];
 
-      // Parse servings to integer or use default
+      // Parse servings with fallback
       const servings = parseInt(recipeData.acf.servings) || 4;
 
-      // Insert recipe into Supabase recipes table
+      // Prepare recipe data with proper type checking
+      const recipeToInsert = {
+        id: recipeId,
+        title: typeof recipeData.title === 'object' ? recipeData.title.rendered : recipeData.title,
+        description: typeof recipeData.content === 'object' ? recipeData.content.rendered : recipeData.content,
+        ingredients,
+        instructions,
+        prep_time: recipeData.acf.prep_time || '',
+        cook_time: recipeData.acf.cook_time || '',
+        servings,
+        meal_type: recipeData.acf.pasto || 'main',
+        user_id: user.id
+      };
+
+      console.log('Inserting recipe:', recipeToInsert);
+
       const { error: insertError } = await supabase
         .from('recipes')
-        .upsert({
-          id: recipeId,
-          title: recipeData.title.rendered || recipeData.title,
-          description: recipeData.content.rendered || recipeData.content,
-          ingredients,
-          instructions,
-          prep_time: recipeData.acf.prep_time || '',
-          cook_time: recipeData.acf.cook_time || '',
-          servings,
-          meal_type: recipeData.acf.pasto || 'main',
-          user_id: user.id
-        });
+        .upsert(recipeToInsert);
 
       if (insertError) {
         console.error('Insert error:', insertError);
