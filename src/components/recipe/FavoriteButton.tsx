@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,14 +21,14 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
 
   const checkFavoriteStatus = async () => {
     try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
       const { data: favorites, error } = await supabase
         .from('favorites')
         .select('*')
         .eq('recipe_id', recipeId)
-        .eq('user_id', session.session.user.id)
+        .eq('user_id', session.user.id)
         .maybeSingle();
 
       if (error) {
@@ -47,18 +47,27 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Fetch all recipes first
+      // Fetch recipe data from WordPress
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
         throw new Error('Failed to fetch recipes from WordPress');
       }
       const recipes = await response.json();
       
-      // Find the specific recipe we want
+      // Find the specific recipe
       const recipeData = recipes.find((recipe: any) => recipe.id === recipeId);
       if (!recipeData) {
         throw new Error('Recipe not found');
       }
+
+      // Transform ingredients and instructions arrays
+      const ingredients = recipeData.acf.ingredients?.map((item: any) => 
+        typeof item.ingredient_item === 'string' ? item.ingredient_item : ''
+      ).filter(Boolean) || [];
+
+      const instructions = recipeData.acf.instructions?.map((item: any) => 
+        typeof item.instructions_step === 'string' ? item.instructions_step : ''
+      ).filter(Boolean) || [];
 
       // Parse servings to integer or use default
       const servings = parseInt(recipeData.acf.servings) || 4;
@@ -68,13 +77,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
         .from('recipes')
         .upsert({
           id: recipeId,
-          title: recipeData.title,
-          description: recipeData.content,
-          ingredients: recipeData.acf.ingredients?.map((i: any) => i.ingredient_item) || [],
-          instructions: recipeData.acf.instructions?.map((i: any) => i.instructions_step) || [],
-          prep_time: recipeData.acf.prep_time,
-          cook_time: recipeData.acf.cook_time,
-          servings: servings,
+          title: recipeData.title.rendered || recipeData.title,
+          description: recipeData.content.rendered || recipeData.content,
+          ingredients,
+          instructions,
+          prep_time: recipeData.acf.prep_time || '',
+          cook_time: recipeData.acf.cook_time || '',
+          servings,
           meal_type: recipeData.acf.pasto || 'main',
           user_id: user.id
         });
@@ -161,13 +170,17 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       disabled={isLoading}
       className="group"
     >
-      <Heart
-        className={`h-4 w-4 ${
-          isFavorite 
-            ? 'fill-current text-red-500' 
-            : 'group-hover:fill-current text-gray-500 group-hover:text-red-500'
-        }`}
-      />
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Heart
+          className={`h-4 w-4 ${
+            isFavorite 
+              ? 'fill-current text-red-500' 
+              : 'group-hover:fill-current text-gray-500 group-hover:text-red-500'
+          }`}
+        />
+      )}
       <span className="sr-only">
         {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       </span>
