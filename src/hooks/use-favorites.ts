@@ -65,7 +65,8 @@ export function useFavorites() {
       if (!existingRecipe) {
         // If recipe doesn't exist, fetch it from WordPress and create it
         try {
-          const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/recipe/${recipeId}`);
+          // Using the correct WordPress API endpoint
+          const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${recipeId}`);
           if (!response.ok) throw new Error('Failed to fetch recipe from WordPress');
           
           const wpRecipe = await response.json();
@@ -74,14 +75,14 @@ export function useFavorites() {
             .from('recipes')
             .insert({
               id: recipeId,
-              title: wpRecipe.title.rendered,
-              description: wpRecipe.content.rendered,
+              title: wpRecipe.title,
+              description: wpRecipe.content,
               ingredients: wpRecipe.acf.ingredients || [],
               instructions: wpRecipe.acf.instructions || [],
               prep_time: wpRecipe.acf.prep_time,
               cook_time: wpRecipe.acf.cook_time,
               servings: wpRecipe.acf.servings,
-              meal_type: wpRecipe.acf.meal_type,
+              meal_type: wpRecipe.acf.pasto,
             });
 
           if (insertError) throw insertError;
