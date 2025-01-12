@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,14 +21,14 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
 
   const checkFavoriteStatus = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) return;
 
       const { data: favorites, error } = await supabase
         .from('favorites')
         .select('*')
         .eq('recipe_id', recipeId)
-        .eq('user_id', session.user.id)
+        .eq('user_id', session.session.user.id)
         .maybeSingle();
 
       if (error) {
@@ -44,61 +44,40 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
 
   const createRecipeInDatabase = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session found');
 
-      // Use the standard WordPress REST API endpoint
-      const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/recipe/${recipeId}`);
+      // Fetch all recipes first
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('WordPress API error response:', errorText);
-        throw new Error('Failed to fetch recipe from WordPress');
+        throw new Error('Failed to fetch recipes from WordPress');
       }
+      const recipes = await response.json();
       
-      const recipeData = await response.json();
-      console.log('Recipe data from WordPress:', recipeData);
-
+      // Find the specific recipe we want
+      const recipeData = recipes.find((recipe: any) => recipe.id === recipeId);
       if (!recipeData) {
         throw new Error('Recipe not found');
       }
 
-      // Transform ingredients and instructions arrays
-      const ingredients = Array.isArray(recipeData.acf?.ingredients) 
-        ? recipeData.acf.ingredients
-            .map((item: any) => item?.ingredient_item)
-            .filter(Boolean)
-        : [];
-
-      const instructions = Array.isArray(recipeData.acf?.instructions)
-        ? recipeData.acf.instructions
-            .map((item: any) => item?.instructions_step)
-            .filter(Boolean)
-        : [];
-
-      // Parse servings with fallback
-      const servings = parseInt(recipeData.acf?.servings) || 4;
-
-      const recipeToInsert = {
-        id: recipeId,
-        title: recipeData.title.rendered,
-        description: recipeData.content.rendered,
-        ingredients,
-        instructions,
-        prep_time: recipeData.acf?.prep_time || '',
-        cook_time: recipeData.acf?.cook_time || '',
-        servings,
-        meal_type: recipeData.acf?.pasto || 'main',
-        user_id: user.id
-      };
-
-      console.log('Inserting recipe:', recipeToInsert);
-
+      // Insert recipe into Supabase recipes table with user_id
       const { error: insertError } = await supabase
         .from('recipes')
-        .upsert(recipeToInsert);
+        .upsert({
+          id: recipeId,
+          title: recipeData.title,
+          description: recipeData.content,
+          ingredients: recipeData.acf.ingredients?.map((i: any) => i.ingredient_item) || [],
+          instructions: recipeData.acf.instructions?.map((i: any) => i.instructions_step) || [],
+          prep_time: recipeData.acf.prep_time,
+          cook_time: recipeData.acf.cook_time,
+          servings: recipeData.acf.servings,
+          meal_type: recipeData.acf.pasto,
+          user_id: session.user.id // Add the user_id here
+        });
 
       if (insertError) {
-        console.error('Insert error:', insertError);
         throw new Error('Failed to create recipe in database');
       }
     } catch (error) {
@@ -110,9 +89,9 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
   const toggleFavorite = async () => {
     try {
       setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: session } = await supabase.auth.getSession();
       
-      if (!session) {
+      if (!session.session) {
         toast({
           title: "Error",
           description: "Please sign in to favorite recipes",
@@ -130,7 +109,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           .from('favorites')
           .insert({
             recipe_id: recipeId,
-            user_id: session.user.id,
+            user_id: session.session.user.id,
           });
 
         if (error) throw error;
@@ -145,7 +124,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           .from('favorites')
           .delete()
           .eq('recipe_id', recipeId)
-          .eq('user_id', session.user.id);
+          .eq('user_id', session.session.user.id);
 
         if (error) throw error;
 
@@ -179,17 +158,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       disabled={isLoading}
       className="group"
     >
-      {isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Heart
-          className={`h-4 w-4 ${
-            isFavorite 
-              ? 'fill-current text-red-500' 
-              : 'group-hover:fill-current text-gray-500 group-hover:text-red-500'
-          }`}
-        />
-      )}
+      <Heart
+        className={`h-4 w-4 ${
+          isFavorite 
+            ? 'fill-current text-red-500' 
+            : 'group-hover:fill-current text-gray-500 group-hover:text-red-500'
+        }`}
+      />
       <span className="sr-only">
         {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       </span>
