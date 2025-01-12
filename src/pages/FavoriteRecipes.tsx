@@ -5,13 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { RecipeCard } from "@/components/RecipeCard";
 import { Recipe } from "@/types/recipe";
-import { useFavorites } from "@/hooks/use-favorites";
 
 const FavoriteRecipes = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated } = useAuthState();
-  const { favorites } = useFavorites();
   const navigate = useNavigate();
 
   const { data: wpRecipes } = useQuery({
@@ -28,12 +26,40 @@ const FavoriteRecipes = () => {
   });
 
   useEffect(() => {
-    if (wpRecipes && favorites) {
-      const favoriteRecipes = wpRecipes.filter(recipe => favorites.includes(recipe.id));
-      setRecipes(favoriteRecipes);
-      setIsLoading(false);
+    const fetchFavorites = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsLoading(false);
+          return;
+        }
+
+        const { data: favorites, error } = await supabase
+          .from('favorites')
+          .select('recipe_id')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        if (wpRecipes && favorites) {
+          const favoriteRecipes = favorites.map(fav => {
+            const recipe = wpRecipes.find(wp => wp.id === fav.recipe_id);
+            return recipe;
+          }).filter((recipe): recipe is Recipe => !!recipe);
+
+          setRecipes(favoriteRecipes);
+        }
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (wpRecipes && isAuthenticated) {
+      fetchFavorites();
     }
-  }, [wpRecipes, favorites]);
+  }, [isAuthenticated, wpRecipes]);
 
   if (isLoading) {
     return (

@@ -63,28 +63,25 @@ export function useFavorites() {
       if (queryError) throw queryError;
 
       if (!existingRecipe) {
-        // If recipe doesn't exist, fetch all recipes and find the one we need
+        // If recipe doesn't exist, fetch it from WordPress and create it
         try {
-          const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
-          if (!response.ok) throw new Error('Failed to fetch recipes from WordPress');
+          const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/recipe/${recipeId}`);
+          if (!response.ok) throw new Error('Failed to fetch recipe from WordPress');
           
-          const recipes = await response.json();
-          const wpRecipe = recipes.find((recipe: any) => recipe.id === recipeId);
-          
-          if (!wpRecipe) throw new Error('Recipe not found');
+          const wpRecipe = await response.json();
           
           const { error: insertError } = await supabase
             .from('recipes')
             .insert({
               id: recipeId,
-              title: wpRecipe.title,
-              description: wpRecipe.content,
+              title: wpRecipe.title.rendered,
+              description: wpRecipe.content.rendered,
               ingredients: wpRecipe.acf.ingredients || [],
               instructions: wpRecipe.acf.instructions || [],
               prep_time: wpRecipe.acf.prep_time,
               cook_time: wpRecipe.acf.cook_time,
               servings: wpRecipe.acf.servings,
-              meal_type: wpRecipe.acf.pasto,
+              meal_type: wpRecipe.acf.meal_type,
             });
 
           if (insertError) throw insertError;
