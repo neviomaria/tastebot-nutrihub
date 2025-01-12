@@ -44,9 +44,8 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
 
   const createRecipeInDatabase = async () => {
     try {
-      // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session found');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
       // Fetch all recipes first
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
@@ -61,7 +60,10 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
         throw new Error('Recipe not found');
       }
 
-      // Insert recipe into Supabase recipes table with user_id
+      // Parse servings to integer or use default
+      const servings = parseInt(recipeData.acf.servings) || 4;
+
+      // Insert recipe into Supabase recipes table
       const { error: insertError } = await supabase
         .from('recipes')
         .upsert({
@@ -72,12 +74,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           instructions: recipeData.acf.instructions?.map((i: any) => i.instructions_step) || [],
           prep_time: recipeData.acf.prep_time,
           cook_time: recipeData.acf.cook_time,
-          servings: recipeData.acf.servings,
-          meal_type: recipeData.acf.pasto,
-          user_id: session.user.id // Add the user_id here
+          servings: servings,
+          meal_type: recipeData.acf.pasto || 'main',
+          user_id: user.id
         });
 
       if (insertError) {
+        console.error('Insert error:', insertError);
         throw new Error('Failed to create recipe in database');
       }
     } catch (error) {
@@ -89,9 +92,9 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
   const toggleFavorite = async () => {
     try {
       setIsLoading(true);
-      const { data: session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session.session) {
+      if (!session) {
         toast({
           title: "Error",
           description: "Please sign in to favorite recipes",
@@ -109,7 +112,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           .from('favorites')
           .insert({
             recipe_id: recipeId,
-            user_id: session.session.user.id,
+            user_id: session.user.id,
           });
 
         if (error) throw error;
@@ -124,7 +127,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           .from('favorites')
           .delete()
           .eq('recipe_id', recipeId)
-          .eq('user_id', session.session.user.id);
+          .eq('user_id', session.user.id);
 
         if (error) throw error;
 
