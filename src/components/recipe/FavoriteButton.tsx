@@ -47,10 +47,11 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      // Fetch only the specific recipe we need
-      const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${recipeId}`);
+      // Use the standard WordPress REST API endpoint
+      const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/recipe/${recipeId}`);
       if (!response.ok) {
-        console.error('WordPress API response:', await response.text());
+        const errorText = await response.text();
+        console.error('WordPress API error response:', errorText);
         throw new Error('Failed to fetch recipe from WordPress');
       }
       
@@ -61,33 +62,32 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
         throw new Error('Recipe not found');
       }
 
-      // Transform ingredients and instructions arrays with type checking
-      const ingredients = Array.isArray(recipeData.acf.ingredients) 
+      // Transform ingredients and instructions arrays
+      const ingredients = Array.isArray(recipeData.acf?.ingredients) 
         ? recipeData.acf.ingredients
             .map((item: any) => item?.ingredient_item)
-            .filter((item: any): item is string => typeof item === 'string')
+            .filter(Boolean)
         : [];
 
-      const instructions = Array.isArray(recipeData.acf.instructions)
+      const instructions = Array.isArray(recipeData.acf?.instructions)
         ? recipeData.acf.instructions
             .map((item: any) => item?.instructions_step)
-            .filter((item: any): item is string => typeof item === 'string')
+            .filter(Boolean)
         : [];
 
       // Parse servings with fallback
-      const servings = parseInt(recipeData.acf.servings) || 4;
+      const servings = parseInt(recipeData.acf?.servings) || 4;
 
-      // Prepare recipe data with proper type checking
       const recipeToInsert = {
         id: recipeId,
-        title: typeof recipeData.title === 'object' ? recipeData.title.rendered : recipeData.title,
-        description: typeof recipeData.content === 'object' ? recipeData.content.rendered : recipeData.content,
+        title: recipeData.title.rendered,
+        description: recipeData.content.rendered,
         ingredients,
         instructions,
-        prep_time: recipeData.acf.prep_time || '',
-        cook_time: recipeData.acf.cook_time || '',
+        prep_time: recipeData.acf?.prep_time || '',
+        cook_time: recipeData.acf?.cook_time || '',
         servings,
-        meal_type: recipeData.acf.pasto || 'main',
+        meal_type: recipeData.acf?.pasto || 'main',
         user_id: user.id
       };
 
