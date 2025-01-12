@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -42,9 +42,14 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
     }
   };
 
+  const parseServings = (servingsStr: string): number => {
+    // Extract numbers from string like "Serving 2" or "2"
+    const match = servingsStr.match(/\d+/);
+    return match ? parseInt(match[0], 10) : 0;
+  };
+
   const createRecipeInDatabase = async () => {
     try {
-      // Get current user session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No session found');
 
@@ -61,6 +66,9 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
         throw new Error('Recipe not found');
       }
 
+      // Parse servings to integer
+      const servings = parseServings(recipeData.acf.servings || '0');
+
       // Insert recipe into Supabase recipes table with user_id
       const { error: insertError } = await supabase
         .from('recipes')
@@ -72,12 +80,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           instructions: recipeData.acf.instructions?.map((i: any) => i.instructions_step) || [],
           prep_time: recipeData.acf.prep_time,
           cook_time: recipeData.acf.cook_time,
-          servings: recipeData.acf.servings,
+          servings: servings,
           meal_type: recipeData.acf.pasto,
-          user_id: session.user.id // Add the user_id here
+          user_id: session.user.id
         });
 
       if (insertError) {
+        console.error('Insert error:', insertError);
         throw new Error('Failed to create recipe in database');
       }
     } catch (error) {
@@ -89,9 +98,9 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
   const toggleFavorite = async () => {
     try {
       setIsLoading(true);
-      const { data: session } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session.session) {
+      if (!session) {
         toast({
           title: "Error",
           description: "Please sign in to favorite recipes",
@@ -109,7 +118,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           .from('favorites')
           .insert({
             recipe_id: recipeId,
-            user_id: session.session.user.id,
+            user_id: session.user.id,
           });
 
         if (error) throw error;
@@ -124,7 +133,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           .from('favorites')
           .delete()
           .eq('recipe_id', recipeId)
-          .eq('user_id', session.session.user.id);
+          .eq('user_id', session.user.id);
 
         if (error) throw error;
 
@@ -158,13 +167,17 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       disabled={isLoading}
       className="group"
     >
-      <Heart
-        className={`h-4 w-4 ${
-          isFavorite 
-            ? 'fill-current text-red-500' 
-            : 'group-hover:fill-current text-gray-500 group-hover:text-red-500'
-        }`}
-      />
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Heart
+          className={`h-4 w-4 ${
+            isFavorite 
+              ? 'fill-current text-red-500' 
+              : 'group-hover:fill-current text-gray-500 group-hover:text-red-500'
+          }`}
+        />
+      )}
       <span className="sr-only">
         {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       </span>
