@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthState } from "@/hooks/use-auth-state";
@@ -9,10 +8,10 @@ import { useFavorites } from "@/hooks/use-favorites";
 const FavoriteRecipes = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthState();
-  const { favorites } = useFavorites();
+  const { favorites, isLoadingFavorites } = useFavorites();
 
-  const { data: wpRecipes, isLoading } = useQuery({
-    queryKey: ['wordpress-recipes'],
+  const { data: wpRecipes, isLoading: isLoadingRecipes } = useQuery({
+    queryKey: ['wordpress-recipes', favorites], // Add favorites to queryKey to refetch when they change
     queryFn: async () => {
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
@@ -24,7 +23,9 @@ const FavoriteRecipes = () => {
     retry: false
   });
 
-  // Filter recipes based on favorites
+  const isLoading = isLoadingRecipes || isLoadingFavorites;
+
+  // Filter recipes based on current favorites
   const favoriteRecipes = wpRecipes?.filter(recipe => favorites.includes(recipe.id)) || [];
 
   if (isLoading) {
