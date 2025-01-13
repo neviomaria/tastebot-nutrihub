@@ -28,14 +28,12 @@ const FavoriteRecipes = () => {
 
   useEffect(() => {
     if (wpRecipes && favorites) {
-      const favoriteRecipes = wpRecipes
-        .filter(recipe => favorites.includes(recipe.id))
-        .filter((recipe): recipe is Recipe => !!recipe);
-
+      // Update recipes state whenever favorites or wpRecipes change
+      const favoriteRecipes = wpRecipes.filter(recipe => favorites.includes(recipe.id));
       setRecipes(favoriteRecipes);
       setIsLoading(false);
     }
-  }, [favorites, wpRecipes]);
+  }, [favorites, wpRecipes]); // Dependencies ensure effect runs when favorites change
 
   if (isLoading) {
     return (
