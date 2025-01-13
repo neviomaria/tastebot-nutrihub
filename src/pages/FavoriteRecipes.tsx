@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { RecipeCard } from "@/components/RecipeCard";
 import { Recipe } from "@/types/recipe";
+import { useFavorites } from "@/hooks/use-favorites";
 
 const FavoriteRecipes = () => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated } = useAuthState();
+  const { favorites } = useFavorites();
   const navigate = useNavigate();
 
   const { data: wpRecipes } = useQuery({
@@ -26,56 +27,31 @@ const FavoriteRecipes = () => {
   });
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setIsLoading(false);
-          return;
-        }
+    if (wpRecipes && favorites) {
+      const favoriteRecipes = wpRecipes
+        .filter(recipe => favorites.includes(recipe.id))
+        .filter((recipe): recipe is Recipe => !!recipe);
 
-        const { data: favorites, error } = await supabase
-          .from('favorites')
-          .select('recipe_id')
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        if (wpRecipes && favorites) {
-          const favoriteRecipes = favorites.map(fav => {
-            const recipe = wpRecipes.find(wp => wp.id === fav.recipe_id);
-            return recipe;
-          }).filter((recipe): recipe is Recipe => !!recipe);
-
-          setRecipes(favoriteRecipes);
-        }
-      } catch (error) {
-        console.error('Error fetching favorites:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (wpRecipes && isAuthenticated) {
-      fetchFavorites();
+      setRecipes(favoriteRecipes);
+      setIsLoading(false);
     }
-  }, [isAuthenticated, wpRecipes]);
+  }, [favorites, wpRecipes]);
 
   if (isLoading) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Favorite Recipes</h1>
-        <div className="text-center">Loading your favorite recipes...</div>
+        <h1 className="text-2xl font-bold mb-4">Ricette Preferite</h1>
+        <div className="text-center">Caricamento delle tue ricette preferite...</div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Favorite Recipes</h1>
+      <h1 className="text-2xl font-bold mb-4">Ricette Preferite</h1>
       {recipes.length === 0 ? (
         <div className="text-center text-gray-600">
-          You haven't added any recipes to your favorites yet.
+          Non hai ancora aggiunto nessuna ricetta ai preferiti.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
