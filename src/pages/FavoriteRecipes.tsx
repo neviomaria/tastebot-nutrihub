@@ -7,13 +7,11 @@ import { Recipe } from "@/types/recipe";
 import { useFavorites } from "@/hooks/use-favorites";
 
 const FavoriteRecipes = () => {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthState();
   const { favorites } = useFavorites();
-  const navigate = useNavigate();
 
-  const { data: wpRecipes } = useQuery({
+  const { data: wpRecipes, isLoading } = useQuery({
     queryKey: ['wordpress-recipes'],
     queryFn: async () => {
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
@@ -26,14 +24,8 @@ const FavoriteRecipes = () => {
     retry: false
   });
 
-  useEffect(() => {
-    if (wpRecipes && favorites) {
-      // Update recipes state whenever favorites or wpRecipes change
-      const favoriteRecipes = wpRecipes.filter(recipe => favorites.includes(recipe.id));
-      setRecipes(favoriteRecipes);
-      setIsLoading(false);
-    }
-  }, [favorites, wpRecipes]); // Dependencies ensure effect runs when favorites change
+  // Filter recipes based on favorites
+  const favoriteRecipes = wpRecipes?.filter(recipe => favorites.includes(recipe.id)) || [];
 
   if (isLoading) {
     return (
@@ -47,13 +39,13 @@ const FavoriteRecipes = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Favorite Recipes</h1>
-      {recipes.length === 0 ? (
+      {favoriteRecipes.length === 0 ? (
         <div className="text-center text-gray-600">
           You haven't added any recipes to your favorites yet.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recipes.map((recipe) => (
+          {favoriteRecipes.map((recipe) => (
             <RecipeCard
               key={recipe.id}
               title={recipe.title}
