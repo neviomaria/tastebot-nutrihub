@@ -89,6 +89,7 @@ export function useFavorites() {
               cook_time: wpRecipe.acf.cook_time,
               servings: servings,
               meal_type: wpRecipe.acf.pasto,
+              user_id: user.id // Add the user_id when inserting the recipe
             });
 
           if (insertError) throw insertError;
