@@ -74,6 +74,9 @@ export function useFavorites() {
           
           if (!wpRecipe) throw new Error('Recipe not found');
           
+          // Parse servings to integer, default to null if invalid
+          const servings = parseInt(wpRecipe.acf.servings) || null;
+          
           const { error: insertError } = await supabase
             .from('recipes')
             .insert({
@@ -84,7 +87,7 @@ export function useFavorites() {
               instructions: wpRecipe.acf.instructions || [],
               prep_time: wpRecipe.acf.prep_time,
               cook_time: wpRecipe.acf.cook_time,
-              servings: wpRecipe.acf.servings,
+              servings: servings,
               meal_type: wpRecipe.acf.pasto,
             });
 
