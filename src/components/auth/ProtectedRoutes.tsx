@@ -37,7 +37,7 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
         }
 
         // Verify session is still valid with a separate call
-        const { data: user, error: userError } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           console.error("User verification error:", userError);
           if (mounted) {
@@ -50,7 +50,7 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('first_name, last_name, country')
-          .eq('id', user.user.id)
+          .eq('id', user.id)
           .single();
 
         if (profileError) {

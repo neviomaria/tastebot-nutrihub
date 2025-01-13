@@ -10,18 +10,20 @@ export const useAuthState = () => {
 
   const handleSignOut = async () => {
     try {
-      // Clear any stored session data first
+      // First clear any stored session data
       localStorage.removeItem('supabase.auth.token');
       
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Sign out error:", error);
-        // Even if there's an error, we want to clear the auth state
-        setIsAuthenticated(false);
-        navigate('/auth');
-        return;
+        toast({
+          variant: "destructive",
+          title: "Error signing out",
+          description: error.message,
+        });
       }
 
+      // Always set authenticated to false and redirect, even if there was an error
       setIsAuthenticated(false);
       navigate('/auth');
     } catch (error) {
@@ -60,7 +62,7 @@ export const useAuthState = () => {
           return;
         }
 
-        // Verify the session is still valid
+        // Verify the session is still valid with a separate call
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
@@ -129,5 +131,5 @@ export const useAuthState = () => {
     };
   }, [toast, navigate]);
 
-  return { isAuthenticated };
+  return { isAuthenticated, handleSignOut };
 };
