@@ -42,6 +42,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
     }
   };
 
+  const parseServings = (servings: string | null): number | null => {
+    if (!servings) return null;
+    // Extract the first number from the string
+    const match = servings.match(/\d+/);
+    return match ? parseInt(match[0], 10) : null;
+  };
+
   const createRecipeInDatabase = async () => {
     try {
       // Get current user session
@@ -61,6 +68,10 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
         throw new Error('Recipe not found');
       }
 
+      // Parse servings to integer
+      const servings = parseServings(recipeData.acf.servings);
+      console.log('Parsed servings:', servings, 'from:', recipeData.acf.servings);
+
       // Insert recipe into Supabase recipes table with user_id
       const { error: insertError } = await supabase
         .from('recipes')
@@ -72,12 +83,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
           instructions: recipeData.acf.instructions?.map((i: any) => i.instructions_step) || [],
           prep_time: recipeData.acf.prep_time,
           cook_time: recipeData.acf.cook_time,
-          servings: recipeData.acf.servings,
+          servings: servings,
           meal_type: recipeData.acf.pasto,
-          user_id: session.user.id // Add the user_id here
+          user_id: session.user.id
         });
 
       if (insertError) {
+        console.error('Insert error:', insertError);
         throw new Error('Failed to create recipe in database');
       }
     } catch (error) {
