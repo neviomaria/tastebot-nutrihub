@@ -40,18 +40,18 @@ const FavoriteRecipes = () => {
   if (isLoading) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Ricette Preferite</h1>
-        <div className="text-center">Caricamento delle tue ricette preferite...</div>
+        <h1 className="text-2xl font-bold mb-4">Favorite Recipes</h1>
+        <div className="text-center">Loading your favorite recipes...</div>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Ricette Preferite</h1>
+      <h1 className="text-2xl font-bold mb-4">Favorite Recipes</h1>
       {recipes.length === 0 ? (
         <div className="text-center text-gray-600">
-          Non hai ancora aggiunto nessuna ricetta ai preferiti.
+          You haven't added any recipes to your favorites yet.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
