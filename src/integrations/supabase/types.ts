@@ -88,30 +88,51 @@ export type Database = {
       }
       meal_plans: {
         Row: {
+          calculated_calories: boolean | null
           created_at: string | null
           daily_calories: number | null
+          duration: string | null
           end_date: string
+          excluded_ingredients: string[] | null
           id: string
+          meals_per_day: string[] | null
+          objective: string | null
+          preferred_cuisines: string[] | null
           start_date: string
           status: string | null
+          time_constraint: string | null
           user_id: string
         }
         Insert: {
+          calculated_calories?: boolean | null
           created_at?: string | null
           daily_calories?: number | null
+          duration?: string | null
           end_date: string
+          excluded_ingredients?: string[] | null
           id?: string
+          meals_per_day?: string[] | null
+          objective?: string | null
+          preferred_cuisines?: string[] | null
           start_date: string
           status?: string | null
+          time_constraint?: string | null
           user_id: string
         }
         Update: {
+          calculated_calories?: boolean | null
           created_at?: string | null
           daily_calories?: number | null
+          duration?: string | null
           end_date?: string
+          excluded_ingredients?: string[] | null
           id?: string
+          meals_per_day?: string[] | null
+          objective?: string | null
+          preferred_cuisines?: string[] | null
           start_date?: string
           status?: string | null
+          time_constraint?: string | null
           user_id?: string
         }
         Relationships: []
