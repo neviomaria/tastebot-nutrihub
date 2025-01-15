@@ -21,11 +21,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { PlusCircle } from "lucide-react";
-import { createMealPlanSchema } from "@/schemas/meal-plan";
+import { createMealPlanSchema, mealPlanObjectives, mealPlanDurations, mealsPerDay, timeConstraints } from "@/schemas/meal-plan";
 import type { CreateMealPlanFormValues } from "@/schemas/meal-plan";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { addDays, format } from "date-fns";
+import { SelectField } from "@/components/form/SelectField";
+import { CheckboxField } from "@/components/form/CheckboxField";
 
 export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
@@ -37,6 +39,9 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
       start_date: format(new Date(), 'yyyy-MM-dd'),
       end_date: format(addDays(new Date(), 7), 'yyyy-MM-dd'),
       daily_calories: 2000,
+      meals_per_day: ["Breakfast", "Lunch", "Dinner"],
+      excluded_ingredients: [],
+      preferred_cuisines: [],
     },
   });
 
@@ -70,6 +75,11 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
           start_date: values.start_date,
           end_date: values.end_date,
           daily_calories: values.daily_calories,
+          objective: values.objective,
+          meals_per_day: values.meals_per_day,
+          time_constraint: values.time_constraint,
+          excluded_ingredients: values.excluded_ingredients,
+          preferred_cuisines: values.preferred_cuisines,
           status: 'active'
         })
         .select()
@@ -111,6 +121,34 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <SelectField
+              form={form}
+              name="objective"
+              label="Primary Objective"
+              options={mealPlanObjectives}
+            />
+
+            <SelectField
+              form={form}
+              name="duration"
+              label="Plan Duration"
+              options={mealPlanDurations}
+            />
+
+            <CheckboxField
+              form={form}
+              name="meals_per_day"
+              label="Meals Per Day"
+              options={mealsPerDay}
+            />
+
+            <SelectField
+              form={form}
+              name="time_constraint"
+              label="Time Constraint"
+              options={timeConstraints}
+            />
+
             <FormField
               control={form.control}
               name="start_date"
@@ -124,6 +162,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="end_date"
@@ -137,6 +176,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="daily_calories"
@@ -154,6 +194,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
                 </FormItem>
               )}
             />
+
             <div className="pt-4">
               <Button type="submit" className="w-full">
                 Create Plan
