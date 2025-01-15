@@ -19,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { PlusCircle } from "lucide-react";
 import { createMealPlanSchema, mealPlanObjectives, mealPlanDurations, mealsPerDay, timeConstraints } from "@/schemas/meal-plan";
@@ -119,89 +120,91 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
             Create a personalized meal plan based on your preferences
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <SelectField
-              form={form}
-              name="objective"
-              label="Primary Objective"
-              options={mealPlanObjectives}
-            />
+        <ScrollArea className="h-[400px] pr-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <SelectField
+                form={form}
+                name="objective"
+                label="Primary Objective"
+                options={mealPlanObjectives}
+              />
 
-            <SelectField
-              form={form}
-              name="duration"
-              label="Plan Duration"
-              options={mealPlanDurations}
-            />
+              <SelectField
+                form={form}
+                name="duration"
+                label="Plan Duration"
+                options={mealPlanDurations}
+              />
 
-            <CheckboxField
-              form={form}
-              name="meals_per_day"
-              label="Meals Per Day"
-              options={mealsPerDay}
-            />
+              <CheckboxField
+                form={form}
+                name="meals_per_day"
+                label="Meals Per Day"
+                options={mealsPerDay}
+              />
 
-            <SelectField
-              form={form}
-              name="time_constraint"
-              label="Time Constraint"
-              options={timeConstraints}
-            />
+              <SelectField
+                form={form}
+                name="time_constraint"
+                label="Time Constraint"
+                options={timeConstraints}
+              />
 
-            <FormField
-              control={form.control}
-              name="start_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="start_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="end_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>End Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="end_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="daily_calories"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Daily Calories Target</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : '')}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="daily_calories"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Daily Calories Target</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : '')}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <div className="pt-4">
-              <Button type="submit" className="w-full">
-                Create Plan
-              </Button>
-            </div>
-          </form>
-        </Form>
+              <div className="pt-4">
+                <Button type="submit" className="w-full">
+                  Create Plan
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
