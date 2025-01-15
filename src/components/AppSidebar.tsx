@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, User, Book, LayoutDashboard, Ticket, LogOut, Heart } from "lucide-react";
+import { Menu, User, Book, LayoutDashboard, Ticket, LogOut, Heart, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "./AppHeader";
@@ -31,6 +31,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     { title: "My Books", icon: Book, path: "/my-books" },
     { title: "My Coupons", icon: Ticket, path: "/my-coupons" },
     { title: "Favorite Recipes", icon: Heart, path: "/favorite-recipes" },
+    { title: "Meal Plans", icon: Calendar, path: "/meal-plans" },
   ];
 
   const [menuItems] = useState<MenuItem[]>(baseMenuItems);

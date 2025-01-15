@@ -38,6 +38,84 @@ export type Database = {
           },
         ]
       }
+      meal_plan_items: {
+        Row: {
+          calories_per_serving: number | null
+          created_at: string | null
+          day_of_week: number
+          id: string
+          meal_plan_id: string
+          meal_type: string
+          recipe_id: number
+          servings: number
+        }
+        Insert: {
+          calories_per_serving?: number | null
+          created_at?: string | null
+          day_of_week: number
+          id?: string
+          meal_plan_id: string
+          meal_type: string
+          recipe_id: number
+          servings?: number
+        }
+        Update: {
+          calories_per_serving?: number | null
+          created_at?: string | null
+          day_of_week?: number
+          id?: string
+          meal_plan_id?: string
+          meal_type?: string
+          recipe_id?: number
+          servings?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_items_meal_plan_id_fkey"
+            columns: ["meal_plan_id"]
+            isOneToOne: false
+            referencedRelation: "meal_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_items_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meal_plans: {
+        Row: {
+          created_at: string | null
+          daily_calories: number | null
+          end_date: string
+          id: string
+          start_date: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          daily_calories?: number | null
+          end_date: string
+          id?: string
+          start_date: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          daily_calories?: number | null
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           access_level: string | null
