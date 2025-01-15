@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CreateMealPlanDialog } from "@/components/meal-plan/CreateMealPlanDialog";
 
 const MealPlans = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: mealPlans, isLoading } = useQuery({
     queryKey: ["meal-plans"],
@@ -45,15 +45,16 @@ const MealPlans = () => {
     );
   }
 
+  const handleSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+  };
+
   return (
     <div className="min-h-screen bg-background px-4 py-6 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Meal Plans</h1>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Meal Plan
-          </Button>
+          <CreateMealPlanDialog onSuccess={handleSuccess} />
         </div>
 
         {mealPlans?.length === 0 ? (
