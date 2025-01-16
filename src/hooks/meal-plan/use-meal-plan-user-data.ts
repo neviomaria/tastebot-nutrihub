@@ -8,11 +8,16 @@ interface UserBook {
   book_title: string;
 }
 
+interface ProfileData {
+  allergies: string[] | null;
+  favorite_cuisines: string[] | null;
+}
+
 export const useMealPlanUserData = (form: UseFormReturn<CreateMealPlanFormValues>) => {
   // Fetch user profile for preferences
   const { data: profile } = useQuery({
     queryKey: ["profile"],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProfileData> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
@@ -25,7 +30,9 @@ export const useMealPlanUserData = (form: UseFormReturn<CreateMealPlanFormValues
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
+    select: (data: ProfileData) => {
       console.log("Profile data received:", data); // Debug log
       
       // Set excluded ingredients from allergies, filtering out "None" and "Other"
@@ -41,6 +48,8 @@ export const useMealPlanUserData = (form: UseFormReturn<CreateMealPlanFormValues
       ) || [];
       console.log("Setting preferred cuisines:", selectedCuisines); // Debug log
       form.setValue("preferred_cuisines", selectedCuisines);
+      
+      return data;
     }
   });
 
