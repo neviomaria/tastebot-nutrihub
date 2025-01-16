@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { PlusCircle } from "lucide-react";
 import { createMealPlanSchema, mealPlanObjectives, mealPlanDurations, mealsPerDay, timeConstraints } from "@/schemas/meal-plan";
+import { allergies, cuisineTypes } from "@/schemas/profile";
 import type { CreateMealPlanFormValues } from "@/schemas/meal-plan";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -43,10 +44,11 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
       meals_per_day: ["Breakfast", "Lunch", "Dinner"],
       excluded_ingredients: [],
       preferred_cuisines: [],
+      selected_books: [],
     },
   });
 
-  // Fetch user profile for preferences
+  // Fetch user profile for preferences and books
   const { data: profile } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
@@ -65,13 +67,56 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
     meta: {
       onSuccess: (data) => {
         // Set excluded ingredients from allergies, filtering out "None"
-        const allergies = data?.allergies?.filter(allergy => allergy !== "None") || [];
-        form.setValue("excluded_ingredients", allergies);
+        const selectedAllergies = data?.allergies?.filter(allergy => allergy !== "None") || [];
+        form.setValue("excluded_ingredients", selectedAllergies);
         
         // Set preferred cuisines, filtering out "Other"
-        const cuisines = data?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || [];
-        form.setValue("preferred_cuisines", cuisines);
+        const selectedCuisines = data?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || [];
+        form.setValue("preferred_cuisines", selectedCuisines);
       }
+    }
+  });
+
+  // Fetch user's books
+  const { data: userBooks = [] } = useQuery({
+    queryKey: ["userBooks"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      // Fetch profile book
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("book_id, book_title")
+        .eq("id", user.id)
+        .single();
+
+      // Fetch additional books from user_coupons
+      const { data: userCoupons } = await supabase
+        .from("user_coupons")
+        .select("book_id, book_title")
+        .eq("user_id", user.id);
+
+      // Combine books, ensuring no duplicates
+      let allBooks = [];
+      if (profile?.book_id) {
+        allBooks.push({
+          book_id: profile.book_id,
+          book_title: profile.book_title || ''
+        });
+      }
+      if (userCoupons) {
+        userCoupons.forEach(coupon => {
+          if (!allBooks.some(book => book.book_id === coupon.book_id)) {
+            allBooks.push({
+              book_id: coupon.book_id,
+              book_title: coupon.book_title
+            });
+          }
+        });
+      }
+
+      return allBooks;
     }
   });
 
@@ -92,6 +137,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
           time_constraint: values.time_constraint,
           excluded_ingredients: values.excluded_ingredients,
           preferred_cuisines: values.preferred_cuisines,
+          selected_books: values.selected_books,
           status: 'active'
         })
         .select()
@@ -211,16 +257,25 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
               <CheckboxField
                 form={form}
                 name="excluded_ingredients"
-                label="Excluded Ingredients (from your allergies)"
-                options={profile?.allergies?.filter(allergy => allergy !== "None") || []}
+                label="Excluded Ingredients"
+                options={allergies.filter(allergy => allergy !== "Other")}
               />
 
               <CheckboxField
                 form={form}
                 name="preferred_cuisines"
                 label="Preferred Cuisines"
-                options={profile?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || []}
+                options={cuisineTypes.filter(cuisine => cuisine !== "Other")}
               />
+
+              {userBooks.length > 0 && (
+                <CheckboxField
+                  form={form}
+                  name="selected_books"
+                  label="Select Books for Recipes"
+                  options={userBooks.map(book => book.book_title)}
+                />
+              )}
 
               <div className="pt-4">
                 <Button type="submit" className="w-full">

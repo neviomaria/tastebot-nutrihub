@@ -43,6 +43,7 @@ export const createMealPlanSchema = z.object({
   daily_calories: z.number().min(500).max(10000).optional(),
   excluded_ingredients: z.array(z.string()).optional(),
   preferred_cuisines: z.array(z.string()).optional(),
+  selected_books: z.array(z.string()).optional(),
 });
 
 export type CreateMealPlanFormValues = z.infer<typeof createMealPlanSchema>;
