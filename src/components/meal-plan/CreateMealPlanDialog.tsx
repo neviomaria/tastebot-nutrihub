@@ -51,7 +51,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
       console.log("Creating meal plan with values:", values);
       
       // Create meal plan
-      const { data: mealPlan, error } = await supabase
+      const { data: mealPlan, error: createError } = await supabase
         .from("meal_plans")
         .insert({
           user_id: user.id,
@@ -69,21 +69,31 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
         .select()
         .single();
 
-      if (error) {
-        console.error("Error creating meal plan:", error);
-        throw error;
+      if (createError) {
+        console.error("Error creating meal plan:", createError);
+        throw createError;
+      }
+
+      if (!mealPlan) {
+        throw new Error("No meal plan data returned");
       }
 
       console.log("Meal plan created, generating items...");
 
       // Generate meal plan items using AI
-      const { error: generateError } = await supabase.functions.invoke('generate-meal-plan', {
+      const { data: generatedData, error: generateError } = await supabase.functions.invoke('generate-meal-plan', {
         body: { mealPlanId: mealPlan.id }
       });
 
       if (generateError) {
         console.error("Error generating meal plan:", generateError);
         throw generateError;
+      }
+
+      console.log("Generation response:", generatedData);
+
+      if (!generatedData) {
+        throw new Error("No data returned from meal plan generation");
       }
 
       console.log("Meal plan generated successfully");
@@ -94,12 +104,13 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
       });
 
       setOpen(false);
+      form.reset();
       onSuccess();
     } catch (error) {
-      console.error("Error creating meal plan:", error);
+      console.error("Error in meal plan creation:", error);
       toast({
         title: "Error",
-        description: "Failed to create meal plan",
+        description: error instanceof Error ? error.message : "Failed to create meal plan",
         variant: "destructive",
       });
     } finally {

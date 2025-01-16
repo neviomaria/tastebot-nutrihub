@@ -27,6 +27,8 @@ serve(async (req) => {
       throw new Error('No meal plan ID provided');
     }
 
+    console.log('Generating meal plan for ID:', mealPlanId);
+
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
@@ -46,6 +48,9 @@ serve(async (req) => {
       .single();
 
     if (mealPlanError) throw mealPlanError;
+    if (!mealPlan) throw new Error('Meal plan not found');
+
+    console.log('Fetched meal plan:', mealPlan);
 
     // Fetch available recipes
     const { data: recipes, error: recipesError } = await supabase
@@ -53,6 +58,9 @@ serve(async (req) => {
       .select('*');
 
     if (recipesError) throw recipesError;
+    if (!recipes) throw new Error('No recipes found');
+
+    console.log('Fetched recipes count:', recipes.length);
 
     // Create prompt for OpenAI
     const prompt = `Create a meal plan with the following requirements:
@@ -66,7 +74,7 @@ Preferred cuisines: ${mealPlan.preferred_cuisines?.join(', ') || 'Any'}
 Dietary preferences: ${mealPlan.profiles.dietary_preferences?.join(', ') || 'None'}
 Cooking skill level: ${mealPlan.profiles.cooking_skill_level || 'Intermediate'}
 
-Available recipes: ${recipes.map(r => r.title).join(', ')}
+Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
 Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. Return the response in this JSON format:
 {
@@ -80,7 +88,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
   ]
 }`;
 
-    console.log('Sending prompt to OpenAI:', prompt);
+    console.log('Sending prompt to OpenAI');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -107,7 +115,10 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
     }
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
+
     const mealPlanItems = JSON.parse(data.choices[0].message.content);
+    console.log('Parsed meal plan items:', mealPlanItems);
 
     // Save generated meal plan items to database
     const { error: insertError } = await supabase
@@ -119,7 +130,9 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
 
     if (insertError) throw insertError;
 
-    return new Response(JSON.stringify({ success: true }), {
+    console.log('Successfully saved meal plan items');
+
+    return new Response(JSON.stringify({ success: true, data: mealPlanItems }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
