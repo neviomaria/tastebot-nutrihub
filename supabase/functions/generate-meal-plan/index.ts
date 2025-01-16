@@ -96,7 +96,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
   "meal_plan_items": [
     {
       "day_of_week": number,
-      "meal_type": string,
+      "meal_type": string (must be one of the exact values listed above),
       "recipe_id": number,
       "servings": number
     }
@@ -160,7 +160,10 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         meal_plan_id: mealPlanId
       })));
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error('Error inserting meal plan items:', insertError);
+      throw insertError;
+    }
 
     console.log('Successfully saved meal plan items');
 
