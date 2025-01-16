@@ -11,6 +11,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Define valid meal types as a constant
+const VALID_MEAL_TYPES = [
+  "Breakfast",
+  "Lunch", 
+  "Dinner",
+  "Morning Snack",
+  "Afternoon Snack",
+  "Evening Snack"
+] as const;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -29,10 +39,8 @@ serve(async (req) => {
 
     console.log('Generating meal plan for ID:', mealPlanId);
 
-    // Initialize Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // First fetch meal plan details
     const { data: mealPlan, error: mealPlanError } = await supabase
       .from('meal_plans')
       .select('*')
@@ -44,7 +52,6 @@ serve(async (req) => {
 
     console.log('Fetched meal plan:', mealPlan);
 
-    // Separately fetch profile data
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('dietary_preferences, allergies, favorite_cuisines, cooking_skill_level')
@@ -56,7 +63,6 @@ serve(async (req) => {
 
     console.log('Fetched profile:', profile);
 
-    // Fetch available recipes
     let recipesQuery = supabase.from('recipes').select('*');
     
     if (mealPlan.selected_books && mealPlan.selected_books.length > 0) {
@@ -83,7 +89,7 @@ Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: "Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack". Return the response in this format:
+Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.map(t => `"${t}"`).join(', ')}. Return the response in this format:
 {
   "meal_plan_items": [
     {
@@ -108,7 +114,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         messages: [
           { 
             role: 'system', 
-            content: 'You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: "Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack".'
+            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')}.`
           },
           { role: 'user', content: prompt }
         ],
@@ -135,9 +141,8 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
     }
 
     // Validate meal types before insertion
-    const validMealTypes = ["Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack"];
     const invalidItems = mealPlanItems.meal_plan_items.filter(
-      (item: any) => !validMealTypes.includes(item.meal_type)
+      (item: any) => !VALID_MEAL_TYPES.includes(item.meal_type)
     );
     
     if (invalidItems.length > 0) {
