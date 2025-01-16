@@ -55,13 +55,22 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("allergies, favorite_cuisines")
         .eq("id", user.id)
         .single();
 
       if (error) throw error;
       return data;
     },
+    onSuccess: (data) => {
+      // Set excluded ingredients from allergies, filtering out "None"
+      const allergies = data?.allergies?.filter(allergy => allergy !== "None") || [];
+      form.setValue("excluded_ingredients", allergies);
+      
+      // Set preferred cuisines, filtering out "Other"
+      const cuisines = data?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || [];
+      form.setValue("preferred_cuisines", cuisines);
+    }
   });
 
   const onSubmit = async (values: CreateMealPlanFormValues) => {
@@ -195,6 +204,20 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+
+              <CheckboxField
+                form={form}
+                name="excluded_ingredients"
+                label="Excluded Ingredients (from your allergies)"
+                options={profile?.allergies?.filter(allergy => allergy !== "None") || []}
+              />
+
+              <CheckboxField
+                form={form}
+                name="preferred_cuisines"
+                label="Preferred Cuisines"
+                options={profile?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || []}
               />
 
               <div className="pt-4">
