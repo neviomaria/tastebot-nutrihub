@@ -45,6 +45,15 @@ export const SignUpCouponForm = () => {
         couponCode: values.coupon_code 
       });
 
+      if (!values.email) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Email is required",
+        });
+        return;
+      }
+
       let bookData = null;
       if (values.coupon_code) {
         const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-coupon', {
@@ -109,6 +118,15 @@ export const SignUpCouponForm = () => {
         return;
       }
 
+      if (!authData.user) {
+        toast({
+          title: "Error",
+          description: "No user data returned",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // If we have a valid coupon, add it to user_coupons table
       if (bookData && authData.user) {
         const { error: couponError } = await supabase
@@ -152,6 +170,7 @@ export const SignUpCouponForm = () => {
           placeholder="Email"
           {...form.register("email")}
           className="w-full"
+          required
         />
         {form.formState.errors.email && (
           <p className="text-sm text-red-500 mt-1">
@@ -166,6 +185,7 @@ export const SignUpCouponForm = () => {
           placeholder="Password"
           {...form.register("password")}
           className="w-full"
+          required
         />
         {form.formState.errors.password && (
           <p className="text-sm text-red-500 mt-1">
