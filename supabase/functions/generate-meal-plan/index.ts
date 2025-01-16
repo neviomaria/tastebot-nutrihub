@@ -32,18 +32,10 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // Fetch meal plan details
+    // First fetch meal plan details
     const { data: mealPlan, error: mealPlanError } = await supabase
       .from('meal_plans')
-      .select(`
-        *,
-        profiles (
-          dietary_preferences,
-          allergies,
-          favorite_cuisines,
-          cooking_skill_level
-        )
-      `)
+      .select('*')
       .eq('id', mealPlanId)
       .single();
 
@@ -51,6 +43,18 @@ serve(async (req) => {
     if (!mealPlan) throw new Error('Meal plan not found');
 
     console.log('Fetched meal plan:', mealPlan);
+
+    // Separately fetch profile data
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('dietary_preferences, allergies, favorite_cuisines, cooking_skill_level')
+      .eq('id', mealPlan.user_id)
+      .single();
+
+    if (profileError) throw profileError;
+    if (!profile) throw new Error('Profile not found');
+
+    console.log('Fetched profile:', profile);
 
     // Fetch available recipes based on selected books
     let recipesQuery = supabase.from('recipes').select('*');
@@ -78,8 +82,8 @@ Meals per day: ${mealPlan.meals_per_day.join(', ')}
 Time constraint: ${mealPlan.time_constraint}
 Excluded ingredients: ${mealPlan.excluded_ingredients?.join(', ') || 'None'}
 Preferred cuisines: ${mealPlan.preferred_cuisines?.join(', ') || 'Any'}
-Dietary preferences: ${mealPlan.profiles.dietary_preferences?.join(', ') || 'None'}
-Cooking skill level: ${mealPlan.profiles.cooking_skill_level || 'Intermediate'}
+Dietary preferences: ${profile.dietary_preferences?.join(', ') || 'None'}
+Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
