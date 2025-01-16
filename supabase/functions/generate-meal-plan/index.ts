@@ -11,7 +11,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Define valid meal types as a constant
+// Define valid meal types as a constant - these MUST match the database constraint
 const VALID_MEAL_TYPES = [
   "Breakfast",
   "Lunch", 
@@ -20,6 +20,8 @@ const VALID_MEAL_TYPES = [
   "Afternoon Snack",
   "Evening Snack"
 ] as const;
+
+type ValidMealType = typeof VALID_MEAL_TYPES[number];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
