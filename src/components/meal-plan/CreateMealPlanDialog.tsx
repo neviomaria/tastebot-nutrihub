@@ -42,10 +42,14 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
 
   const onSubmit = async (values: CreateMealPlanFormValues) => {
     try {
+      console.log("Starting meal plan creation...");
       setIsGenerating(true);
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
+      console.log("Creating meal plan with values:", values);
+      
       // Create meal plan
       const { data: mealPlan, error } = await supabase
         .from("meal_plans")
@@ -65,14 +69,24 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating meal plan:", error);
+        throw error;
+      }
+
+      console.log("Meal plan created, generating items...");
 
       // Generate meal plan items using AI
       const { error: generateError } = await supabase.functions.invoke('generate-meal-plan', {
         body: { mealPlanId: mealPlan.id }
       });
 
-      if (generateError) throw generateError;
+      if (generateError) {
+        console.error("Error generating meal plan:", generateError);
+        throw generateError;
+      }
+
+      console.log("Meal plan generated successfully");
 
       toast({
         title: "Success",
