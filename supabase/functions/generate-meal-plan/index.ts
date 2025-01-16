@@ -61,8 +61,6 @@ serve(async (req) => {
     
     // If selected books are specified, filter recipes accordingly
     if (mealPlan.selected_books && mealPlan.selected_books.length > 0) {
-      // Here you would add logic to filter recipes by book
-      // For now, we'll fetch all recipes as the book-recipe relationship isn't established
       console.log('Selected books:', mealPlan.selected_books);
     }
 
@@ -73,7 +71,6 @@ serve(async (req) => {
 
     console.log('Fetched recipes count:', recipes.length);
 
-    // Create prompt for OpenAI
     const prompt = `Create a meal plan with the following requirements:
 Duration: ${mealPlan.duration}
 Daily calorie target: ${mealPlan.daily_calories}
@@ -87,7 +84,7 @@ Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. Return the response in this JSON format:
+Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. Return the response in this format:
 {
   "meal_plan_items": [
     {
@@ -116,6 +113,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
           },
           { role: 'user', content: prompt }
         ],
+        response_format: { type: "json_object" }
       }),
     });
 
@@ -128,8 +126,14 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
     const data = await response.json();
     console.log('OpenAI response:', data);
 
-    const mealPlanItems = JSON.parse(data.choices[0].message.content);
-    console.log('Parsed meal plan items:', mealPlanItems);
+    let mealPlanItems;
+    try {
+      mealPlanItems = JSON.parse(data.choices[0].message.content);
+      console.log('Parsed meal plan items:', mealPlanItems);
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      throw new Error('Invalid response format from OpenAI');
+    }
 
     // Save generated meal plan items to database
     const { error: insertError } = await supabase
