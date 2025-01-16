@@ -42,14 +42,12 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
 
   const onSubmit = async (values: CreateMealPlanFormValues) => {
     try {
-      console.log("Starting meal plan creation...");
+      console.log("Starting meal plan creation with values:", values);
       setIsGenerating(true);
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
-      console.log("Creating meal plan with values:", values);
-      
       // Create meal plan
       const { data: mealPlan, error: createError } = await supabase
         .from("meal_plans")
@@ -96,11 +94,9 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
         throw new Error("No data returned from meal plan generation");
       }
 
-      console.log("Meal plan generated successfully");
-
       toast({
         title: "Success",
-        description: "Meal plan created and generated successfully",
+        description: "Meal plan created successfully",
       });
 
       setOpen(false);

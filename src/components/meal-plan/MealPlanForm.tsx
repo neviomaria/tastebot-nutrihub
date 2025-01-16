@@ -17,9 +17,14 @@ interface MealPlanFormProps {
 }
 
 export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPlanFormProps) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    form.handleSubmit(onSubmit)(e);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <SelectField
           form={form}
           name="objective"
