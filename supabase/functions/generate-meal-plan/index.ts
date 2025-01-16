@@ -52,10 +52,17 @@ serve(async (req) => {
 
     console.log('Fetched meal plan:', mealPlan);
 
-    // Fetch available recipes
-    const { data: recipes, error: recipesError } = await supabase
-      .from('recipes')
-      .select('*');
+    // Fetch available recipes based on selected books
+    let recipesQuery = supabase.from('recipes').select('*');
+    
+    // If selected books are specified, filter recipes accordingly
+    if (mealPlan.selected_books && mealPlan.selected_books.length > 0) {
+      // Here you would add logic to filter recipes by book
+      // For now, we'll fetch all recipes as the book-recipe relationship isn't established
+      console.log('Selected books:', mealPlan.selected_books);
+    }
+
+    const { data: recipes, error: recipesError } = await recipesQuery;
 
     if (recipesError) throw recipesError;
     if (!recipes) throw new Error('No recipes found');

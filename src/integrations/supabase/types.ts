@@ -98,6 +98,7 @@ export type Database = {
           meals_per_day: string[] | null
           objective: string | null
           preferred_cuisines: string[] | null
+          selected_books: string[] | null
           start_date: string
           status: string | null
           time_constraint: string | null
@@ -114,6 +115,7 @@ export type Database = {
           meals_per_day?: string[] | null
           objective?: string | null
           preferred_cuisines?: string[] | null
+          selected_books?: string[] | null
           start_date: string
           status?: string | null
           time_constraint?: string | null
@@ -130,6 +132,7 @@ export type Database = {
           meals_per_day?: string[] | null
           objective?: string | null
           preferred_cuisines?: string[] | null
+          selected_books?: string[] | null
           start_date?: string
           status?: string | null
           time_constraint?: string | null
