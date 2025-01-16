@@ -25,16 +25,18 @@ export const useMealPlanUserData = (form: UseFormReturn<CreateMealPlanFormValues
       if (error) throw error;
       return data;
     },
-    meta: {
-      onSuccess: (data) => {
-        // Set excluded ingredients from allergies, filtering out "None"
-        const selectedAllergies = data?.allergies?.filter(allergy => allergy !== "None") || [];
-        form.setValue("excluded_ingredients", selectedAllergies);
-        
-        // Set preferred cuisines, filtering out "Other"
-        const selectedCuisines = data?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || [];
-        form.setValue("preferred_cuisines", selectedCuisines);
-      }
+    onSuccess: (data) => {
+      // Set excluded ingredients from allergies, filtering out "None" and "Other"
+      const selectedAllergies = data?.allergies?.filter(allergy => 
+        allergy !== "None" && allergy !== "Other"
+      ) || [];
+      form.setValue("excluded_ingredients", selectedAllergies);
+      
+      // Set preferred cuisines, filtering out "Other"
+      const selectedCuisines = data?.favorite_cuisines?.filter(cuisine => 
+        cuisine !== "Other"
+      ) || [];
+      form.setValue("preferred_cuisines", selectedCuisines);
     }
   });
 
