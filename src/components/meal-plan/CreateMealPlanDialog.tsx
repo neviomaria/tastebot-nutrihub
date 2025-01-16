@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { createMealPlanSchema } from "@/schemas/meal-plan";
 import type { CreateMealPlanFormValues } from "@/schemas/meal-plan";
 import { supabase } from "@/integrations/supabase/client";

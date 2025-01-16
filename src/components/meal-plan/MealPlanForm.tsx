@@ -90,7 +90,11 @@ export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPl
         )}
 
         <div className="pt-4">
-          <Button type="submit" className="w-full" disabled={isGenerating}>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isGenerating}
+          >
             {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
