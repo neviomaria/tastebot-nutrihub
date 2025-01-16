@@ -11,13 +11,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Define valid meal types as a constant - these MUST match the database constraint
+// Define valid meal types as a constant
 const VALID_MEAL_TYPES = [
   "Breakfast",
-  "Lunch", 
-  "Dinner",
   "Morning Snack",
+  "Lunch", 
   "Afternoon Snack",
+  "Dinner",
   "Evening Snack"
 ] as const;
 
@@ -96,7 +96,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
   "meal_plan_items": [
     {
       "day_of_week": number,
-      "meal_type": string (must be one of the exact values listed above),
+      "meal_type": string (must be exactly one of: ${VALID_MEAL_TYPES.map(t => `"${t}"`).join(', ')}),
       "recipe_id": number,
       "servings": number
     }
