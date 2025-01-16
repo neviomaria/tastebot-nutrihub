@@ -62,14 +62,16 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      // Set excluded ingredients from allergies, filtering out "None"
-      const allergies = data?.allergies?.filter(allergy => allergy !== "None") || [];
-      form.setValue("excluded_ingredients", allergies);
-      
-      // Set preferred cuisines, filtering out "Other"
-      const cuisines = data?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || [];
-      form.setValue("preferred_cuisines", cuisines);
+    meta: {
+      onSuccess: (data) => {
+        // Set excluded ingredients from allergies, filtering out "None"
+        const allergies = data?.allergies?.filter(allergy => allergy !== "None") || [];
+        form.setValue("excluded_ingredients", allergies);
+        
+        // Set preferred cuisines, filtering out "Other"
+        const cuisines = data?.favorite_cuisines?.filter(cuisine => cuisine !== "Other") || [];
+        form.setValue("preferred_cuisines", cuisines);
+      }
     }
   });
 
