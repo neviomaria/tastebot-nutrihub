@@ -56,10 +56,9 @@ serve(async (req) => {
 
     console.log('Fetched profile:', profile);
 
-    // Fetch available recipes based on selected books
+    // Fetch available recipes
     let recipesQuery = supabase.from('recipes').select('*');
     
-    // If selected books are specified, filter recipes accordingly
     if (mealPlan.selected_books && mealPlan.selected_books.length > 0) {
       console.log('Selected books:', mealPlan.selected_books);
     }
@@ -84,7 +83,7 @@ Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. Return the response in this format:
+Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: "Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack". Return the response in this format:
 {
   "meal_plan_items": [
     {
@@ -109,7 +108,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         messages: [
           { 
             role: 'system', 
-            content: 'You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly.'
+            content: 'You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: "Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack".'
           },
           { role: 'user', content: prompt }
         ],
@@ -133,6 +132,17 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
       throw new Error('Invalid response format from OpenAI');
+    }
+
+    // Validate meal types before insertion
+    const validMealTypes = ["Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack"];
+    const invalidItems = mealPlanItems.meal_plan_items.filter(
+      (item: any) => !validMealTypes.includes(item.meal_type)
+    );
+    
+    if (invalidItems.length > 0) {
+      console.error('Invalid meal types found:', invalidItems);
+      throw new Error('Invalid meal types in generated plan');
     }
 
     // Save generated meal plan items to database
