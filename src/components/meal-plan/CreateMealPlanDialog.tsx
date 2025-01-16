@@ -22,6 +22,7 @@ import { useMealPlanUserData } from "@/hooks/meal-plan/use-meal-plan-user-data";
 
 export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<CreateMealPlanFormValues>({
@@ -41,10 +42,12 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
 
   const onSubmit = async (values: CreateMealPlanFormValues) => {
     try {
+      setIsGenerating(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
-      const { data, error } = await supabase
+      // Create meal plan
+      const { data: mealPlan, error } = await supabase
         .from("meal_plans")
         .insert({
           user_id: user.id,
@@ -64,9 +67,16 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
 
       if (error) throw error;
 
+      // Generate meal plan items using AI
+      const { error: generateError } = await supabase.functions.invoke('generate-meal-plan', {
+        body: { mealPlanId: mealPlan.id }
+      });
+
+      if (generateError) throw generateError;
+
       toast({
         title: "Success",
-        description: "Meal plan created successfully",
+        description: "Meal plan created and generated successfully",
       });
 
       setOpen(false);
@@ -78,6 +88,8 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
         description: "Failed to create meal plan",
         variant: "destructive",
       });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -101,6 +113,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
             form={form} 
             onSubmit={onSubmit}
             userBooks={userBooks}
+            isGenerating={isGenerating}
           />
         </ScrollArea>
       </DialogContent>

@@ -7,14 +7,16 @@ import { CheckboxField } from "@/components/form/CheckboxField";
 import { CreateMealPlanFormValues } from "@/schemas/meal-plan";
 import { mealPlanObjectives, mealPlanDurations, mealsPerDay, timeConstraints } from "@/schemas/meal-plan";
 import { allergies, cuisineTypes } from "@/schemas/profile";
+import { Loader2 } from "lucide-react";
 
 interface MealPlanFormProps {
   form: UseFormReturn<CreateMealPlanFormValues>;
   onSubmit: (values: CreateMealPlanFormValues) => void;
   userBooks: { book_id: string; book_title: string; }[];
+  isGenerating?: boolean;
 }
 
-export const MealPlanForm = ({ form, onSubmit, userBooks }: MealPlanFormProps) => {
+export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPlanFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -88,8 +90,15 @@ export const MealPlanForm = ({ form, onSubmit, userBooks }: MealPlanFormProps) =
         )}
 
         <div className="pt-4">
-          <Button type="submit" className="w-full">
-            Create Plan
+          <Button type="submit" className="w-full" disabled={isGenerating}>
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating Plan...
+              </>
+            ) : (
+              'Create Plan'
+            )}
           </Button>
         </div>
       </form>
