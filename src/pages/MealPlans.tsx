@@ -3,10 +3,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CreateMealPlanDialog } from "@/components/meal-plan/CreateMealPlanDialog";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const MealPlans = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: mealPlans, isLoading } = useQuery({
     queryKey: ["meal-plans"],
@@ -38,6 +52,44 @@ const MealPlans = () => {
     },
   });
 
+  const handleSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+  };
+
+  const handleDelete = async (planId: string) => {
+    try {
+      // First delete related meal plan items
+      const { error: itemsError } = await supabase
+        .from('meal_plan_items')
+        .delete()
+        .eq('meal_plan_id', planId);
+
+      if (itemsError) throw itemsError;
+
+      // Then delete the meal plan
+      const { error: planError } = await supabase
+        .from('meal_plans')
+        .delete()
+        .eq('id', planId);
+
+      if (planError) throw planError;
+
+      toast({
+        title: "Success",
+        description: "Meal plan deleted successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+    } catch (error) {
+      console.error('Error deleting meal plan:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete meal plan",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -45,10 +97,6 @@ const MealPlans = () => {
       </div>
     );
   }
-
-  const handleSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
-  };
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 md:p-8">
@@ -82,7 +130,38 @@ const MealPlans = () => {
                       {plan.daily_calories} calories per day
                     </p>
                   </div>
-                  <Button variant="outline">View Details</Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => navigate(`/meal-plan/${plan.id}`)}
+                    >
+                      View Details
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Meal Plan</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this meal plan? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(plan.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </div>
             ))}
