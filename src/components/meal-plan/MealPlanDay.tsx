@@ -43,19 +43,27 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       if (!response.ok) {
         throw new Error('Failed to fetch recipes');
       }
-      return response.json();
+      const recipes = await response.json();
+      // Trasformiamo l'array in un oggetto per un accesso più veloce
+      return recipes.reduce((acc: Record<number, any>, recipe: any) => {
+        acc[recipe.id] = recipe;
+        return acc;
+      }, {});
     }
   });
 
   const getRecipeImage = (recipeId: number) => {
-    if (!recipes) return "/placeholder.svg";
-    const recipe = recipes.find((r: any) => r.id === recipeId);
-    if (!recipe?.acf?.recipe_image?.url) return "/placeholder.svg";
+    if (!recipes || !recipes[recipeId]?.acf?.recipe_image?.url) {
+      console.log('Recipe or image not found for ID:', recipeId);
+      return "/placeholder.svg";
+    }
     
-    const imageUrl = recipe.acf.recipe_image.url;
+    const imageUrl = recipes[recipeId].acf.recipe_image.url;
     const urlParts = imageUrl.split('.');
     const extension = urlParts.pop();
-    return `${urlParts.join('.')}-300x300.${extension}`;
+    const thumbnailUrl = `${urlParts.join('.')}-300x300.${extension}`;
+    console.log('Generated thumbnail URL:', thumbnailUrl);
+    return thumbnailUrl;
   };
 
   const formatMealType = (type: string) => {
