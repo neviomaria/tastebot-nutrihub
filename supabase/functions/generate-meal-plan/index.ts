@@ -119,7 +119,9 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
       "servings": number (1-8)
     }
   ]
-}`;
+}
+
+IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 represents Monday and 7 represents Sunday.`;
 
     console.log('Sending prompt to OpenAI');
 
@@ -134,7 +136,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         messages: [
           { 
             role: 'system', 
-            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week must be a number between 1 and 7.`
+            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week must be a number between 1 and 7 (Monday to Sunday).`
           },
           { role: 'user', content: prompt }
         ],
@@ -181,7 +183,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
       throw new Error('Invalid recipe IDs in generated plan');
     }
 
-    // Validate day_of_week and servings
+    // Validate day_of_week values
     const invalidDayOrServings = mealPlanItems.meal_plan_items.filter(
       (item: any) => 
         !Number.isInteger(item.day_of_week) ||
