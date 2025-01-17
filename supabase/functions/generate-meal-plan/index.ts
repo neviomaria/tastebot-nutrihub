@@ -89,7 +89,7 @@ Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). Return the response in this format:
+Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week MUST be a number between 1 and 7 (inclusive). Return the response in this format:
 {
   "meal_plan_items": [
     {
@@ -110,11 +110,11 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4',
         messages: [
           { 
             role: 'system', 
-            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores).`
+            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week must be a number between 1 and 7.`
           },
           { role: 'user', content: prompt }
         ],
@@ -164,8 +164,10 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
     // Validate day_of_week and servings
     const invalidDayOrServings = mealPlanItems.meal_plan_items.filter(
       (item: any) => 
+        !Number.isInteger(item.day_of_week) ||
         item.day_of_week < 1 || 
         item.day_of_week > 7 ||
+        !Number.isInteger(item.servings) ||
         item.servings < 1 ||
         item.servings > 8
     );
