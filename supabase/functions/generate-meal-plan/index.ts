@@ -81,17 +81,21 @@ serve(async (req) => {
     // Get recipes from WordPress API for these book IDs
     const recipes = [];
     try {
-      // Build the URL with multiple libro_associato[] parameters
-      const bookIdsParam = Array.from(bookIds).map(id => `libro_associato[]=${id}`).join('&');
-      const url = `https://brainscapebooks.com/wp-json/wp/v2/ricette?${bookIdsParam}&per_page=100`;
+      // Build the URL with the correct WordPress taxonomy query format
+      const bookIdsQuery = Array.from(bookIds).join(',');
+      const url = `https://brainscapebooks.com/wp-json/wp/v2/ricette?libro_associato=${bookIdsQuery}&per_page=100`;
       console.log('Fetching recipes from URL:', url);
       
       const response = await fetch(url);
+      const responseText = await response.text(); // Get raw response text for better error logging
+      
       if (!response.ok) {
         console.error(`Error fetching recipes: ${response.status} ${response.statusText}`);
+        console.error('Response body:', responseText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const bookRecipes = await response.json();
+      
+      const bookRecipes = JSON.parse(responseText);
       console.log(`Found ${bookRecipes.length} recipes`);
       
       recipes.push(...bookRecipes.map((recipe: any) => ({
