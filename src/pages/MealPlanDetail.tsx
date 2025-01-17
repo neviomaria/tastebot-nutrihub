@@ -61,30 +61,32 @@ const MealPlanDetail = () => {
   }, {});
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Meal Plan</h1>
-        <div className="flex gap-4 text-sm text-muted-foreground">
-          <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
-          <span>•</span>
-          <span>End: {new Date(mealPlan.end_date).toLocaleDateString()}</span>
-          {mealPlan.daily_calories && (
-            <>
-              <span>•</span>
-              <span>Target: {mealPlan.daily_calories} calories/day</span>
-            </>
-          )}
+    <div className="max-h-[calc(100vh-40px)] lg:max-h-[calc(100vh-60px)] overflow-y-auto">
+      <div className="container mx-auto py-4 px-2 lg:px-4">
+        <div className="mb-4 lg:mb-8">
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Meal Plan</h1>
+          <div className="flex flex-wrap gap-2 lg:gap-4 text-xs lg:text-sm text-muted-foreground">
+            <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
+            <span>•</span>
+            <span>End: {new Date(mealPlan.end_date).toLocaleDateString()}</span>
+            {mealPlan.daily_calories && (
+              <>
+                <span>•</span>
+                <span>Target: {mealPlan.daily_calories} calories/day</span>
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-6">
-        {Object.entries(mealsByDay).map(([day, meals]) => (
-          <MealPlanDay
-            key={day}
-            dayNumber={parseInt(day)}
-            meals={meals as any}
-          />
-        ))}
+        <div className="space-y-4 lg:space-y-6">
+          {Object.entries(mealsByDay).map(([day, meals]) => (
+            <MealPlanDay
+              key={day}
+              dayNumber={parseInt(day)}
+              meals={meals as any}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -71,20 +71,20 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-      <div className="bg-primary px-6 py-3">
-        <h2 className="text-xl font-semibold text-white">Day {dayNumber + 1}</h2>
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-primary px-4 py-2">
+        <h2 className="text-lg lg:text-xl font-semibold text-white">Day {dayNumber + 1}</h2>
       </div>
-      <div className="p-6">
-        <div className="grid gap-6">
+      <div className="p-3 lg:p-6">
+        <div className="grid gap-3 lg:gap-6">
           {meals.map((meal, index) => (
             <div 
               key={`${meal.recipe.id}-${index}`}
               className="group cursor-pointer"
               onClick={() => setSelectedRecipeId(meal.recipe.id)}
             >
-              <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
-                <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+              <div className="flex items-center gap-3 lg:gap-4 p-2 lg:p-4 rounded-lg hover:bg-secondary transition-colors">
+                <div className="w-16 h-16 lg:w-24 lg:h-24 rounded-lg overflow-hidden flex-shrink-0">
                   <img
                     src={getRecipeImage(meal.recipe.id)}
                     alt={meal.recipe.title}
@@ -96,18 +96,18 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                     }}
                   />
                 </div>
-                <div className="flex-grow">
-                  <span className="text-sm font-medium text-primary mb-1 block">
+                <div className="flex-grow min-w-0">
+                  <span className="text-xs lg:text-sm font-medium text-primary mb-1 block">
                     {formatMealType(meal.meal_type)}
                   </span>
-                  <h3 className="font-semibold group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
                     {meal.recipe.title}
                   </h3>
-                  <div className="text-sm text-muted-foreground mt-1">
+                  <div className="text-xs lg:text-sm text-muted-foreground mt-1 flex flex-wrap gap-2">
                     <span>Prep: {meal.recipe.prep_time}</span>
-                    <span className="mx-2">•</span>
+                    <span>•</span>
                     <span>Cook: {meal.recipe.cook_time}</span>
-                    <span className="mx-2">•</span>
+                    <span>•</span>
                     <span>Servings: {meal.servings}</span>
                   </div>
                 </div>
