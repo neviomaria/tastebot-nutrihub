@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { RecipeImage } from "@/components/recipe/RecipeImage";
 
 const MealPlanDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,14 +21,7 @@ const MealPlanDetail = () => {
               title,
               prep_time,
               cook_time,
-              servings,
-              ingredients,
-              instructions,
-              acf (
-                recipe_image (
-                  url
-                )
-              )
+              servings
             )
           )
         `)
@@ -71,11 +65,10 @@ const MealPlanDetail = () => {
             <div key={item.id} className="border-b py-4 last:border-b-0">
               <h3 className="font-medium">Day {item.day_of_week} - {item.meal_type}</h3>
               <div className="mt-2 flex gap-4">
-                {item.recipe?.acf?.recipe_image?.url && (
-                  <img 
-                    src={item.recipe.acf.recipe_image.url}
-                    alt={item.recipe.title}
-                    className="w-24 h-24 object-cover rounded-lg"
+                {item.recipe && (
+                  <RecipeImage 
+                    title={item.recipe.title}
+                    imageUrl={undefined}
                   />
                 )}
                 <div>

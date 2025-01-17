@@ -37,8 +37,8 @@ serve(async (req) => {
     // Get recipes from selected books
     const { data: recipes, error: recipesError } = await supabase
       .from('recipes')
-      .select('id, title, libro_associato')
-      .in('libro_associato', mealPlan.selected_books)
+      .select('id, title')
+      .in('book_title', mealPlan.selected_books)
       .limit(20);
 
     if (recipesError) {
@@ -76,7 +76,7 @@ Example format:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           { 
             role: 'system', 
