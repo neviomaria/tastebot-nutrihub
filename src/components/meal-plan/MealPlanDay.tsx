@@ -3,6 +3,7 @@ import { useState } from "react";
 import { RecipeContent } from "@/components/recipe/RecipeContent";
 import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
 import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 interface MealPlanDayProps {
   dayNumber: number;
@@ -22,7 +23,7 @@ interface MealPlanDayProps {
 export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
-  const { data: selectedRecipe } = useQuery({
+  const { data: selectedRecipe, isLoading: isLoadingRecipe } = useQuery({
     queryKey: ['recipe', selectedRecipeId],
     queryFn: async () => {
       if (!selectedRecipeId) return null;
@@ -58,7 +59,6 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       return "/placeholder.svg";
     }
 
-    // Use the same image URL format as in BookRecipes
     return recipe.acf.recipe_image.url;
   };
 
@@ -74,7 +74,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
         <h2 className="text-xl font-semibold text-white">Day {dayNumber + 1}</h2>
       </div>
       <div className="p-6">
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {meals.map((meal, index) => (
             <div 
               key={`${meal.recipe.id}-${index}`}
@@ -114,9 +114,13 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
         </div>
       </div>
 
-      <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipeId(null)}>
+      <Dialog open={!!selectedRecipeId} onOpenChange={() => setSelectedRecipeId(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedRecipe && (
+          {isLoadingRecipe ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : selectedRecipe ? (
             <div className="space-y-6">
               <DialogTitle className="text-2xl font-bold">{selectedRecipe.title}</DialogTitle>
               <RecipeMetadata
@@ -130,7 +134,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                 nutritionFacts={selectedRecipe.acf.nutrition_facts}
               />
             </div>
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>
