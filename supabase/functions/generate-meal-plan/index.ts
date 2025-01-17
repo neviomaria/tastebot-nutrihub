@@ -28,12 +28,14 @@ serve(async (req) => {
 
   try {
     if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
       throw new Error('OpenAI API key not configured');
     }
 
     const { mealPlanId } = await req.json();
     
     if (!mealPlanId) {
+      console.error('No meal plan ID provided');
       throw new Error('No meal plan ID provided');
     }
 
@@ -47,8 +49,14 @@ serve(async (req) => {
       .eq('id', mealPlanId)
       .single();
 
-    if (mealPlanError) throw mealPlanError;
-    if (!mealPlan) throw new Error('Meal plan not found');
+    if (mealPlanError) {
+      console.error('Error fetching meal plan:', mealPlanError);
+      throw mealPlanError;
+    }
+    if (!mealPlan) {
+      console.error('Meal plan not found');
+      throw new Error('Meal plan not found');
+    }
 
     console.log('Fetched meal plan:', mealPlan);
 
@@ -58,8 +66,14 @@ serve(async (req) => {
       .eq('id', mealPlan.user_id)
       .single();
 
-    if (profileError) throw profileError;
-    if (!profile) throw new Error('Profile not found');
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      throw profileError;
+    }
+    if (!profile) {
+      console.error('Profile not found');
+      throw new Error('Profile not found');
+    }
 
     console.log('Fetched profile:', profile);
 
@@ -71,8 +85,14 @@ serve(async (req) => {
 
     const { data: recipes, error: recipesError } = await recipesQuery;
 
-    if (recipesError) throw recipesError;
-    if (!recipes || recipes.length === 0) throw new Error('No recipes found');
+    if (recipesError) {
+      console.error('Error fetching recipes:', recipesError);
+      throw recipesError;
+    }
+    if (!recipes || recipes.length === 0) {
+      console.error('No recipes found');
+      throw new Error('No recipes found');
+    }
 
     console.log('Fetched recipes count:', recipes.length);
 
@@ -110,7 +130,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           { 
             role: 'system', 
