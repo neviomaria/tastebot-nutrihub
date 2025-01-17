@@ -44,25 +44,36 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
         throw new Error('Failed to fetch recipes');
       }
       const recipes = await response.json();
-      // Trasformiamo l'array in un oggetto per un accesso più veloce
-      return recipes.reduce((acc: Record<number, any>, recipe: any) => {
-        acc[recipe.id] = recipe;
-        return acc;
-      }, {});
+      console.log('Fetched recipes:', recipes); // Debug log
+      return recipes;
     }
   });
 
   const getRecipeImage = (recipeId: number) => {
-    if (!recipes || !recipes[recipeId]?.acf?.recipe_image?.url) {
-      console.log('Recipe or image not found for ID:', recipeId);
+    if (!recipes) {
+      console.log('No recipes data available');
       return "/placeholder.svg";
     }
-    
-    const imageUrl = recipes[recipeId].acf.recipe_image.url;
+
+    const recipe = recipes.find((r: any) => r.id === recipeId);
+    if (!recipe) {
+      console.log('Recipe not found:', recipeId);
+      return "/placeholder.svg";
+    }
+
+    if (!recipe.acf?.recipe_image?.url) {
+      console.log('No image URL for recipe:', recipeId);
+      return "/placeholder.svg";
+    }
+
+    const imageUrl = recipe.acf.recipe_image.url;
+    console.log('Original image URL:', imageUrl); // Debug log
+
+    // Generate thumbnail URL
     const urlParts = imageUrl.split('.');
     const extension = urlParts.pop();
     const thumbnailUrl = `${urlParts.join('.')}-300x300.${extension}`;
-    console.log('Generated thumbnail URL:', thumbnailUrl);
+    console.log('Generated thumbnail URL:', thumbnailUrl); // Debug log
     return thumbnailUrl;
   };
 
