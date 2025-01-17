@@ -153,7 +153,7 @@ ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join('\n')}`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model: 'gpt-4',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
