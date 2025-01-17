@@ -126,18 +126,24 @@ serve(async (req) => {
         throw new Error('OpenAI API key not configured');
       }
 
-      const systemPrompt = `You are a meal planning assistant. Create a meal plan using only the provided recipes. 
-Your response must be a valid JSON object with a meal_plan_items array. Each item must have exactly these fields:
-- day_of_week (integer 1-6)
-- meal_type (string, exactly matching one of: ${selectedMealTypes.join(', ')})
-- recipe_id (integer, must be one of the provided recipe IDs)
-- servings (integer 1-8)
+      const systemPrompt = `You are a meal planning assistant. Generate a meal plan using ONLY the recipes I provide.
+Your response must be a valid JSON object with this exact structure:
+{
+  "meal_plan_items": [
+    {
+      "day_of_week": <number 1-7>,
+      "meal_type": <string matching one of: ${selectedMealTypes.join(', ')}>,
+      "recipe_id": <number matching one of the provided recipe IDs>,
+      "servings": <number 1-8>
+    }
+  ]
+}
+Do not add any explanations or additional fields. Return ONLY the JSON object.`;
 
-Do not include any explanations or additional fields. Only return the JSON object.`;
+      const userPrompt = `Create a meal plan using only these recipes (format is ID: Title): 
+${filteredRecipes.map(r => `${r.id}: ${r.title}`).join('\n')}`;
 
-      const userPrompt = `Create a meal plan using only these recipes: ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join(', ')}`;
-
-      console.log('Sending prompt to OpenAI:', { systemPrompt, userPrompt });
+      console.log('Sending prompts to OpenAI:', { systemPrompt, userPrompt });
 
       const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -162,7 +168,7 @@ Do not include any explanations or additional fields. Only return the JSON objec
       }
 
       const data = await openAIResponse.json();
-      console.log('OpenAI response:', data);
+      console.log('OpenAI raw response:', data);
 
       if (!data.choices?.[0]?.message?.content) {
         console.error('Invalid OpenAI response structure:', data);
@@ -171,18 +177,18 @@ Do not include any explanations or additional fields. Only return the JSON objec
 
       let mealPlanItems;
       try {
-        const content = data.choices[0].message.content;
+        const content = data.choices[0].message.content.trim();
         console.log('Parsing OpenAI response content:', content);
         mealPlanItems = JSON.parse(content);
         console.log('Parsed meal plan items:', mealPlanItems);
       } catch (error) {
         console.error('Error parsing OpenAI response:', error);
-        throw new Error('Invalid response format from OpenAI');
+        throw new Error('Invalid JSON format in OpenAI response');
       }
 
       if (!mealPlanItems?.meal_plan_items || !Array.isArray(mealPlanItems.meal_plan_items)) {
         console.error('Invalid meal plan items structure:', mealPlanItems);
-        throw new Error('Invalid meal plan items structure from OpenAI');
+        throw new Error('Invalid meal plan structure in OpenAI response');
       }
 
       // Validate recipe_ids exist in our database
