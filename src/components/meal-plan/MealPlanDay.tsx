@@ -58,7 +58,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     const imageUrl = recipeImages[recipeId];
     if (!imageUrl) return "/placeholder.svg";
     
-    // Get the thumbnail version of the image
+    // Get the thumbnail version of the image using the same logic as RecipeCard
     const urlParts = imageUrl.split('.');
     const extension = urlParts.pop();
     return `${urlParts.join('.')}-300x300.${extension}`;
