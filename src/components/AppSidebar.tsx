@@ -143,7 +143,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         <div className="flex w-full items-center px-4">
           <Link 
             to="/" 
-            className="flex items-center gap-2 font-semibold ml-8 lg:ml-0" 
+            className="flex items-center gap-2 font-semibold ml-14 lg:ml-0" 
             onClick={handleMenuClick}
           >
             <span className="text-xl">Pybher</span>
