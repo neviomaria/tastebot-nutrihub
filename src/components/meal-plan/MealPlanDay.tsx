@@ -36,29 +36,23 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     enabled: !!selectedRecipeId
   });
 
-  const { data: recipeImages } = useQuery({
-    queryKey: ['recipe-images'],
+  const { data: recipes } = useQuery({
+    queryKey: ['recipes'],
     queryFn: async () => {
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
         throw new Error('Failed to fetch recipes');
       }
-      const recipes = await response.json();
-      return recipes.reduce((acc: Record<number, string>, recipe: any) => {
-        if (recipe.acf?.recipe_image?.url) {
-          acc[recipe.id] = recipe.acf.recipe_image.url;
-        }
-        return acc;
-      }, {});
+      return response.json();
     }
   });
 
   const getRecipeImage = (recipeId: number) => {
-    if (!recipeImages) return "/placeholder.svg";
-    const imageUrl = recipeImages[recipeId];
-    if (!imageUrl) return "/placeholder.svg";
+    if (!recipes) return "/placeholder.svg";
+    const recipe = recipes.find((r: any) => r.id === recipeId);
+    if (!recipe?.acf?.recipe_image?.url) return "/placeholder.svg";
     
-    // Get the thumbnail version of the image using the same logic as RecipeCard
+    const imageUrl = recipe.acf.recipe_image.url;
     const urlParts = imageUrl.split('.');
     const extension = urlParts.pop();
     return `${urlParts.join('.')}-300x300.${extension}`;
