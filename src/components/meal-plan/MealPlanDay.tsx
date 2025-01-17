@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { RecipeContent } from "@/components/recipe/RecipeContent";
 import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
@@ -36,9 +36,32 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     enabled: !!selectedRecipeId
   });
 
+  const { data: recipeImages } = useQuery({
+    queryKey: ['recipe-images'],
+    queryFn: async () => {
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipes');
+      }
+      const recipes = await response.json();
+      return recipes.reduce((acc: Record<number, string>, recipe: any) => {
+        if (recipe.acf?.recipe_image?.url) {
+          acc[recipe.id] = recipe.acf.recipe_image.url;
+        }
+        return acc;
+      }, {});
+    }
+  });
+
   const getRecipeImage = (recipeId: number) => {
-    // This is a placeholder. You should implement proper image fetching logic
-    return "/placeholder.svg";
+    if (!recipeImages) return "/placeholder.svg";
+    const imageUrl = recipeImages[recipeId];
+    if (!imageUrl) return "/placeholder.svg";
+    
+    // Get the thumbnail version of the image
+    const urlParts = imageUrl.split('.');
+    const extension = urlParts.pop();
+    return `${urlParts.join('.')}-300x300.${extension}`;
   };
 
   const formatMealType = (type: string) => {
@@ -67,6 +90,10 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                     alt={meal.recipe.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    onError={(e) => {
+                      console.log('Image failed to load:', meal.recipe.id);
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
                 <div className="flex-grow">
@@ -94,7 +121,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           {selectedRecipe && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold">{selectedRecipe.title}</h2>
+              <DialogTitle className="text-2xl font-bold">{selectedRecipe.title}</DialogTitle>
               <RecipeMetadata
                 prepTime={selectedRecipe.acf.prep_time}
                 cookTime={selectedRecipe.acf.cook_time}
