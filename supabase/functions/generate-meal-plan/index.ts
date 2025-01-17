@@ -123,6 +123,10 @@ serve(async (req) => {
 
       console.log('Selected meal types:', selectedMealTypes);
 
+      if (!openAIApiKey) {
+        throw new Error('OpenAI API key not configured');
+      }
+
       const prompt = `Create a simple meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
 - day_of_week (integer 1-6)
@@ -144,10 +148,6 @@ Example format:
 
       console.log('Sending prompt to OpenAI:', prompt);
 
-      if (!openAIApiKey) {
-        throw new Error('OpenAI API key not configured');
-      }
-
       const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -155,7 +155,7 @@ Example format:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'gpt-4o-mini',
           messages: [
             { 
               role: 'system', 
@@ -168,13 +168,18 @@ Example format:
       });
 
       if (!openAIResponse.ok) {
-        const error = await openAIResponse.json();
-        console.error('OpenAI API error:', error);
-        throw new Error('Failed to generate meal plan with OpenAI');
+        const error = await openAIResponse.text();
+        console.error('OpenAI API error response:', error);
+        throw new Error(`OpenAI API error: ${error}`);
       }
 
       const data = await openAIResponse.json();
       console.log('OpenAI response:', data);
+
+      if (!data.choices?.[0]?.message?.content) {
+        console.error('Invalid OpenAI response structure:', data);
+        throw new Error('Invalid response from OpenAI');
+      }
 
       let mealPlanItems;
       try {
