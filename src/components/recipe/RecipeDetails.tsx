@@ -1,11 +1,16 @@
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Recipe } from "@/types/recipe";
-import { RecipeMetadata } from "./RecipeMetadata";
-import { RecipeContent } from "./RecipeContent";
-import { FavoriteButton } from "./FavoriteButton";
+import { useQuery } from "@tanstack/react-query";
+import { RecipeHeader } from "@/components/recipe/RecipeHeader";
+import { RecipeImage } from "@/components/recipe/RecipeImage";
+import { RecipeDetails } from "@/components/recipe/RecipeDetails";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Button } from "@/components/ui/button";
 import { Volume2, Loader2 } from "lucide-react";
-import { useEffect } from "react";
 
 interface RecipeDetailsProps {
   recipe: Recipe;
@@ -13,18 +18,63 @@ interface RecipeDetailsProps {
 
 export function RecipeDetails({ recipe }: RecipeDetailsProps) {
   const { generateSpeech, isLoading, cleanup } = useTextToSpeech();
+  const { toast } = useToast();
 
   useEffect(() => {
     return () => cleanup();
   }, [cleanup]);
 
-  const handlePlayRecipe = async () => {
-    const textToRead = `Recipe for ${recipe.title}. 
-      ${recipe.content}
-      Ingredients needed: ${recipe.acf.ingredients.map(i => i.ingredient_item).join(", ")}. 
-      Instructions: ${recipe.acf.instructions.map(i => i.instructions_step).join(". ")}`;
+  const formatRecipeText = () => {
+    const sections = [];
     
-    await generateSpeech(textToRead);
+    // Add title
+    sections.push(`Recipe for ${recipe.title}.`);
+    
+    // Add description if exists
+    if (recipe.content) {
+      sections.push(recipe.content.replace(/<[^>]*>/g, ''));
+    }
+    
+    // Add ingredients
+    if (recipe.acf.ingredients?.length > 0) {
+      sections.push("Ingredients needed:");
+      recipe.acf.ingredients.forEach(i => {
+        sections.push(i.ingredient_item);
+      });
+    }
+    
+    // Add instructions
+    if (recipe.acf.instructions?.length > 0) {
+      sections.push("Instructions:");
+      recipe.acf.instructions.forEach((i, index) => {
+        sections.push(`Step ${index + 1}: ${i.instructions_step}`);
+      });
+    }
+    
+    return sections.join(' ');
+  };
+
+  const handlePlayRecipe = async () => {
+    try {
+      const textToRead = formatRecipeText();
+      if (textToRead.length > 4096) {
+        toast({
+          title: "Text too long",
+          description: "The recipe text is too long to be converted to speech. Please try a shorter recipe.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      await generateSpeech(textToRead);
+    } catch (error) {
+      console.error('Error playing recipe:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate audio. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

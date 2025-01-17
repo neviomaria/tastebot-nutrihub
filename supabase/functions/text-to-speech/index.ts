@@ -18,6 +18,10 @@ serve(async (req) => {
       throw new Error('Text is required')
     }
 
+    if (text.length > 4096) {
+      throw new Error('Text is too long. Maximum length is 4096 characters.')
+    }
+
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
@@ -45,6 +49,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error in text-to-speech function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
