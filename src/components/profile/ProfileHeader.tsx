@@ -14,13 +14,11 @@ export const ProfileHeader = ({ avatarUrl, firstName, lastName }: ProfileHeaderP
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <Avatar className="h-12 w-12">
-        <AvatarImage src={avatarUrl} />
-        <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white">
-          {getInitials()}
-        </AvatarFallback>
-      </Avatar>
-    </div>
+    <Avatar className="h-8 w-8 lg:h-12 lg:w-12">
+      <AvatarImage src={avatarUrl} />
+      <AvatarFallback className="bg-gradient-to-br from-purple-600 to-blue-600 text-white text-xs lg:text-base">
+        {getInitials()}
+      </AvatarFallback>
+    </Avatar>
   );
 };
