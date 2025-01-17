@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import { RecipeImage } from "@/components/recipe/RecipeImage";
+import { MealPlanDay } from "@/components/meal-plan/MealPlanDay";
 
 const MealPlanDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,45 +42,49 @@ const MealPlanDetail = () => {
   }
 
   if (!mealPlan) {
-    return <div>Meal plan not found</div>;
+    return (
+      <div className="p-6">
+        <div className="text-center py-8">
+          <p className="text-lg text-gray-600">Meal plan not found</p>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Meal Plan Details</h1>
-      
-      <div className="grid gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Plan Overview</h2>
-          <div className="grid gap-2">
-            <p><span className="font-medium">Start Date:</span> {new Date(mealPlan.start_date).toLocaleDateString()}</p>
-            <p><span className="font-medium">End Date:</span> {new Date(mealPlan.end_date).toLocaleDateString()}</p>
-            <p><span className="font-medium">Duration:</span> {mealPlan.duration}</p>
-          </div>
-        </div>
+  // Group meals by day
+  const mealsByDay = mealPlan.meal_plan_items?.reduce((acc: any, item) => {
+    if (!acc[item.day_of_week]) {
+      acc[item.day_of_week] = [];
+    }
+    acc[item.day_of_week].push(item);
+    return acc;
+  }, {});
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Meal Schedule</h2>
-          {mealPlan.meal_plan_items?.map((item) => (
-            <div key={item.id} className="border-b py-4 last:border-b-0">
-              <h3 className="font-medium">Day {item.day_of_week} - {item.meal_type}</h3>
-              <div className="mt-2 flex gap-4">
-                {item.recipe && (
-                  <RecipeImage 
-                    title={item.recipe.title}
-                    imageUrl={undefined}
-                  />
-                )}
-                <div>
-                  <p className="text-lg">{item.recipe?.title}</p>
-                  <p className="text-sm text-gray-600">
-                    Prep: {item.recipe?.prep_time} | Cook: {item.recipe?.cook_time} | Servings: {item.servings}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Meal Plan</h1>
+        <div className="flex gap-4 text-sm text-muted-foreground">
+          <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
+          <span>•</span>
+          <span>End: {new Date(mealPlan.end_date).toLocaleDateString()}</span>
+          {mealPlan.daily_calories && (
+            <>
+              <span>•</span>
+              <span>Target: {mealPlan.daily_calories} calories/day</span>
+            </>
+          )}
         </div>
+      </div>
+
+      <div className="space-y-6">
+        {Object.entries(mealsByDay).map(([day, meals]) => (
+          <MealPlanDay
+            key={day}
+            dayNumber={parseInt(day)}
+            meals={meals as any}
+          />
+        ))}
       </div>
     </div>
   );
