@@ -22,19 +22,10 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // Get meal plan details and book IDs
+    // First get the meal plan to get the user_id
     const { data: mealPlan, error: mealPlanError } = await supabase
       .from('meal_plans')
-      .select(`
-        *,
-        user_id,
-        profiles!meal_plans_user_id_fkey (
-          book_id
-        ),
-        user_coupons!inner (
-          book_id
-        )
-      `)
+      .select('*')
       .eq('id', mealPlanId)
       .single();
 
@@ -47,18 +38,45 @@ serve(async (req) => {
       throw new Error('Meal plan not found');
     }
 
-    // Extract unique book IDs from profile and user_coupons
-    const bookIds = new Set<string>();
-    if (mealPlan.profiles?.book_id) {
-      bookIds.add(mealPlan.profiles.book_id);
+    // Then get the user's profile book
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('book_id')
+      .eq('id', mealPlan.user_id)
+      .single();
+
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      throw new Error('Failed to fetch user profile');
     }
-    if (mealPlan.user_coupons) {
-      mealPlan.user_coupons.forEach((coupon: { book_id: string }) => {
+
+    // Get additional books from user_coupons
+    const { data: userCoupons, error: couponsError } = await supabase
+      .from('user_coupons')
+      .select('book_id')
+      .eq('user_id', mealPlan.user_id);
+
+    if (couponsError) {
+      console.error('Error fetching user coupons:', couponsError);
+      throw new Error('Failed to fetch user coupons');
+    }
+
+    // Combine book IDs
+    const bookIds = new Set<string>();
+    if (profile?.book_id) {
+      bookIds.add(profile.book_id);
+    }
+    if (userCoupons) {
+      userCoupons.forEach(coupon => {
         bookIds.add(coupon.book_id);
       });
     }
 
     console.log('Book IDs to fetch recipes from:', Array.from(bookIds));
+
+    if (bookIds.size === 0) {
+      throw new Error('No books found for user');
+    }
 
     // Get recipes from WordPress API for these book IDs
     const recipes = [];
