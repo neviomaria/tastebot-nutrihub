@@ -48,15 +48,11 @@ serve(async (req) => {
       console.log('Fetching recipes from URL:', url);
       
       const response = await fetch(url);
-      const responseText = await response.text();
-      
       if (!response.ok) {
-        console.error(`Error fetching recipes: ${response.status} ${response.statusText}`);
-        console.error('Response body:', responseText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const wpRecipes = JSON.parse(responseText);
+      const wpRecipes = await response.json();
       console.log('Total WordPress recipes fetched:', wpRecipes.length);
 
       // Insert recipes into Supabase if they don't exist
@@ -68,7 +64,6 @@ serve(async (req) => {
           .single();
 
         if (!existingRecipe) {
-          // Transform ingredients and instructions to match our schema
           const ingredients = Array.isArray(recipe.acf?.ingredients) 
             ? recipe.acf.ingredients.map((i: any) => i.ingredient_item || i).filter(Boolean)
             : [];
@@ -94,12 +89,12 @@ serve(async (req) => {
 
           if (insertError) {
             console.error('Error inserting recipe:', insertError);
-            throw new Error('Failed to create recipe in database');
+            continue; // Continue with next recipe if this one fails
           }
         }
       }
 
-      // Now get recipes from Supabase
+      // Now get all available recipes from Supabase
       const { data: recipes, error: recipesError } = await supabase
         .from('recipes')
         .select('id, title');
@@ -155,7 +150,7 @@ Example format:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-4',
           messages: [
             { 
               role: 'system', 
@@ -195,20 +190,6 @@ Example format:
       if (!mealPlanItems?.meal_plan_items || !Array.isArray(mealPlanItems.meal_plan_items)) {
         console.error('Invalid meal plan items structure:', mealPlanItems);
         throw new Error('Invalid meal plan items structure from OpenAI');
-      }
-
-      // Validate day_of_week values and meal types
-      const invalidItems = mealPlanItems.meal_plan_items.filter(
-        (item: any) => 
-          !Number.isInteger(item.day_of_week) || 
-          item.day_of_week < 1 || 
-          item.day_of_week > 6 ||
-          !selectedMealTypes.includes(item.meal_type)
-      );
-
-      if (invalidItems.length > 0) {
-        console.error('Invalid items found:', invalidItems);
-        throw new Error('Invalid values in generated plan. Check day_of_week (must be 1-6) and meal_type.');
       }
 
       // Validate recipe_ids exist in our database
