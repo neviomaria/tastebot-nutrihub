@@ -131,13 +131,14 @@ Your response must be a valid JSON object with this exact structure:
 {
   "meal_plan_items": [
     {
-      "day_of_week": <number 1-7>,
+      "day_of_week": <number between 1 and 7 inclusive>,
       "meal_type": <string matching one of: ${selectedMealTypes.join(', ')}>,
       "recipe_id": <number matching one of the provided recipe IDs>,
-      "servings": <number 1-8>
+      "servings": <number between 1 and 8 inclusive>
     }
   ]
 }
+IMPORTANT: day_of_week MUST be a number between 1 and 7 inclusive.
 Do not add any explanations or additional fields. Return ONLY the JSON object.`;
 
       const userPrompt = `Create a meal plan using only these recipes (format is ID: Title): 
@@ -152,7 +153,7 @@ ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join('\n')}`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-4',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
@@ -190,6 +191,19 @@ ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join('\n')}`;
         console.error('Invalid meal plan items structure:', mealPlanItems);
         throw new Error('Invalid meal plan structure in OpenAI response');
       }
+
+      // Validate meal plan items before insertion
+      mealPlanItems.meal_plan_items.forEach((item: any) => {
+        if (!Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 7) {
+          throw new Error(`Invalid day_of_week value: ${item.day_of_week}. Must be between 1 and 7.`);
+        }
+        if (!selectedMealTypes.includes(item.meal_type)) {
+          throw new Error(`Invalid meal_type: ${item.meal_type}`);
+        }
+        if (!Number.isInteger(item.servings) || item.servings < 1 || item.servings > 8) {
+          throw new Error(`Invalid servings value: ${item.servings}. Must be between 1 and 8.`);
+        }
+      });
 
       // Validate recipe_ids exist in our database
       const recipeIds = mealPlanItems.meal_plan_items.map((item: any) => item.recipe_id);
