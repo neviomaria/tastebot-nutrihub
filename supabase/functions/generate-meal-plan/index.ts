@@ -81,13 +81,12 @@ serve(async (req) => {
     // Get recipes from WordPress API for these book IDs
     const recipes = [];
     try {
-      // Build the URL with the correct WordPress taxonomy query format
-      const bookIdsQuery = Array.from(bookIds).join(',');
-      const url = `https://brainscapebooks.com/wp-json/wp/v2/ricette?libro_associato=${bookIdsQuery}&per_page=100`;
+      // Use the custom endpoint for recipes
+      const url = `https://brainscapebooks.com/wp-json/custom/v1/recipes`;
       console.log('Fetching recipes from URL:', url);
       
       const response = await fetch(url);
-      const responseText = await response.text(); // Get raw response text for better error logging
+      const responseText = await response.text();
       
       if (!response.ok) {
         console.error(`Error fetching recipes: ${response.status} ${response.statusText}`);
@@ -95,12 +94,21 @@ serve(async (req) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const bookRecipes = JSON.parse(responseText);
-      console.log(`Found ${bookRecipes.length} recipes`);
+      const allRecipes = JSON.parse(responseText);
+      console.log('Total recipes fetched:', allRecipes.length);
+      
+      // Filter recipes based on book IDs
+      const bookRecipes = allRecipes.filter((recipe: any) => 
+        recipe.acf?.libro_associato?.some((book: any) => 
+          bookIds.has(book.ID.toString())
+        )
+      );
+      
+      console.log(`Found ${bookRecipes.length} recipes for selected books`);
       
       recipes.push(...bookRecipes.map((recipe: any) => ({
         id: recipe.id,
-        title: recipe.title.rendered,
+        title: recipe.title,
         prep_time: recipe.acf?.prep_time || '',
         cook_time: recipe.acf?.cook_time || '',
         servings: parseInt(recipe.acf?.servings) || 4
