@@ -150,15 +150,14 @@ Example format:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'gpt-4o-mini',
           messages: [
             { 
               role: 'system', 
               content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-6 and meal_type exactly matching the provided options.'
             },
             { role: 'user', content: prompt }
-          ],
-          response_format: { type: "json_object" }
+          ]
         }),
       });
 
