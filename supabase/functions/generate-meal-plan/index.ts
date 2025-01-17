@@ -38,13 +38,18 @@ serve(async (req) => {
       throw new Error('Meal plan not found');
     }
 
-    console.log('Meal plan details:', mealPlan);
+    if (!mealPlan.selected_books || mealPlan.selected_books.length === 0) {
+      throw new Error('No books selected for meal plan');
+    }
 
-    // Get recipes from selected books
+    console.log('Meal plan details:', mealPlan);
+    console.log('Selected books:', mealPlan.selected_books);
+
+    // Get recipes from selected books using case-insensitive comparison
     const { data: recipes, error: recipesError } = await supabase
       .from('recipes')
       .select('id, title, book_title')
-      .in('book_title', mealPlan.selected_books || [])
+      .filter('book_title', 'in', `(${mealPlan.selected_books.map(book => `'${book}'`).join(',')})`)
       .limit(20);
 
     if (recipesError) {
@@ -52,9 +57,18 @@ serve(async (req) => {
       throw new Error('Failed to fetch recipes');
     }
 
+    console.log('Recipes query result:', recipes);
+
     if (!recipes || recipes.length === 0) {
+      // Try to fetch all recipes to debug
+      const { data: allRecipes } = await supabase
+        .from('recipes')
+        .select('id, title, book_title')
+        .limit(5);
+      
       console.error('No recipes found for selected books:', mealPlan.selected_books);
-      throw new Error('No recipes found for selected books');
+      console.log('Sample of available recipes:', allRecipes);
+      throw new Error(`No recipes found for selected books. Selected books: ${mealPlan.selected_books.join(', ')}`);
     }
 
     console.log('Available recipes:', recipes);
