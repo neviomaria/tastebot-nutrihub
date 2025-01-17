@@ -78,11 +78,10 @@ serve(async (req) => {
       throw new Error('No books found for user');
     }
 
-    // Get recipes from WordPress API for these book IDs
+    // Get recipes from WordPress API
     const recipes = [];
     try {
-      // Use the custom endpoint for recipes
-      const url = `https://brainscapebooks.com/wp-json/custom/v1/recipes`;
+      const url = 'https://brainscapebooks.com/wp-json/custom/v1/recipes';
       console.log('Fetching recipes from URL:', url);
       
       const response = await fetch(url);
