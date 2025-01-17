@@ -5,18 +5,18 @@ import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Recipe } from "@/types/recipe";
 import { useQuery } from "@tanstack/react-query";
-import { RecipeHeader } from "@/components/recipe/RecipeHeader";
-import { RecipeImage } from "@/components/recipe/RecipeImage";
-import { RecipeDetails } from "@/components/recipe/RecipeDetails";
-import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { Button } from "@/components/ui/button";
 import { Volume2, Loader2 } from "lucide-react";
+import { FavoriteButton } from "@/components/recipe/FavoriteButton";
+import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
+import { RecipeContent } from "@/components/recipe/RecipeContent";
+import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 
 interface RecipeDetailsProps {
   recipe: Recipe;
 }
 
-export function RecipeDetails({ recipe }: RecipeDetailsProps) {
+export function RecipeDetailsContent({ recipe }: RecipeDetailsProps) {
   const { generateSpeech, isLoading, cleanup } = useTextToSpeech();
   const { toast } = useToast();
 
@@ -118,3 +118,6 @@ export function RecipeDetails({ recipe }: RecipeDetailsProps) {
     </div>
   );
 }
+
+// Rename the exported component to avoid naming conflict
+export { RecipeDetailsContent as RecipeDetails };
