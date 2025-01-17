@@ -121,7 +121,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
   ]
 }
 
-IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 represents Monday and 7 represents Sunday.`;
+IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 represents Monday and 7 represents Sunday. Any other values will cause an error.`;
 
     console.log('Sending prompt to OpenAI');
 
@@ -136,7 +136,7 @@ IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 repr
         messages: [
           { 
             role: 'system', 
-            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week must be a number between 1 and 7 (Monday to Sunday).`
+            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week MUST be an integer between 1 and 7 (Monday to Sunday).`
           },
           { role: 'user', content: prompt }
         ],
@@ -185,13 +185,11 @@ IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 repr
 
     // Validate day_of_week values
     const invalidDayOrServings = mealPlanItems.meal_plan_items.filter(
-      (item: any) => 
-        !Number.isInteger(item.day_of_week) ||
-        item.day_of_week < 1 || 
-        item.day_of_week > 7 ||
-        !Number.isInteger(item.servings) ||
-        item.servings < 1 ||
-        item.servings > 8
+      (item: any) => {
+        const dayOfWeek = parseInt(item.day_of_week, 10);
+        return isNaN(dayOfWeek) || dayOfWeek < 1 || dayOfWeek > 7 ||
+               !Number.isInteger(item.servings) || item.servings < 1 || item.servings > 8;
+      }
     );
 
     if (invalidDayOrServings.length > 0) {
