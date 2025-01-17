@@ -20,7 +20,11 @@ serve(async (req) => {
     const { mealPlanId } = await req.json();
     console.log('Generating meal plan for ID:', mealPlanId);
 
-    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // First get the meal plan to get the user_id
     const { data: mealPlan, error: mealPlanError } = await supabase
@@ -127,7 +131,7 @@ serve(async (req) => {
     const prompt = `Create a simple meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
 - day_of_week (integer 1-7)
-- meal_type (one of: ${mealPlan.meals_per_day.join(', ')})
+- meal_type (one of: ${mealPlan.meals_per_day?.join(', ')})
 - recipe_id (from available recipes)
 - servings (integer 1-8)
 
@@ -179,11 +183,19 @@ Example format:
 
     let mealPlanItems;
     try {
-      mealPlanItems = JSON.parse(data.choices[0].message.content);
+      const content = data.choices[0].message.content;
+      console.log('Parsing OpenAI response content:', content);
+      mealPlanItems = JSON.parse(content);
       console.log('Parsed meal plan items:', mealPlanItems);
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
       throw new Error('Invalid response format from OpenAI');
+    }
+
+    // Validate meal plan items
+    if (!mealPlanItems?.meal_plan_items || !Array.isArray(mealPlanItems.meal_plan_items)) {
+      console.error('Invalid meal plan items structure:', mealPlanItems);
+      throw new Error('Invalid meal plan items structure from OpenAI');
     }
 
     // Validate day_of_week values
@@ -211,7 +223,7 @@ Example format:
 
     if (insertError) {
       console.error('Error inserting meal plan items:', insertError);
-      throw new Error('Failed to save meal plan items');
+      throw new Error(`Failed to save meal plan items: ${insertError.message}`);
     }
 
     console.log('Successfully saved meal plan items');
