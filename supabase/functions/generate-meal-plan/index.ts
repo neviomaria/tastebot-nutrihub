@@ -11,7 +11,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Define valid meal types
+// Define valid meal types - these must match exactly what's in the database
 const VALID_MEAL_TYPES = [
   "Breakfast",
   "Morning Snack",
@@ -93,10 +93,10 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
 {
   "meal_plan_items": [
     {
-      "day_of_week": number,
+      "day_of_week": number (1-7),
       "meal_type": string (must be exactly one of: ${VALID_MEAL_TYPES.join(', ')}),
-      "recipe_id": number,
-      "servings": number
+      "recipe_id": number (must be an ID from the available recipes),
+      "servings": number (1-8)
     }
   ]
 }`;
@@ -159,6 +159,20 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
     if (invalidRecipes.length > 0) {
       console.error('Invalid recipe IDs found:', invalidRecipes);
       throw new Error('Invalid recipe IDs in generated plan');
+    }
+
+    // Validate day_of_week and servings
+    const invalidDayOrServings = mealPlanItems.meal_plan_items.filter(
+      (item: any) => 
+        item.day_of_week < 1 || 
+        item.day_of_week > 7 ||
+        item.servings < 1 ||
+        item.servings > 8
+    );
+
+    if (invalidDayOrServings.length > 0) {
+      console.error('Invalid day_of_week or servings found:', invalidDayOrServings);
+      throw new Error('Invalid day_of_week or servings in generated plan');
     }
 
     // Save generated meal plan items to database
