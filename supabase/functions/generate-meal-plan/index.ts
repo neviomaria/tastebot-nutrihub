@@ -11,6 +11,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Define valid meal types that match the database constraint
+const VALID_MEAL_TYPES = [
+  "breakfast",
+  "lunch", 
+  "dinner",
+  "morning_snack",
+  "afternoon_snack",
+  "evening_snack"
+] as const;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -128,13 +138,11 @@ serve(async (req) => {
 
     console.log('Available recipes:', recipes);
 
-    // Define valid meal types (exactly as they appear in the database)
-    const validMealTypes = ["Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack"];
-    
-    // Filter to only include meal types selected by the user
-    const selectedMealTypes = validMealTypes.filter(type => 
-      mealPlan.meals_per_day?.includes(type)
-    );
+    // Convert user-selected meal types to match database format
+    const selectedMealTypes = (mealPlan.meals_per_day || []).map(type => {
+      // Convert to lowercase and replace spaces with underscores
+      return type.toLowerCase().replace(/\s+/g, '_');
+    }).filter(type => VALID_MEAL_TYPES.includes(type as any));
 
     if (selectedMealTypes.length === 0) {
       throw new Error('No valid meal types selected');
