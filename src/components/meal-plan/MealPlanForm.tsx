@@ -1,12 +1,10 @@
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/form/SelectField";
 import { CheckboxField } from "@/components/form/CheckboxField";
 import { CreateMealPlanFormValues } from "@/schemas/meal-plan";
-import { mealPlanObjectives, mealPlanDurations, mealsPerDay, timeConstraints } from "@/schemas/meal-plan";
-import { allergies, cuisineTypes } from "@/schemas/profile";
+import { mealPlanDurations, mealsPerDay } from "@/schemas/meal-plan";
 import { Loader2 } from "lucide-react";
 
 interface MealPlanFormProps {
@@ -27,13 +25,6 @@ export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPl
       <form onSubmit={handleSubmit} className="space-y-4">
         <SelectField
           form={form}
-          name="objective"
-          label="Primary Objective"
-          options={mealPlanObjectives}
-        />
-
-        <SelectField
-          form={form}
           name="duration"
           label="Plan Duration"
           options={mealPlanDurations}
@@ -44,45 +35,6 @@ export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPl
           name="meals_per_day"
           label="Meals Per Day"
           options={mealsPerDay}
-        />
-
-        <SelectField
-          form={form}
-          name="time_constraint"
-          label="Time Constraint"
-          options={timeConstraints}
-        />
-
-        <div className="space-y-4">
-          <Input
-            type="date"
-            {...form.register("start_date")}
-            aria-label="Start Date"
-          />
-          <Input
-            type="date"
-            {...form.register("end_date")}
-            aria-label="End Date"
-          />
-          <Input
-            type="number"
-            {...form.register("daily_calories", { valueAsNumber: true })}
-            placeholder="Daily Calories Target"
-          />
-        </div>
-
-        <CheckboxField
-          form={form}
-          name="excluded_ingredients"
-          label="Excluded Ingredients"
-          options={allergies.filter(allergy => allergy !== "Other")}
-        />
-
-        <CheckboxField
-          form={form}
-          name="preferred_cuisines"
-          label="Preferred Cuisines"
-          options={cuisineTypes.filter(cuisine => cuisine !== "Other")}
         />
 
         {userBooks.length > 0 && (

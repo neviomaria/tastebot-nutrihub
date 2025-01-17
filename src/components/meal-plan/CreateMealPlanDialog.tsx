@@ -32,10 +32,8 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
     defaultValues: {
       start_date: format(new Date(), 'yyyy-MM-dd'),
       end_date: format(addDays(new Date(), 7), 'yyyy-MM-dd'),
-      daily_calories: 2000,
+      duration: "7 Days",
       meals_per_day: ["Breakfast", "Lunch", "Dinner"],
-      excluded_ingredients: [],
-      preferred_cuisines: [],
       selected_books: [],
     },
   });
@@ -64,14 +62,10 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
           user_id: user.id,
           start_date: values.start_date,
           end_date: values.end_date,
-          daily_calories: values.daily_calories,
-          objective: values.objective,
           meals_per_day: values.meals_per_day,
-          time_constraint: values.time_constraint,
-          excluded_ingredients: values.excluded_ingredients,
-          preferred_cuisines: values.preferred_cuisines,
           selected_books: values.selected_books,
-          status: 'active'
+          status: 'active',
+          duration: values.duration,
         })
         .select()
         .single();
