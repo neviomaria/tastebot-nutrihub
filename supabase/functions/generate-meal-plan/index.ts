@@ -131,14 +131,14 @@ Your response must be a valid JSON object with this exact structure:
 {
   "meal_plan_items": [
     {
-      "day_of_week": <number between 1 and 7 inclusive>,
+      "day_of_week": <number between 0 and 6 inclusive, where 0 is Sunday>,
       "meal_type": <string matching one of: ${selectedMealTypes.join(', ')}>,
       "recipe_id": <number matching one of the provided recipe IDs>,
       "servings": <number between 1 and 8 inclusive>
     }
   ]
 }
-IMPORTANT: day_of_week MUST be a number between 1 and 7 inclusive.
+IMPORTANT: day_of_week MUST be a number between 0 and 6 inclusive, where 0 represents Sunday.
 Do not add any explanations or additional fields. Return ONLY the JSON object.`;
 
       const userPrompt = `Create a meal plan using only these recipes (format is ID: Title): 
@@ -153,7 +153,7 @@ ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join('\n')}`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4',
+          model: 'gpt-4o',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
@@ -194,8 +194,8 @@ ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join('\n')}`;
 
       // Validate meal plan items before insertion
       mealPlanItems.meal_plan_items.forEach((item: any) => {
-        if (!Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 7) {
-          throw new Error(`Invalid day_of_week value: ${item.day_of_week}. Must be between 1 and 7.`);
+        if (!Number.isInteger(item.day_of_week) || item.day_of_week < 0 || item.day_of_week > 6) {
+          throw new Error(`Invalid day_of_week value: ${item.day_of_week}. Must be between 0 and 6.`);
         }
         if (!selectedMealTypes.includes(item.meal_type)) {
           throw new Error(`Invalid meal_type: ${item.meal_type}`);
