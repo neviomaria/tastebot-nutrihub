@@ -109,11 +109,11 @@ Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week MUST be a number between 1 and 7 (inclusive). Return the response in this format:
+Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). Return the response in this format:
 {
   "meal_plan_items": [
     {
-      "day_of_week": number (1-7),
+      "day_of_week": number (1-7, where 1=Monday, 7=Sunday),
       "meal_type": string (must be exactly one of: ${VALID_MEAL_TYPES.join(', ')}),
       "recipe_id": number (must be an ID from the available recipes),
       "servings": number (1-8)
@@ -199,13 +199,17 @@ IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 repr
       throw new Error('Invalid day_of_week or servings in generated plan');
     }
 
+    // Convert day_of_week to integers explicitly before insertion
+    const formattedItems = mealPlanItems.meal_plan_items.map((item: any) => ({
+      ...item,
+      day_of_week: parseInt(item.day_of_week, 10),
+      meal_plan_id: mealPlanId
+    }));
+
     // Save generated meal plan items to database
     const { error: insertError } = await supabase
       .from('meal_plan_items')
-      .insert(mealPlanItems.meal_plan_items.map((item: any) => ({
-        ...item,
-        meal_plan_id: mealPlanId
-      })));
+      .insert(formattedItems);
 
     if (insertError) {
       console.error('Error inserting meal plan items:', insertError);
