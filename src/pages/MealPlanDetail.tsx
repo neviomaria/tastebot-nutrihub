@@ -1,11 +1,32 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { MealPlanDay } from "@/components/meal-plan/MealPlanDay";
+import { Button } from "@/components/ui/button";
 
 const MealPlanDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // Fetch all user's meal plans to enable navigation
+  const { data: allMealPlans } = useQuery({
+    queryKey: ["meal-plans"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from("meal_plans")
+        .select("id, start_date")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("start_date", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: mealPlan, isLoading } = useQuery({
     queryKey: ["meal-plan", id],
@@ -32,6 +53,10 @@ const MealPlanDetail = () => {
       return data;
     },
   });
+
+  const currentIndex = allMealPlans?.findIndex(plan => plan.id === id) ?? -1;
+  const previousPlan = currentIndex > 0 ? allMealPlans?.[currentIndex - 1] : null;
+  const nextPlan = currentIndex < (allMealPlans?.length ?? 0) - 1 ? allMealPlans?.[currentIndex + 1] : null;
 
   if (isLoading) {
     return (
@@ -63,7 +88,25 @@ const MealPlanDetail = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Meal Plan</h1>
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => previousPlan && navigate(`/meal-plan/${previousPlan.id}`)}
+            disabled={!previousPlan}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-3xl font-bold">Meal Plan</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => nextPlan && navigate(`/meal-plan/${nextPlan.id}`)}
+            disabled={!nextPlan}
+          >
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
         <div className="flex gap-4 text-sm text-muted-foreground">
           <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
           <span>•</span>
