@@ -11,14 +11,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Define valid meal types - these must match exactly what's in the database
+// These meal types MUST match exactly what's allowed in the database
 const VALID_MEAL_TYPES = [
-  "Breakfast",
-  "Morning Snack",
-  "Lunch",
-  "Afternoon Snack",
-  "Dinner",
-  "Evening Snack"
+  "breakfast",
+  "morning_snack",
+  "lunch",
+  "afternoon_snack",
+  "dinner",
+  "evening_snack"
 ];
 
 serve(async (req) => {
@@ -89,7 +89,7 @@ Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')}. Return the response in this format:
+Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). Return the response in this format:
 {
   "meal_plan_items": [
     {
@@ -114,7 +114,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         messages: [
           { 
             role: 'system', 
-            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')}.`
+            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores).`
           },
           { role: 'user', content: prompt }
         ],
