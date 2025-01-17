@@ -11,38 +11,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// These meal types MUST match exactly what's allowed in the database
-const VALID_MEAL_TYPES = [
-  "breakfast",
-  "morning_snack",
-  "lunch",
-  "afternoon_snack",
-  "dinner",
-  "evening_snack"
-];
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    if (!openAIApiKey) {
-      console.error('OpenAI API key not configured');
-      throw new Error('OpenAI API key not configured');
-    }
-
     const { mealPlanId } = await req.json();
-    
-    if (!mealPlanId) {
-      console.error('No meal plan ID provided');
-      throw new Error('No meal plan ID provided');
-    }
-
     console.log('Generating meal plan for ID:', mealPlanId);
 
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
+    // Get meal plan details
     const { data: mealPlan, error: mealPlanError } = await supabase
       .from('meal_plans')
       .select('*')
@@ -53,77 +33,40 @@ serve(async (req) => {
       console.error('Error fetching meal plan:', mealPlanError);
       throw mealPlanError;
     }
-    if (!mealPlan) {
-      console.error('Meal plan not found');
-      throw new Error('Meal plan not found');
-    }
 
-    console.log('Fetched meal plan:', mealPlan);
-
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('dietary_preferences, allergies, favorite_cuisines, cooking_skill_level')
-      .eq('id', mealPlan.user_id)
-      .single();
-
-    if (profileError) {
-      console.error('Error fetching profile:', profileError);
-      throw profileError;
-    }
-    if (!profile) {
-      console.error('Profile not found');
-      throw new Error('Profile not found');
-    }
-
-    console.log('Fetched profile:', profile);
-
-    let recipesQuery = supabase.from('recipes').select('*');
-    
-    if (mealPlan.selected_books && mealPlan.selected_books.length > 0) {
-      console.log('Selected books:', mealPlan.selected_books);
-    }
-
-    const { data: recipes, error: recipesError } = await recipesQuery;
+    // Get available recipes (simplified query)
+    const { data: recipes, error: recipesError } = await supabase
+      .from('recipes')
+      .select('id, title')
+      .limit(10);
 
     if (recipesError) {
       console.error('Error fetching recipes:', recipesError);
       throw recipesError;
     }
-    if (!recipes || recipes.length === 0) {
-      console.error('No recipes found');
-      throw new Error('No recipes found');
-    }
 
-    console.log('Fetched recipes count:', recipes.length);
+    console.log('Available recipes:', recipes);
 
-    const prompt = `Create a meal plan with the following requirements:
-Duration: ${mealPlan.duration}
-Daily calorie target: ${mealPlan.daily_calories}
-Objective: ${mealPlan.objective}
-Meals per day: ${mealPlan.meals_per_day.join(', ')}
-Time constraint: ${mealPlan.time_constraint}
-Excluded ingredients: ${mealPlan.excluded_ingredients?.join(', ') || 'None'}
-Preferred cuisines: ${mealPlan.preferred_cuisines?.join(', ') || 'Any'}
-Dietary preferences: ${profile.dietary_preferences?.join(', ') || 'None'}
-Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
+    const prompt = `Create a simple 3-day meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
+Return a JSON object with meal_plan_items array. Each item must have:
+- day_of_week (integer 1-7, where 1=Monday)
+- meal_type (one of: breakfast, lunch, dinner)
+- recipe_id (from available recipes)
+- servings (integer 1-8)
 
-Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
-
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). Return the response in this format:
+Example format:
 {
   "meal_plan_items": [
     {
-      "day_of_week": number (1-7, where 1=Monday, 7=Sunday),
-      "meal_type": string (must be exactly one of: ${VALID_MEAL_TYPES.join(', ')}),
-      "recipe_id": number (must be an ID from the available recipes),
-      "servings": number (1-8)
+      "day_of_week": 1,
+      "meal_type": "breakfast",
+      "recipe_id": 123,
+      "servings": 4
     }
   ]
-}
+}`;
 
-IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 represents Monday and 7 represents Sunday. Any other values will cause an error.`;
-
-    console.log('Sending prompt to OpenAI');
+    console.log('Sending prompt to OpenAI:', prompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -132,11 +75,11 @@ IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 repr
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { 
             role: 'system', 
-            content: `You are a helpful meal planning assistant that creates personalized meal plans based on user preferences and available recipes. Always return valid JSON that matches the requested format exactly. The meal_type must be exactly one of: ${VALID_MEAL_TYPES.join(', ')} (all lowercase with underscores). The day_of_week MUST be an integer between 1 and 7 (Monday to Sunday).`
+            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-7.'
           },
           { role: 'user', content: prompt }
         ],
@@ -153,61 +96,29 @@ IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 repr
     const data = await response.json();
     console.log('OpenAI response:', data);
 
-    let mealPlanItems;
-    try {
-      mealPlanItems = JSON.parse(data.choices[0].message.content);
-      console.log('Parsed meal plan items:', mealPlanItems);
-    } catch (error) {
-      console.error('Error parsing OpenAI response:', error);
-      throw new Error('Invalid response format from OpenAI');
-    }
+    const mealPlanItems = JSON.parse(data.choices[0].message.content);
+    console.log('Parsed meal plan items:', mealPlanItems);
 
-    // Validate meal types before insertion
-    const invalidItems = mealPlanItems.meal_plan_items.filter(
-      (item: any) => !VALID_MEAL_TYPES.includes(item.meal_type)
-    );
-    
-    if (invalidItems.length > 0) {
-      console.error('Invalid meal types found:', invalidItems);
-      throw new Error('Invalid meal types in generated plan');
-    }
-
-    // Validate recipe IDs exist
-    const recipeIds = new Set(recipes.map(r => r.id));
-    const invalidRecipes = mealPlanItems.meal_plan_items.filter(
-      (item: any) => !recipeIds.has(item.recipe_id)
+    // Validate day_of_week values
+    const invalidDays = mealPlanItems.meal_plan_items.filter(
+      (item: any) => !Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 7
     );
 
-    if (invalidRecipes.length > 0) {
-      console.error('Invalid recipe IDs found:', invalidRecipes);
-      throw new Error('Invalid recipe IDs in generated plan');
+    if (invalidDays.length > 0) {
+      console.error('Invalid day_of_week values found:', invalidDays);
+      throw new Error('Invalid day_of_week values in generated plan');
     }
 
-    // Validate day_of_week and servings values
-    const invalidDayOrServings = mealPlanItems.meal_plan_items.filter(
-      (item: any) => {
-        const dayOfWeek = parseInt(item.day_of_week, 10);
-        return isNaN(dayOfWeek) || dayOfWeek < 1 || dayOfWeek > 7 ||
-               !Number.isInteger(item.servings) || item.servings < 1 || item.servings > 8;
-      }
-    );
-
-    if (invalidDayOrServings.length > 0) {
-      console.error('Invalid day_of_week or servings found:', invalidDayOrServings);
-      throw new Error('Invalid day_of_week or servings in generated plan');
-    }
-
-    // Convert day_of_week to integers explicitly before insertion
-    const formattedItems = mealPlanItems.meal_plan_items.map((item: any) => ({
+    // Add meal_plan_id to each item
+    const itemsToInsert = mealPlanItems.meal_plan_items.map((item: any) => ({
       ...item,
-      day_of_week: parseInt(item.day_of_week, 10),
       meal_plan_id: mealPlanId
     }));
 
-    // Save generated meal plan items to database
+    // Insert meal plan items
     const { error: insertError } = await supabase
       .from('meal_plan_items')
-      .insert(formattedItems);
+      .insert(itemsToInsert);
 
     if (insertError) {
       console.error('Error inserting meal plan items:', insertError);
