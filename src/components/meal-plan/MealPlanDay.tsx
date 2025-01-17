@@ -39,42 +39,27 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   const { data: recipes } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
-      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      const response = await fetch('https://brainscapebooks.com/wp-content/uploads/recipes.json');
       if (!response.ok) {
         throw new Error('Failed to fetch recipes');
       }
       const recipes = await response.json();
-      console.log('Fetched recipes:', recipes); // Debug log
       return recipes;
     }
   });
 
   const getRecipeImage = (recipeId: number) => {
     if (!recipes) {
-      console.log('No recipes data available');
       return "/placeholder.svg";
     }
 
     const recipe = recipes.find((r: any) => r.id === recipeId);
-    if (!recipe) {
-      console.log('Recipe not found:', recipeId);
+    if (!recipe?.acf?.recipe_image?.url) {
       return "/placeholder.svg";
     }
 
-    if (!recipe.acf?.recipe_image?.url) {
-      console.log('No image URL for recipe:', recipeId);
-      return "/placeholder.svg";
-    }
-
-    const imageUrl = recipe.acf.recipe_image.url;
-    console.log('Original image URL:', imageUrl); // Debug log
-
-    // Generate thumbnail URL
-    const urlParts = imageUrl.split('.');
-    const extension = urlParts.pop();
-    const thumbnailUrl = `${urlParts.join('.')}-300x300.${extension}`;
-    console.log('Generated thumbnail URL:', thumbnailUrl); // Debug log
-    return thumbnailUrl;
+    // Use the same image URL format as in BookRecipes
+    return recipe.acf.recipe_image.url;
   };
 
   const formatMealType = (type: string) => {
@@ -104,7 +89,6 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                     className="w-full h-full object-cover"
                     loading="lazy"
                     onError={(e) => {
-                      console.log('Image failed to load:', meal.recipe.id);
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />
