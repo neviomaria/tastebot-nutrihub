@@ -151,7 +151,7 @@ serve(async (req) => {
 
     const prompt = `Create a simple meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
-- day_of_week (integer 1-7)
+- day_of_week (integer 1-6)
 - meal_type (must be exactly one of these: ${selectedMealTypes.join(', ')})
 - recipe_id (from available recipes)
 - servings (integer 1-8)
@@ -185,7 +185,7 @@ Example format:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-7 and meal_type exactly matching the provided options.'
+            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-6 and meal_type exactly matching the provided options.'
           },
           { role: 'user', content: prompt }
         ],
@@ -223,13 +223,13 @@ Example format:
       (item: any) => 
         !Number.isInteger(item.day_of_week) || 
         item.day_of_week < 1 || 
-        item.day_of_week > 7 ||
+        item.day_of_week > 6 ||  // Changed from 7 to 6 to match database constraint
         !selectedMealTypes.includes(item.meal_type)
     );
 
     if (invalidItems.length > 0) {
       console.error('Invalid items found:', invalidItems);
-      throw new Error('Invalid values in generated plan. Check day_of_week (must be 1-7) and meal_type.');
+      throw new Error('Invalid values in generated plan. Check day_of_week (must be 1-6) and meal_type.');
     }
 
     // Add meal_plan_id to each item
