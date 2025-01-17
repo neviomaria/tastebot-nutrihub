@@ -149,14 +149,14 @@ Example format:
       throw new Error('OpenAI API key not configured');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           { 
             role: 'system', 
@@ -168,17 +168,23 @@ Example format:
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (!openAIResponse.ok) {
+      const error = await openAIResponse.json();
       console.error('OpenAI API error:', error);
       throw new Error('Failed to generate meal plan with OpenAI');
     }
 
-    const data = await response.json();
+    const data = await openAIResponse.json();
     console.log('OpenAI response:', data);
 
-    const mealPlanItems = JSON.parse(data.choices[0].message.content);
-    console.log('Parsed meal plan items:', mealPlanItems);
+    let mealPlanItems;
+    try {
+      mealPlanItems = JSON.parse(data.choices[0].message.content);
+      console.log('Parsed meal plan items:', mealPlanItems);
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      throw new Error('Invalid response format from OpenAI');
+    }
 
     // Validate day_of_week values
     const invalidDays = mealPlanItems.meal_plan_items.filter(
@@ -195,6 +201,8 @@ Example format:
       ...item,
       meal_plan_id: mealPlanId
     }));
+
+    console.log('Attempting to insert meal plan items:', itemsToInsert);
 
     // Insert meal plan items
     const { error: insertError } = await supabase
