@@ -139,14 +139,16 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-white">
-      <div className="flex h-[60px] items-center px-4 border-b">
-        <Link 
-          to="/" 
-          className="flex items-center gap-2 font-semibold" 
-          onClick={handleMenuClick}
-        >
-          <span className="text-xl">Pybher</span>
-        </Link>
+      <div className="flex h-[60px] items-center border-b">
+        <div className="flex w-full items-center px-4">
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 font-semibold ml-8 lg:ml-0" 
+            onClick={handleMenuClick}
+          >
+            <span className="text-xl">Pybher</span>
+          </Link>
+        </div>
       </div>
       <ScrollArea className="flex-1 overflow-y-auto px-2">
         <div className="space-y-1 py-2">
