@@ -19,12 +19,12 @@ export const mealPlanDurations = [
 ] as const;
 
 export const mealsPerDay = [
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Morning Snack",
-  "Afternoon Snack",
-  "Evening Snack"
+  "breakfast",
+  "lunch",
+  "dinner",
+  "morning_snack",
+  "afternoon_snack",
+  "evening_snack"
 ] as const;
 
 export const timeConstraints = [

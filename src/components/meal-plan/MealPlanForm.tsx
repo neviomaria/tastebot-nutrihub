@@ -14,6 +14,14 @@ interface MealPlanFormProps {
   isGenerating?: boolean;
 }
 
+// Helper function to format meal type for display
+const formatMealType = (type: string) => {
+  return type
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPlanFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +42,10 @@ export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPl
           form={form}
           name="meals_per_day"
           label="Meals Per Day"
-          options={mealsPerDay}
+          options={mealsPerDay.map(meal => ({
+            label: formatMealType(meal),
+            value: meal
+          }))}
         />
 
         {userBooks.length > 0 && (

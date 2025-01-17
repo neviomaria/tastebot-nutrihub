@@ -138,11 +138,10 @@ serve(async (req) => {
 
     console.log('Available recipes:', recipes);
 
-    // Convert user-selected meal types to match database format
-    const selectedMealTypes = (mealPlan.meals_per_day || []).map(type => {
-      // Convert to lowercase and replace spaces with underscores
-      return type.toLowerCase().replace(/\s+/g, '_');
-    }).filter(type => VALID_MEAL_TYPES.includes(type as any));
+    // Use the meal types directly from meals_per_day as they are already in the correct format
+    const selectedMealTypes = (mealPlan.meals_per_day || []).filter(type => 
+      VALID_MEAL_TYPES.includes(type as any)
+    );
 
     if (selectedMealTypes.length === 0) {
       throw new Error('No valid meal types selected');
