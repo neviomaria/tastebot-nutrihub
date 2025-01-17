@@ -128,15 +128,24 @@ serve(async (req) => {
 
     console.log('Available recipes:', recipes);
 
-    // Ensure meal types are properly formatted
-    const validMealTypes = (mealPlan.meals_per_day || []).map(type => 
-      type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+    // Define valid meal types (exactly as they appear in the database)
+    const validMealTypes = ["Breakfast", "Lunch", "Dinner", "Morning Snack", "Afternoon Snack", "Evening Snack"];
+    
+    // Filter to only include meal types selected by the user
+    const selectedMealTypes = validMealTypes.filter(type => 
+      mealPlan.meals_per_day?.includes(type)
     );
+
+    if (selectedMealTypes.length === 0) {
+      throw new Error('No valid meal types selected');
+    }
+
+    console.log('Selected meal types:', selectedMealTypes);
 
     const prompt = `Create a simple meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
 - day_of_week (integer 1-7)
-- meal_type (must be exactly one of these: ${validMealTypes.join(', ')})
+- meal_type (must be exactly one of these: ${selectedMealTypes.join(', ')})
 - recipe_id (from available recipes)
 - servings (integer 1-8)
 
@@ -145,7 +154,7 @@ Example format:
   "meal_plan_items": [
     {
       "day_of_week": 1,
-      "meal_type": "${validMealTypes[0] || 'Breakfast'}",
+      "meal_type": "${selectedMealTypes[0]}",
       "recipe_id": 123,
       "servings": 4
     }
@@ -197,7 +206,6 @@ Example format:
       throw new Error('Invalid response format from OpenAI');
     }
 
-    // Validate meal plan items
     if (!mealPlanItems?.meal_plan_items || !Array.isArray(mealPlanItems.meal_plan_items)) {
       console.error('Invalid meal plan items structure:', mealPlanItems);
       throw new Error('Invalid meal plan items structure from OpenAI');
@@ -209,7 +217,7 @@ Example format:
         !Number.isInteger(item.day_of_week) || 
         item.day_of_week < 1 || 
         item.day_of_week > 7 ||
-        !validMealTypes.includes(item.meal_type)
+        !selectedMealTypes.includes(item.meal_type)
     );
 
     if (invalidItems.length > 0) {
