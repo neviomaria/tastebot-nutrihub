@@ -50,11 +50,23 @@ serve(async (req) => {
       throw new Error(error.error?.message || 'Failed to generate speech')
     }
 
-    const arrayBuffer = await response.arrayBuffer()
-    const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+    // Get the audio data as an ArrayBuffer
+    const audioBuffer = await response.arrayBuffer()
+    
+    // Convert ArrayBuffer to Uint8Array
+    const uint8Array = new Uint8Array(audioBuffer)
+    
+    // Convert to base64 in chunks to avoid stack overflow
+    const chunkSize = 32768 // Process 32KB at a time
+    let base64String = ''
+    
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize)
+      base64String += btoa(String.fromCharCode.apply(null, chunk))
+    }
 
     return new Response(
-      JSON.stringify({ audioContent: base64Audio }),
+      JSON.stringify({ audioContent: base64String }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
