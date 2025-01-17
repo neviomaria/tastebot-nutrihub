@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { createMealPlanSchema } from "@/schemas/meal-plan";
 import type { CreateMealPlanFormValues } from "@/schemas/meal-plan";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +25,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
   const [open, setOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<CreateMealPlanFormValues>({
     resolver: zodResolver(createMealPlanSchema),
@@ -39,6 +41,13 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
   });
 
   const { userBooks } = useMealPlanUserData(form);
+
+  // Set all books as selected by default when userBooks changes
+  React.useEffect(() => {
+    if (userBooks.length > 0) {
+      form.setValue('selected_books', userBooks.map(book => book.book_title));
+    }
+  }, [userBooks, form]);
 
   const onSubmit = async (values: CreateMealPlanFormValues) => {
     try {
@@ -102,6 +111,8 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
       setOpen(false);
       form.reset();
       onSuccess();
+      // Navigate to the meal plan detail page
+      navigate(`/meal-plan/${mealPlan.id}`);
     } catch (error) {
       console.error("Error in meal plan creation:", error);
       toast({

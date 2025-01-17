@@ -34,12 +34,12 @@ export const timeConstraints = [
 ] as const;
 
 export const createMealPlanSchema = z.object({
-  objective: z.enum(mealPlanObjectives),
+  objective: z.enum(mealPlanObjectives).optional(),
   duration: z.enum(mealPlanDurations),
-  meals_per_day: z.array(z.enum(mealsPerDay)),
-  time_constraint: z.enum(timeConstraints),
-  start_date: z.string(),
-  end_date: z.string(),
+  meals_per_day: z.array(z.enum(mealsPerDay)).min(1, "Select at least one meal"),
+  time_constraint: z.enum(timeConstraints).optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
   daily_calories: z.number().min(500).max(10000).optional(),
   excluded_ingredients: z.array(z.string()).optional(),
   preferred_cuisines: z.array(z.string()).optional(),

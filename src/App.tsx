@@ -17,6 +17,7 @@ import BookRecipes from "@/pages/BookRecipes";
 import RecipeDetail from "@/pages/RecipeDetail";
 import FavoriteRecipes from "@/pages/FavoriteRecipes";
 import MealPlans from "@/pages/MealPlans";
+import MealPlanDetail from "@/pages/MealPlanDetail";
 import { AppSidebar } from "@/components/AppSidebar";
 
 const queryClient = new QueryClient({
@@ -43,6 +44,7 @@ function AuthenticatedApp() {
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/favorite-recipes" element={<FavoriteRecipes />} />
         <Route path="/meal-plans" element={<MealPlans />} />
+        <Route path="/meal-plan/:id" element={<MealPlanDetail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppSidebar>
