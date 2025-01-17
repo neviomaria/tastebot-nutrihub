@@ -126,26 +126,18 @@ serve(async (req) => {
         throw new Error('OpenAI API key not configured');
       }
 
-      const prompt = `Create a simple meal plan using these recipes: ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
-Return a JSON object with meal_plan_items array. Each item must have:
+      const systemPrompt = `You are a meal planning assistant. Create a meal plan using only the provided recipes. 
+Your response must be a valid JSON object with a meal_plan_items array. Each item must have exactly these fields:
 - day_of_week (integer 1-6)
-- meal_type (must be exactly one of these: ${selectedMealTypes.join(', ')})
-- recipe_id (from available recipes)
+- meal_type (string, exactly matching one of: ${selectedMealTypes.join(', ')})
+- recipe_id (integer, must be one of the provided recipe IDs)
 - servings (integer 1-8)
 
-Example format:
-{
-  "meal_plan_items": [
-    {
-      "day_of_week": 1,
-      "meal_type": "${selectedMealTypes[0]}",
-      "recipe_id": ${filteredRecipes[0].id},
-      "servings": 4
-    }
-  ]
-}`;
+Do not include any explanations or additional fields. Only return the JSON object.`;
 
-      console.log('Sending prompt to OpenAI:', prompt);
+      const userPrompt = `Create a meal plan using only these recipes: ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join(', ')}`;
+
+      console.log('Sending prompt to OpenAI:', { systemPrompt, userPrompt });
 
       const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -156,12 +148,10 @@ Example format:
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           messages: [
-            { 
-              role: 'system', 
-              content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-6 and meal_type exactly matching the provided options.'
-            },
-            { role: 'user', content: prompt }
-          ]
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
         }),
       });
 
