@@ -35,7 +35,7 @@ const MealPlanDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-[calc(100vh-40px)]">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -43,9 +43,9 @@ const MealPlanDetail = () => {
 
   if (!mealPlan) {
     return (
-      <div className="p-6">
-        <div className="text-center py-8">
-          <p className="text-lg text-gray-600">Meal plan not found</p>
+      <div className="p-4">
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-600">Meal plan not found</p>
         </div>
       </div>
     );
@@ -61,24 +61,22 @@ const MealPlanDetail = () => {
   }, {});
 
   return (
-    <div className="max-h-[calc(100vh-40px)] lg:max-h-[calc(100vh-60px)] overflow-y-auto">
-      <div className="container mx-auto py-4 px-2 lg:px-4">
-        <div className="mb-4 lg:mb-8">
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2">Meal Plan</h1>
-          <div className="flex flex-wrap gap-2 lg:gap-4 text-xs lg:text-sm text-muted-foreground">
-            <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
-            <span>•</span>
-            <span>End: {new Date(mealPlan.end_date).toLocaleDateString()}</span>
-            {mealPlan.daily_calories && (
-              <>
-                <span>•</span>
-                <span>Target: {mealPlan.daily_calories} calories/day</span>
-              </>
-            )}
-          </div>
+    <div className="h-[calc(100vh-40px)] overflow-y-auto bg-background">
+      <div className="p-4">
+        <h1 className="text-xl font-semibold mb-2">Meal Plan</h1>
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-4">
+          <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
+          <span>•</span>
+          <span>End: {new Date(mealPlan.end_date).toLocaleDateString()}</span>
+          {mealPlan.daily_calories && (
+            <>
+              <span>•</span>
+              <span>{mealPlan.daily_calories} calories/day</span>
+            </>
+          )}
         </div>
 
-        <div className="space-y-4 lg:space-y-6">
+        <div className="space-y-4">
           {Object.entries(mealsByDay).map(([day, meals]) => (
             <MealPlanDay
               key={day}

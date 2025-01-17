@@ -58,7 +58,6 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     const imageUrl = recipeImages[recipeId];
     if (!imageUrl) return "/placeholder.svg";
     
-    // Get the thumbnail version of the image
     const urlParts = imageUrl.split('.');
     const extension = urlParts.pop();
     return `${urlParts.join('.')}-300x300.${extension}`;
@@ -71,50 +70,48 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div className="rounded-lg overflow-hidden">
       <div className="bg-primary px-4 py-2">
-        <h2 className="text-lg lg:text-xl font-semibold text-white">Day {dayNumber + 1}</h2>
+        <h2 className="text-lg font-semibold text-white">Day {dayNumber}</h2>
       </div>
-      <div className="p-3 lg:p-6">
-        <div className="grid gap-3 lg:gap-6">
-          {meals.map((meal, index) => (
-            <div 
-              key={`${meal.recipe.id}-${index}`}
-              className="group cursor-pointer"
-              onClick={() => setSelectedRecipeId(meal.recipe.id)}
-            >
-              <div className="flex items-center gap-3 lg:gap-4 p-2 lg:p-4 rounded-lg hover:bg-secondary transition-colors">
-                <div className="w-16 h-16 lg:w-24 lg:h-24 rounded-lg overflow-hidden flex-shrink-0">
-                  <img
-                    src={getRecipeImage(meal.recipe.id)}
-                    alt={meal.recipe.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => {
-                      console.log('Image failed to load:', meal.recipe.id);
-                      e.currentTarget.src = "/placeholder.svg";
-                    }}
-                  />
-                </div>
-                <div className="flex-grow min-w-0">
-                  <span className="text-xs lg:text-sm font-medium text-primary mb-1 block">
-                    {formatMealType(meal.meal_type)}
-                  </span>
-                  <h3 className="font-semibold truncate group-hover:text-primary transition-colors">
-                    {meal.recipe.title}
-                  </h3>
-                  <div className="text-xs lg:text-sm text-muted-foreground mt-1 flex flex-wrap gap-2">
-                    <span>Prep: {meal.recipe.prep_time}</span>
-                    <span>•</span>
-                    <span>Cook: {meal.recipe.cook_time}</span>
-                    <span>•</span>
-                    <span>Servings: {meal.servings}</span>
-                  </div>
+      <div className="space-y-4">
+        {meals.map((meal, index) => (
+          <div 
+            key={`${meal.recipe.id}-${index}`}
+            className="group cursor-pointer px-4"
+            onClick={() => setSelectedRecipeId(meal.recipe.id)}
+          >
+            <div className="flex items-center gap-3 py-2">
+              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                <img
+                  src={getRecipeImage(meal.recipe.id)}
+                  alt={meal.recipe.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => {
+                    console.log('Image failed to load:', meal.recipe.id);
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+              <div className="flex-grow min-w-0">
+                <span className="text-xs font-medium text-primary block">
+                  {formatMealType(meal.meal_type)}
+                </span>
+                <h3 className="font-medium text-sm truncate">
+                  {meal.recipe.title}
+                </h3>
+                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                  <span>Prep: {meal.recipe.prep_time}</span>
+                  <span>•</span>
+                  <span>Cook: {meal.recipe.cook_time}</span>
+                  <span>•</span>
+                  <span>Servings: {meal.servings}</span>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipeId(null)}>
