@@ -72,7 +72,7 @@ serve(async (req) => {
     const { data: recipes, error: recipesError } = await recipesQuery;
 
     if (recipesError) throw recipesError;
-    if (!recipes) throw new Error('No recipes found');
+    if (!recipes || recipes.length === 0) throw new Error('No recipes found');
 
     console.log('Fetched recipes count:', recipes.length);
 
@@ -110,7 +110,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           { 
             role: 'system', 
@@ -148,6 +148,17 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
     if (invalidItems.length > 0) {
       console.error('Invalid meal types found:', invalidItems);
       throw new Error('Invalid meal types in generated plan');
+    }
+
+    // Validate recipe IDs exist
+    const recipeIds = new Set(recipes.map(r => r.id));
+    const invalidRecipes = mealPlanItems.meal_plan_items.filter(
+      (item: any) => !recipeIds.has(item.recipe_id)
+    );
+
+    if (invalidRecipes.length > 0) {
+      console.error('Invalid recipe IDs found:', invalidRecipes);
+      throw new Error('Invalid recipe IDs in generated plan');
     }
 
     // Save generated meal plan items to database
