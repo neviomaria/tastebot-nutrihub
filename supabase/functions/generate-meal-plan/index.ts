@@ -11,15 +11,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const VALID_MEAL_TYPES = [
-  "breakfast",
-  "lunch", 
-  "dinner",
-  "morning_snack",
-  "afternoon_snack",
-  "evening_snack"
-] as const;
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -77,23 +68,33 @@ serve(async (req) => {
           .single();
 
         if (!existingRecipe) {
+          // Transform ingredients and instructions to match our schema
+          const ingredients = Array.isArray(recipe.acf?.ingredients) 
+            ? recipe.acf.ingredients.map((i: any) => i.ingredient_item || i).filter(Boolean)
+            : [];
+            
+          const instructions = Array.isArray(recipe.acf?.instructions)
+            ? recipe.acf.instructions.map((i: any) => i.instructions_step || i).filter(Boolean)
+            : [];
+
           const { error: insertError } = await supabase
             .from('recipes')
             .insert({
               id: recipe.id,
               title: recipe.title,
               description: recipe.content,
-              ingredients: recipe.acf?.ingredients?.map((i: any) => i.ingredient_item) || [],
-              instructions: recipe.acf?.instructions?.map((i: any) => i.instructions_step) || [],
+              ingredients: ingredients,
+              instructions: instructions,
               prep_time: recipe.acf?.prep_time,
               cook_time: recipe.acf?.cook_time,
               servings: parseInt(recipe.acf?.servings) || 4,
-              meal_type: recipe.acf?.meal_type,
+              meal_type: recipe.acf?.pasto,
               book_title: recipe.acf?.libro_associato?.[0]?.post_title
             });
 
           if (insertError) {
             console.error('Error inserting recipe:', insertError);
+            throw new Error('Failed to create recipe in database');
           }
         }
       }
@@ -114,12 +115,10 @@ serve(async (req) => {
       console.log('Available recipes:', recipes);
 
       // Use the meal types from meals_per_day
-      const selectedMealTypes = (mealPlan.meals_per_day || []).filter(type => 
-        VALID_MEAL_TYPES.includes(type as any)
-      );
+      const selectedMealTypes = mealPlan.meals_per_day || [];
 
       if (selectedMealTypes.length === 0) {
-        throw new Error('No valid meal types selected');
+        throw new Error('No meal types selected');
       }
 
       console.log('Selected meal types:', selectedMealTypes);
@@ -198,7 +197,7 @@ Example format:
         (item: any) => 
           !Number.isInteger(item.day_of_week) || 
           item.day_of_week < 1 || 
-          item.day_of_week > 6 ||  // Changed from 7 to 6 to match database constraint
+          item.day_of_week > 6 ||
           !selectedMealTypes.includes(item.meal_type)
       );
 
