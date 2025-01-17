@@ -80,24 +80,30 @@ serve(async (req) => {
 
     // Get recipes from WordPress API for these book IDs
     const recipes = [];
-    for (const bookId of bookIds) {
-      try {
-        const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/ricette?libro_associato=${bookId}&per_page=20`);
-        if (!response.ok) {
-          console.error(`Error fetching recipes for book ${bookId}:`, response.statusText);
-          continue;
-        }
-        const bookRecipes = await response.json();
-        recipes.push(...bookRecipes.map((recipe: any) => ({
-          id: recipe.id,
-          title: recipe.title.rendered,
-          prep_time: recipe.acf?.prep_time || '',
-          cook_time: recipe.acf?.cook_time || '',
-          servings: parseInt(recipe.acf?.servings) || 4
-        })));
-      } catch (error) {
-        console.error(`Error fetching recipes for book ${bookId}:`, error);
+    try {
+      // Build the URL with multiple libro_associato[] parameters
+      const bookIdsParam = Array.from(bookIds).map(id => `libro_associato[]=${id}`).join('&');
+      const url = `https://brainscapebooks.com/wp-json/wp/v2/ricette?${bookIdsParam}&per_page=100`;
+      console.log('Fetching recipes from URL:', url);
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error(`Error fetching recipes: ${response.status} ${response.statusText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const bookRecipes = await response.json();
+      console.log(`Found ${bookRecipes.length} recipes`);
+      
+      recipes.push(...bookRecipes.map((recipe: any) => ({
+        id: recipe.id,
+        title: recipe.title.rendered,
+        prep_time: recipe.acf?.prep_time || '',
+        cook_time: recipe.acf?.cook_time || '',
+        servings: parseInt(recipe.acf?.servings) || 4
+      })));
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+      throw new Error(`Failed to fetch recipes: ${error.message}`);
     }
 
     if (!recipes || recipes.length === 0) {
