@@ -11,17 +11,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Define valid meal types as a constant
+// Define valid meal types
 const VALID_MEAL_TYPES = [
   "Breakfast",
   "Morning Snack",
-  "Lunch", 
+  "Lunch",
   "Afternoon Snack",
   "Dinner",
   "Evening Snack"
-] as const;
-
-type ValidMealType = typeof VALID_MEAL_TYPES[number];
+];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -91,12 +89,12 @@ Cooking skill level: ${profile.cooking_skill_level || 'Intermediate'}
 
 Available recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}
 
-Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.map(t => `"${t}"`).join(', ')}. Return the response in this format:
+Please create a meal plan that assigns recipes to each meal for each day of the plan. For each meal, select an appropriate recipe from the available recipes list that matches the requirements. The meal_type MUST be exactly one of: ${VALID_MEAL_TYPES.join(', ')}. Return the response in this format:
 {
   "meal_plan_items": [
     {
       "day_of_week": number,
-      "meal_type": string (must be exactly one of: ${VALID_MEAL_TYPES.map(t => `"${t}"`).join(', ')}),
+      "meal_type": string (must be exactly one of: ${VALID_MEAL_TYPES.join(', ')}),
       "recipe_id": number,
       "servings": number
     }
@@ -112,7 +110,7 @@ Please create a meal plan that assigns recipes to each meal for each day of the 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           { 
             role: 'system', 
