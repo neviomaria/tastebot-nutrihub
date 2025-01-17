@@ -22,10 +22,19 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
-    // Get meal plan details
+    // Get meal plan details and book IDs
     const { data: mealPlan, error: mealPlanError } = await supabase
       .from('meal_plans')
-      .select('*, selected_books')
+      .select(`
+        *,
+        user_id,
+        profiles!meal_plans_user_id_fkey (
+          book_id
+        ),
+        user_coupons!inner (
+          book_id
+        )
+      `)
       .eq('id', mealPlanId)
       .single();
 
@@ -38,37 +47,44 @@ serve(async (req) => {
       throw new Error('Meal plan not found');
     }
 
-    if (!mealPlan.selected_books || mealPlan.selected_books.length === 0) {
-      throw new Error('No books selected for meal plan');
+    // Extract unique book IDs from profile and user_coupons
+    const bookIds = new Set<string>();
+    if (mealPlan.profiles?.book_id) {
+      bookIds.add(mealPlan.profiles.book_id);
+    }
+    if (mealPlan.user_coupons) {
+      mealPlan.user_coupons.forEach((coupon: { book_id: string }) => {
+        bookIds.add(coupon.book_id);
+      });
     }
 
-    console.log('Meal plan details:', mealPlan);
-    console.log('Selected books:', mealPlan.selected_books);
+    console.log('Book IDs to fetch recipes from:', Array.from(bookIds));
 
-    // Get recipes from selected books using case-insensitive comparison
-    const { data: recipes, error: recipesError } = await supabase
-      .from('recipes')
-      .select('id, title, book_title')
-      .or(mealPlan.selected_books.map(book => `book_title.ilike.${book}`).join(','))
-      .limit(20);
-
-    if (recipesError) {
-      console.error('Error fetching recipes:', recipesError);
-      throw new Error('Failed to fetch recipes');
+    // Get recipes from WordPress API for these book IDs
+    const recipes = [];
+    for (const bookId of bookIds) {
+      try {
+        const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/ricette?libro_associato=${bookId}&per_page=20`);
+        if (!response.ok) {
+          console.error(`Error fetching recipes for book ${bookId}:`, response.statusText);
+          continue;
+        }
+        const bookRecipes = await response.json();
+        recipes.push(...bookRecipes.map((recipe: any) => ({
+          id: recipe.id,
+          title: recipe.title.rendered,
+          prep_time: recipe.acf?.prep_time || '',
+          cook_time: recipe.acf?.cook_time || '',
+          servings: parseInt(recipe.acf?.servings) || 4
+        })));
+      } catch (error) {
+        console.error(`Error fetching recipes for book ${bookId}:`, error);
+      }
     }
-
-    console.log('Recipes query result:', recipes);
 
     if (!recipes || recipes.length === 0) {
-      // Try to fetch all recipes to debug
-      const { data: allRecipes } = await supabase
-        .from('recipes')
-        .select('id, title, book_title')
-        .limit(5);
-      
-      console.error('No recipes found for selected books:', mealPlan.selected_books);
-      console.log('Sample of available recipes:', allRecipes);
-      throw new Error(`No recipes found for selected books. Selected books: ${mealPlan.selected_books.join(', ')}`);
+      console.error('No recipes found for books:', Array.from(bookIds));
+      throw new Error(`No recipes found for selected books. Book IDs: ${Array.from(bookIds).join(', ')}`);
     }
 
     console.log('Available recipes:', recipes);
