@@ -183,7 +183,7 @@ IMPORTANT: The day_of_week values MUST be integers between 1 and 7, where 1 repr
       throw new Error('Invalid recipe IDs in generated plan');
     }
 
-    // Validate day_of_week values
+    // Validate day_of_week and servings values
     const invalidDayOrServings = mealPlanItems.meal_plan_items.filter(
       (item: any) => {
         const dayOfWeek = parseInt(item.day_of_week, 10);
