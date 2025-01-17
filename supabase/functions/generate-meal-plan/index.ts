@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // First get the meal plan to get the user_id
+    // First get the meal plan to get the user_id and selected_books
     const { data: mealPlan, error: mealPlanError } = await supabase
       .from('meal_plans')
       .select('*')
@@ -42,6 +42,12 @@ serve(async (req) => {
       throw new Error('Meal plan not found');
     }
 
+    console.log('Meal plan selected books:', mealPlan.selected_books);
+
+    if (!mealPlan.selected_books || mealPlan.selected_books.length === 0) {
+      throw new Error('No books selected for meal plan');
+    }
+
     // Get recipes from WordPress API
     try {
       const url = 'https://brainscapebooks.com/wp-json/custom/v1/recipes';
@@ -52,11 +58,24 @@ serve(async (req) => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const wpRecipes = await response.json();
-      console.log('Total WordPress recipes fetched:', wpRecipes.length);
+      const allRecipes = await response.json();
+      console.log('Total WordPress recipes fetched:', allRecipes.length);
 
-      // Insert recipes into Supabase if they don't exist
-      for (const recipe of wpRecipes) {
+      // Filter recipes based on selected books
+      const selectedBooks = new Set(mealPlan.selected_books);
+      const filteredRecipes = allRecipes.filter((recipe: any) => {
+        const bookTitle = recipe.acf?.libro_associato?.[0]?.post_title;
+        return bookTitle && selectedBooks.has(bookTitle);
+      });
+
+      console.log('Filtered recipes for selected books:', filteredRecipes.length);
+
+      if (filteredRecipes.length === 0) {
+        throw new Error('No recipes found for selected books');
+      }
+
+      // Insert filtered recipes into Supabase if they don't exist
+      for (const recipe of filteredRecipes) {
         const { data: existingRecipe } = await supabase
           .from('recipes')
           .select('id')
@@ -89,25 +108,10 @@ serve(async (req) => {
 
           if (insertError) {
             console.error('Error inserting recipe:', insertError);
-            continue; // Continue with next recipe if this one fails
+            continue;
           }
         }
       }
-
-      // Now get all available recipes from Supabase
-      const { data: recipes, error: recipesError } = await supabase
-        .from('recipes')
-        .select('id, title');
-
-      if (recipesError) {
-        throw recipesError;
-      }
-
-      if (!recipes || recipes.length === 0) {
-        throw new Error('No recipes available');
-      }
-
-      console.log('Available recipes:', recipes);
 
       // Use the meal types from meals_per_day
       const selectedMealTypes = mealPlan.meals_per_day || [];
@@ -122,7 +126,7 @@ serve(async (req) => {
         throw new Error('OpenAI API key not configured');
       }
 
-      const prompt = `Create a simple meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
+      const prompt = `Create a simple meal plan using these recipes: ${filteredRecipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
 - day_of_week (integer 1-6)
 - meal_type (must be exactly one of these: ${selectedMealTypes.join(', ')})
@@ -135,7 +139,7 @@ Example format:
     {
       "day_of_week": 1,
       "meal_type": "${selectedMealTypes[0]}",
-      "recipe_id": ${recipes[0].id},
+      "recipe_id": ${filteredRecipes[0].id},
       "servings": 4
     }
   ]
