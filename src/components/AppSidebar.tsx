@@ -126,7 +126,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
     <Link
       to={item.path}
       onClick={handleMenuClick}
-      className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ${
+      className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ${
         location.pathname === item.path
           ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
           : ""
@@ -139,32 +139,36 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-white">
-      <div className="flex h-[60px] items-center border-b px-4">
-        <Link to="/" className="flex items-center gap-2 font-semibold" onClick={handleMenuClick}>
+      <div className="flex h-[60px] items-center px-4 border-b">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 font-semibold" 
+          onClick={handleMenuClick}
+        >
           <span className="text-xl">Pybher</span>
         </Link>
       </div>
       <ScrollArea className="flex-1 overflow-y-auto px-2">
-        <div className="space-y-2 py-4">
-          <div className="flex flex-col gap-1">
+        <div className="space-y-1 py-2">
+          <div className="flex flex-col gap-0.5">
             {menuItems.map((item) => (
               <div key={item.title}>
                 <MenuLink item={item} />
                 {item.title === "My Books" && userBooks.length > 0 && (
-                  <div className="ml-4 mt-1 space-y-0.5">
+                  <div className="ml-3 mt-0.5 space-y-0.5">
                     {userBooks.map((book) => (
                       <div key={book.book_id} className="space-y-0.5">
                         <Link
                           to={`/book/${book.book_id}`}
                           onClick={handleMenuClick}
-                          className="block rounded-lg px-2 py-1.5 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
+                          className="block rounded-lg px-2 py-1 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
                         >
                           {book.book_title}
                         </Link>
                         <Link
                           to={`/book/${book.book_id}/recipes`}
                           onClick={handleMenuClick}
-                          className="block rounded-lg px-2 py-1.5 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ml-2"
+                          className="block rounded-lg px-2 py-1 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ml-2"
                         >
                           Book Recipes
                         </Link>
