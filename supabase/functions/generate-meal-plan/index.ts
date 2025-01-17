@@ -31,27 +31,38 @@ serve(async (req) => {
 
     if (mealPlanError) {
       console.error('Error fetching meal plan:', mealPlanError);
-      throw mealPlanError;
+      throw new Error('Failed to fetch meal plan details');
     }
+
+    if (!mealPlan) {
+      throw new Error('Meal plan not found');
+    }
+
+    console.log('Meal plan details:', mealPlan);
 
     // Get recipes from selected books
     const { data: recipes, error: recipesError } = await supabase
       .from('recipes')
-      .select('id, title')
-      .in('book_title', mealPlan.selected_books)
+      .select('id, title, book_title')
+      .in('book_title', mealPlan.selected_books || [])
       .limit(20);
 
     if (recipesError) {
       console.error('Error fetching recipes:', recipesError);
-      throw recipesError;
+      throw new Error('Failed to fetch recipes');
+    }
+
+    if (!recipes || recipes.length === 0) {
+      console.error('No recipes found for selected books:', mealPlan.selected_books);
+      throw new Error('No recipes found for selected books');
     }
 
     console.log('Available recipes:', recipes);
 
-    const prompt = `Create a simple 3-day meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
+    const prompt = `Create a simple meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
-- day_of_week (integer 1-3)
-- meal_type (one of: breakfast, lunch, dinner)
+- day_of_week (integer 1-7)
+- meal_type (one of: ${mealPlan.meals_per_day.join(', ')})
 - recipe_id (from available recipes)
 - servings (integer 1-8)
 
@@ -80,7 +91,7 @@ Example format:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-3.'
+            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-7.'
           },
           { role: 'user', content: prompt }
         ],
@@ -91,7 +102,7 @@ Example format:
     if (!response.ok) {
       const error = await response.json();
       console.error('OpenAI API error:', error);
-      throw new Error('Failed to generate meal plan');
+      throw new Error('Failed to generate meal plan with OpenAI');
     }
 
     const data = await response.json();
@@ -102,7 +113,7 @@ Example format:
 
     // Validate day_of_week values
     const invalidDays = mealPlanItems.meal_plan_items.filter(
-      (item: any) => !Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 3
+      (item: any) => !Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 7
     );
 
     if (invalidDays.length > 0) {
@@ -123,7 +134,7 @@ Example format:
 
     if (insertError) {
       console.error('Error inserting meal plan items:', insertError);
-      throw insertError;
+      throw new Error('Failed to save meal plan items');
     }
 
     console.log('Successfully saved meal plan items');
@@ -133,7 +144,10 @@ Example format:
     });
   } catch (error) {
     console.error('Error in generate-meal-plan function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error instanceof Error ? error.message : 'Failed to generate meal plan',
+      details: error instanceof Error ? error.stack : undefined
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
