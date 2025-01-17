@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import OpenAI from 'https://esm.sh/openai@4.20.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +12,7 @@ serve(async (req) => {
 
   try {
     const { text } = await req.json()
+    console.log('Received text length:', text?.length)
 
     if (!text) {
       throw new Error('Text is required')
@@ -22,6 +22,14 @@ serve(async (req) => {
       throw new Error('Text is too long. Maximum length is 4096 characters.')
     }
 
+    // Clean and format the text to prevent potential issues
+    const cleanText = text
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/\s+/g, ' ')    // Normalize whitespace
+      .trim()
+
+    console.log('Cleaned text length:', cleanText.length)
+
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
@@ -30,7 +38,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'tts-1',
-        input: text,
+        input: cleanText,
         voice: 'alloy',
         response_format: 'mp3',
       }),
@@ -38,6 +46,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json()
+      console.error('OpenAI API error:', error)
       throw new Error(error.error?.message || 'Failed to generate speech')
     }
 
