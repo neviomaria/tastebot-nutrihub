@@ -22,7 +22,12 @@ const MealPlanDetail = () => {
               cook_time,
               servings,
               ingredients,
-              instructions
+              instructions,
+              acf (
+                recipe_image (
+                  url
+                )
+              )
             )
           )
         `)
@@ -56,8 +61,7 @@ const MealPlanDetail = () => {
           <div className="grid gap-2">
             <p><span className="font-medium">Start Date:</span> {new Date(mealPlan.start_date).toLocaleDateString()}</p>
             <p><span className="font-medium">End Date:</span> {new Date(mealPlan.end_date).toLocaleDateString()}</p>
-            <p><span className="font-medium">Daily Calories:</span> {mealPlan.daily_calories}</p>
-            <p><span className="font-medium">Objective:</span> {mealPlan.objective}</p>
+            <p><span className="font-medium">Duration:</span> {mealPlan.duration}</p>
           </div>
         </div>
 
@@ -66,11 +70,20 @@ const MealPlanDetail = () => {
           {mealPlan.meal_plan_items?.map((item) => (
             <div key={item.id} className="border-b py-4 last:border-b-0">
               <h3 className="font-medium">Day {item.day_of_week} - {item.meal_type}</h3>
-              <div className="mt-2">
-                <p className="text-lg">{item.recipe?.title}</p>
-                <p className="text-sm text-gray-600">
-                  Prep: {item.recipe?.prep_time} | Cook: {item.recipe?.cook_time} | Servings: {item.servings}
-                </p>
+              <div className="mt-2 flex gap-4">
+                {item.recipe?.acf?.recipe_image?.url && (
+                  <img 
+                    src={item.recipe.acf.recipe_image.url}
+                    alt={item.recipe.title}
+                    className="w-24 h-24 object-cover rounded-lg"
+                  />
+                )}
+                <div>
+                  <p className="text-lg">{item.recipe?.title}</p>
+                  <p className="text-sm text-gray-600">
+                    Prep: {item.recipe?.prep_time} | Cook: {item.recipe?.cook_time} | Servings: {item.servings}
+                  </p>
+                </div>
               </div>
             </div>
           ))}

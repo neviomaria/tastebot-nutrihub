@@ -25,7 +25,7 @@ serve(async (req) => {
     // Get meal plan details
     const { data: mealPlan, error: mealPlanError } = await supabase
       .from('meal_plans')
-      .select('*')
+      .select('*, selected_books')
       .eq('id', mealPlanId)
       .single();
 
@@ -34,11 +34,12 @@ serve(async (req) => {
       throw mealPlanError;
     }
 
-    // Get available recipes (simplified query)
+    // Get recipes from selected books
     const { data: recipes, error: recipesError } = await supabase
       .from('recipes')
-      .select('id, title')
-      .limit(10);
+      .select('id, title, libro_associato')
+      .in('libro_associato', mealPlan.selected_books)
+      .limit(20);
 
     if (recipesError) {
       console.error('Error fetching recipes:', recipesError);
@@ -49,7 +50,7 @@ serve(async (req) => {
 
     const prompt = `Create a simple 3-day meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
-- day_of_week (integer 1-7, where 1=Monday)
+- day_of_week (integer 1-3)
 - meal_type (one of: breakfast, lunch, dinner)
 - recipe_id (from available recipes)
 - servings (integer 1-8)
@@ -79,7 +80,7 @@ Example format:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-7.'
+            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-3.'
           },
           { role: 'user', content: prompt }
         ],
@@ -101,7 +102,7 @@ Example format:
 
     // Validate day_of_week values
     const invalidDays = mealPlanItems.meal_plan_items.filter(
-      (item: any) => !Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 7
+      (item: any) => !Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 3
     );
 
     if (invalidDays.length > 0) {
