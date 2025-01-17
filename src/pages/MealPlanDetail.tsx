@@ -43,10 +43,8 @@ const MealPlanDetail = () => {
 
   if (!mealPlan) {
     return (
-      <div className="p-4">
-        <div className="text-center py-4">
-          <p className="text-sm text-gray-600">Meal plan not found</p>
-        </div>
+      <div className="text-center py-4">
+        <p className="text-sm text-gray-600">Meal plan not found</p>
       </div>
     );
   }
@@ -61,29 +59,31 @@ const MealPlanDetail = () => {
   }, {});
 
   return (
-    <div className="h-[calc(100vh-40px)] overflow-y-auto bg-background">
-      <div className="p-4">
-        <h1 className="text-xl font-semibold mb-2">Meal Plan</h1>
-        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-4">
-          <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
-          <span>•</span>
-          <span>End: {new Date(mealPlan.end_date).toLocaleDateString()}</span>
-          {mealPlan.daily_calories && (
-            <>
-              <span>•</span>
-              <span>{mealPlan.daily_calories} calories/day</span>
-            </>
-          )}
-        </div>
+    <div className="h-screen overflow-hidden flex flex-col bg-background">
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-4 py-2">
+          <h1 className="text-lg font-semibold mb-1">Meal Plan</h1>
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-4">
+            <span>Start: {new Date(mealPlan.start_date).toLocaleDateString()}</span>
+            <span>•</span>
+            <span>End: {new Date(mealPlan.end_date).toLocaleDateString()}</span>
+            {mealPlan.daily_calories && (
+              <>
+                <span>•</span>
+                <span>{mealPlan.daily_calories} calories/day</span>
+              </>
+            )}
+          </div>
 
-        <div className="space-y-4">
-          {Object.entries(mealsByDay).map(([day, meals]) => (
-            <MealPlanDay
-              key={day}
-              dayNumber={parseInt(day)}
-              meals={meals as any}
-            />
-          ))}
+          <div className="space-y-4">
+            {Object.entries(mealsByDay).map(([day, meals]) => (
+              <MealPlanDay
+                key={day}
+                dayNumber={parseInt(day)}
+                meals={meals as any}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

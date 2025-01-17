@@ -74,14 +74,14 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       <div className="bg-primary px-4 py-2">
         <h2 className="text-lg font-semibold text-white">Day {dayNumber}</h2>
       </div>
-      <div className="space-y-4">
+      <div className="divide-y divide-gray-100">
         {meals.map((meal, index) => (
           <div 
             key={`${meal.recipe.id}-${index}`}
-            className="group cursor-pointer px-4"
+            className="cursor-pointer px-4 py-3"
             onClick={() => setSelectedRecipeId(meal.recipe.id)}
           >
-            <div className="flex items-center gap-3 py-2">
+            <div className="flex items-start gap-3">
               <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
                 <img
                   src={getRecipeImage(meal.recipe.id)}
@@ -95,13 +95,13 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                 />
               </div>
               <div className="flex-grow min-w-0">
-                <span className="text-xs font-medium text-primary block">
+                <span className="text-sm font-medium text-primary block">
                   {formatMealType(meal.meal_type)}
                 </span>
-                <h3 className="font-medium text-sm truncate">
+                <h3 className="font-medium text-base truncate">
                   {meal.recipe.title}
                 </h3>
-                <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                   <span>Prep: {meal.recipe.prep_time}</span>
                   <span>•</span>
                   <span>Cook: {meal.recipe.cook_time}</span>

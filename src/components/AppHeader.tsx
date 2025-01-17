@@ -21,7 +21,7 @@ export const AppHeader = () => {
   });
 
   return (
-    <div className="sticky top-0 z-50 bg-white border-b flex items-center justify-end gap-1 p-1 lg:p-4 shadow-sm min-h-[40px] lg:min-h-[60px]">
+    <div className="sticky top-0 z-50 bg-white border-b flex items-center justify-end h-10 px-2">
       <span className="text-sm font-medium truncate hidden sm:block">
         {profile?.first_name} {profile?.last_name}
       </span>
