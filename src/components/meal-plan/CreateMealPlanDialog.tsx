@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +43,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
   const { userBooks } = useMealPlanUserData(form);
 
   // Set all books as selected by default when userBooks changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (userBooks.length > 0) {
       form.setValue('selected_books', userBooks.map(book => book.book_title));
     }
