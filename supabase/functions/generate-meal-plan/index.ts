@@ -128,10 +128,15 @@ serve(async (req) => {
 
     console.log('Available recipes:', recipes);
 
+    // Ensure meal types are properly formatted
+    const validMealTypes = (mealPlan.meals_per_day || []).map(type => 
+      type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+    );
+
     const prompt = `Create a simple meal plan using these recipes: ${recipes.map(r => `${r.id}: ${r.title}`).join(', ')}. 
 Return a JSON object with meal_plan_items array. Each item must have:
 - day_of_week (integer 1-7)
-- meal_type (one of: ${mealPlan.meals_per_day?.join(', ')})
+- meal_type (must be exactly one of these: ${validMealTypes.join(', ')})
 - recipe_id (from available recipes)
 - servings (integer 1-8)
 
@@ -140,7 +145,7 @@ Example format:
   "meal_plan_items": [
     {
       "day_of_week": 1,
-      "meal_type": "breakfast",
+      "meal_type": "${validMealTypes[0] || 'Breakfast'}",
       "recipe_id": 123,
       "servings": 4
     }
@@ -164,7 +169,7 @@ Example format:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-7.'
+            content: 'You are a meal planning assistant. Always return valid JSON with day_of_week as integers 1-7 and meal_type exactly matching the provided options.'
           },
           { role: 'user', content: prompt }
         ],
@@ -198,14 +203,18 @@ Example format:
       throw new Error('Invalid meal plan items structure from OpenAI');
     }
 
-    // Validate day_of_week values
-    const invalidDays = mealPlanItems.meal_plan_items.filter(
-      (item: any) => !Number.isInteger(item.day_of_week) || item.day_of_week < 1 || item.day_of_week > 7
+    // Validate day_of_week values and meal types
+    const invalidItems = mealPlanItems.meal_plan_items.filter(
+      (item: any) => 
+        !Number.isInteger(item.day_of_week) || 
+        item.day_of_week < 1 || 
+        item.day_of_week > 7 ||
+        !validMealTypes.includes(item.meal_type)
     );
 
-    if (invalidDays.length > 0) {
-      console.error('Invalid day_of_week values found:', invalidDays);
-      throw new Error('Invalid day_of_week values in generated plan');
+    if (invalidItems.length > 0) {
+      console.error('Invalid items found:', invalidItems);
+      throw new Error('Invalid values in generated plan. Check day_of_week (must be 1-7) and meal_type.');
     }
 
     // Add meal_plan_id to each item
