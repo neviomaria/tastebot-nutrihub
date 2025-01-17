@@ -42,10 +42,7 @@ export const MealPlanForm = ({ form, onSubmit, userBooks, isGenerating }: MealPl
           form={form}
           name="meals_per_day"
           label="Meals Per Day"
-          options={mealsPerDay.map(meal => ({
-            label: formatMealType(meal),
-            value: meal
-          }))}
+          options={mealsPerDay}
         />
 
         {userBooks.length > 0 && (

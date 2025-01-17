@@ -8,11 +8,16 @@ import {
 } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 
+interface Option {
+  label: string;
+  value: string;
+}
+
 interface CheckboxFieldProps {
   form: UseFormReturn<any>;
   name: string;
   label: string;
-  options: readonly string[];
+  options: readonly (string | Option)[];
 }
 
 export const CheckboxField = ({ form, name, label, options }: CheckboxFieldProps) => {
@@ -26,36 +31,38 @@ export const CheckboxField = ({ form, name, label, options }: CheckboxFieldProps
           <div className="grid grid-cols-1 gap-4 mt-2">
             {options.map((option) => (
               <FormField
-                key={option}
+                key={typeof option === 'string' ? option : option.value}
                 control={form.control}
                 name={name}
                 render={({ field }) => {
-                  const isNoneOption = option === "None";
+                  const optionValue = typeof option === 'string' ? option : option.value;
+                  const optionLabel = typeof option === 'string' ? option : option.label;
+                  const isNoneOption = optionValue === "None";
                   const currentValue = field.value || [];
                   
                   return (
                     <FormItem
-                      key={option}
+                      key={optionValue}
                       className="flex flex-row items-start space-x-3 space-y-0"
                     >
                       <FormControl>
                         <Checkbox
-                          checked={field.value?.includes(option)}
+                          checked={field.value?.includes(optionValue)}
                           onCheckedChange={(checked) => {
                             let updated;
                             if (isNoneOption && checked) {
                               updated = ["None"];
                             } else if (!isNoneOption && checked) {
-                              updated = [...currentValue.filter(val => val !== "None"), option];
+                              updated = [...currentValue.filter(val => val !== "None"), optionValue];
                             } else {
-                              updated = currentValue.filter((value: string) => value !== option);
+                              updated = currentValue.filter((value: string) => value !== optionValue);
                             }
                             field.onChange(updated);
                           }}
                         />
                       </FormControl>
                       <FormLabel className="font-normal cursor-pointer">
-                        {option}
+                        {optionLabel}
                       </FormLabel>
                     </FormItem>
                   );

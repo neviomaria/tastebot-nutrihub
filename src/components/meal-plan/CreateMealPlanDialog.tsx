@@ -33,7 +33,7 @@ export const CreateMealPlanDialog = ({ onSuccess }: { onSuccess: () => void }) =
       start_date: format(new Date(), 'yyyy-MM-dd'),
       end_date: format(addDays(new Date(), 7), 'yyyy-MM-dd'),
       duration: "7 Days",
-      meals_per_day: ["Breakfast", "Lunch", "Dinner"],
+      meals_per_day: ["breakfast", "lunch", "dinner"],
       selected_books: [],
     },
   });
