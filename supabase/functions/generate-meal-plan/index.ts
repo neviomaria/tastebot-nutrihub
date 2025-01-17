@@ -49,7 +49,7 @@ serve(async (req) => {
     const { data: recipes, error: recipesError } = await supabase
       .from('recipes')
       .select('id, title, book_title')
-      .filter('book_title', 'in', `(${mealPlan.selected_books.map(book => `'${book}'`).join(',')})`)
+      .or(mealPlan.selected_books.map(book => `book_title.ilike.${book}`).join(','))
       .limit(20);
 
     if (recipesError) {
