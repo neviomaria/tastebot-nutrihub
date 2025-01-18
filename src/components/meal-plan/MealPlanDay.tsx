@@ -3,7 +3,8 @@ import { useState, useMemo } from "react";
 import { RecipeContent } from "@/components/recipe/RecipeContent";
 import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MealPlanDayProps {
   dayNumber: number;
@@ -67,7 +68,24 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
 
   const selectedRecipe = selectedRecipeId ? recipeMap?.[selectedRecipeId] : null;
 
-  // Fetch media details when a recipe is selected, now with authentication
+  // Get current recipe index and handle navigation
+  const currentRecipeIndex = useMemo(() => {
+    return meals.findIndex(meal => meal.recipe.id === selectedRecipeId);
+  }, [meals, selectedRecipeId]);
+
+  const handlePreviousRecipe = () => {
+    if (currentRecipeIndex > 0) {
+      setSelectedRecipeId(meals[currentRecipeIndex - 1].recipe.id);
+    }
+  };
+
+  const handleNextRecipe = () => {
+    if (currentRecipeIndex < meals.length - 1) {
+      setSelectedRecipeId(meals[currentRecipeIndex + 1].recipe.id);
+    }
+  };
+
+  // Fetch media details when a recipe is selected
   const { data: mediaDetails, isLoading: isLoadingMedia } = useQuery({
     queryKey: ["media", selectedRecipe?.acf?.recipe_image?.ID, wpToken],
     queryFn: async () => {
@@ -93,19 +111,16 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   });
 
   const getRecipeImageUrl = (recipe: any) => {
-    // First check if we have a recipe with image data
     if (!recipe?.acf?.recipe_image?.ID) {
       console.log('No recipe image ID found for recipe:', recipe?.id);
       return "/placeholder.svg";
     }
 
-    // If this is the selected recipe and we have media details
     if (selectedRecipe?.id === recipe.id && mediaDetails?.media_details?.sizes?.["recipe-app"]?.source_url) {
       console.log('Found recipe-app URL for recipe:', recipe.id);
       return mediaDetails.media_details.sizes["recipe-app"].source_url;
     }
 
-    // If we don't have media details yet or it's not the selected recipe, return the default image URL
     return recipe.acf.recipe_image.url || "/placeholder.svg";
   };
 
@@ -178,7 +193,31 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
             </div>
           ) : selectedRecipe ? (
             <div className="space-y-6">
-              <DialogTitle className="text-2xl font-bold">{selectedRecipe.title}</DialogTitle>
+              <div className="flex items-center justify-between gap-4">
+                <DialogTitle className="text-2xl font-bold flex-grow">{selectedRecipe.title}</DialogTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handlePreviousRecipe}
+                    disabled={currentRecipeIndex <= 0}
+                    className="rounded-full"
+                  >
+                    <ArrowLeftCircle className="h-4 w-4" />
+                    <span className="sr-only">Previous recipe</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleNextRecipe}
+                    disabled={currentRecipeIndex >= meals.length - 1}
+                    className="rounded-full"
+                  >
+                    <ArrowRightCircle className="h-4 w-4" />
+                    <span className="sr-only">Next recipe</span>
+                  </Button>
+                </div>
+              </div>
               <RecipeMetadata
                 prepTime={selectedRecipe.acf?.prep_time || "N/A"}
                 cookTime={selectedRecipe.acf?.cook_time || "N/A"}
