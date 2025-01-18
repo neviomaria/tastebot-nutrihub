@@ -37,31 +37,6 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     enabled: !!selectedRecipeId
   });
 
-  const { data: recipes } = useQuery({
-    queryKey: ['recipes'],
-    queryFn: async () => {
-      const response = await fetch('https://brainscapebooks.com/wp-content/uploads/recipes.json');
-      if (!response.ok) {
-        throw new Error('Failed to fetch recipes');
-      }
-      const recipes = await response.json();
-      return recipes;
-    }
-  });
-
-  const getRecipeImage = (recipeId: number) => {
-    if (!recipes) {
-      return "/placeholder.svg";
-    }
-
-    const recipe = recipes.find((r: any) => r.id === recipeId);
-    if (!recipe?.acf?.recipe_image?.url) {
-      return "/placeholder.svg";
-    }
-
-    return recipe.acf.recipe_image.url;
-  };
-
   const formatMealType = (type: string) => {
     return type.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
@@ -84,11 +59,12 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
               <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
                 <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                   <img
-                    src={getRecipeImage(meal.recipe.id)}
+                    src={`https://brainscapebooks.com/wp-json/custom/v1/recipe/${meal.recipe.id}/image`}
                     alt={meal.recipe.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
                     onError={(e) => {
+                      console.log('Image failed to load, using placeholder');
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />
