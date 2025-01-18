@@ -42,13 +42,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       size={size}
       onClick={handleToggleFavorite}
       disabled={isLoading}
-      className="group"
+      className="group hover:bg-transparent"
     >
       <Heart
         className={`h-4 w-4 ${
           isFavorite 
-            ? 'fill-current text-red-500' 
-            : 'group-hover:fill-current text-gray-500 group-hover:text-red-500'
+            ? 'fill-current text-[#ea384c]' 
+            : 'group-hover:fill-current text-[#9b87f5] group-hover:text-[#9b87f5]'
         }`}
       />
       <span className="sr-only">
