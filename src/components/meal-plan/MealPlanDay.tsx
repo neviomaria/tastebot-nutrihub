@@ -59,7 +59,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
               <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
                 <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                   <img
-                    src={`https://brainscapebooks.com/wp-json/custom/v1/recipe/${meal.recipe.id}/image`}
+                    src={`https://brainscapebooks.com/wp-json/wp/v2/media?parent=${meal.recipe.id}&per_page=1`}
                     alt={meal.recipe.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
