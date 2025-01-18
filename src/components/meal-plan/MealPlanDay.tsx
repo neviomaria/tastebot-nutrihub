@@ -50,43 +50,57 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       </div>
       <div className="p-6">
         <div className="grid gap-4">
-          {meals.map((meal, index) => (
-            <div 
-              key={`${meal.recipe.id}-${index}`}
-              className="group cursor-pointer"
-              onClick={() => setSelectedRecipeId(meal.recipe.id)}
-            >
-              <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
-                <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                  <img
-                    src={`https://brainscapebooks.com/wp-content/uploads/recipes/${meal.recipe.id}-recipe-app.jpg`}
-                    alt={meal.recipe.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => {
-                      console.log('Image failed to load, using placeholder');
-                      e.currentTarget.src = "/placeholder.svg";
-                    }}
-                  />
-                </div>
-                <div className="flex-grow">
-                  <span className="text-sm font-medium text-primary mb-1 block">
-                    {formatMealType(meal.meal_type)}
-                  </span>
-                  <h3 className="font-semibold group-hover:text-primary transition-colors">
-                    {meal.recipe.title}
-                  </h3>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    <span>Prep: {meal.recipe.prep_time}</span>
-                    <span className="mx-2">•</span>
-                    <span>Cook: {meal.recipe.cook_time}</span>
-                    <span className="mx-2">•</span>
-                    <span>Servings: {meal.servings}</span>
+          {meals.map((meal, index) => {
+            const { data: recipeImage } = useQuery({
+              queryKey: ['recipe-image', meal.recipe.id],
+              queryFn: async () => {
+                const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${meal.recipe.id}`);
+                if (!response.ok) {
+                  throw new Error('Failed to fetch recipe image');
+                }
+                const mediaData = await response.json();
+                return mediaData.media_details.sizes['recipe-app'].source_url;
+              }
+            });
+
+            return (
+              <div 
+                key={`${meal.recipe.id}-${index}`}
+                className="group cursor-pointer"
+                onClick={() => setSelectedRecipeId(meal.recipe.id)}
+              >
+                <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={recipeImage || "/placeholder.svg"}
+                      alt={meal.recipe.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        console.log('Image failed to load, using placeholder');
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
+                  </div>
+                  <div className="flex-grow">
+                    <span className="text-sm font-medium text-primary mb-1 block">
+                      {formatMealType(meal.meal_type)}
+                    </span>
+                    <h3 className="font-semibold group-hover:text-primary transition-colors">
+                      {meal.recipe.title}
+                    </h3>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      <span>Prep: {meal.recipe.prep_time}</span>
+                      <span className="mx-2">•</span>
+                      <span>Cook: {meal.recipe.cook_time}</span>
+                      <span className="mx-2">•</span>
+                      <span>Servings: {meal.servings}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
