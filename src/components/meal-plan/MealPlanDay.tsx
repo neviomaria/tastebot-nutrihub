@@ -19,9 +19,23 @@ interface MealPlanDayProps {
     };
     servings: number;
   }>;
+  allDaysMeals?: Array<{
+    dayNumber: number;
+    meals: Array<{
+      meal_type: string;
+      recipe: {
+        id: number;
+        title: string;
+        prep_time: string;
+        cook_time: string;
+        servings: number;
+      };
+      servings: number;
+    }>;
+  }>;
 }
 
-export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
+export function MealPlanDay({ dayNumber, meals, allDaysMeals = [] }: MealPlanDayProps) {
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
   // First get the WordPress auth token
@@ -68,20 +82,28 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
 
   const selectedRecipe = selectedRecipeId ? recipeMap?.[selectedRecipeId] : null;
 
+  // Create a flat array of all recipes across all days
+  const allRecipes = useMemo(() => {
+    if (allDaysMeals && allDaysMeals.length > 0) {
+      return allDaysMeals.flatMap(day => day.meals);
+    }
+    return meals;
+  }, [allDaysMeals, meals]);
+
   // Get current recipe index and handle navigation
   const currentRecipeIndex = useMemo(() => {
-    return meals.findIndex(meal => meal.recipe.id === selectedRecipeId);
-  }, [meals, selectedRecipeId]);
+    return allRecipes.findIndex(meal => meal.recipe.id === selectedRecipeId);
+  }, [allRecipes, selectedRecipeId]);
 
   const handlePreviousRecipe = () => {
     if (currentRecipeIndex > 0) {
-      setSelectedRecipeId(meals[currentRecipeIndex - 1].recipe.id);
+      setSelectedRecipeId(allRecipes[currentRecipeIndex - 1].recipe.id);
     }
   };
 
   const handleNextRecipe = () => {
-    if (currentRecipeIndex < meals.length - 1) {
-      setSelectedRecipeId(meals[currentRecipeIndex + 1].recipe.id);
+    if (currentRecipeIndex < allRecipes.length - 1) {
+      setSelectedRecipeId(allRecipes[currentRecipeIndex + 1].recipe.id);
     }
   };
 
@@ -193,9 +215,9 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
             </div>
           ) : selectedRecipe ? (
             <div className="space-y-6">
-              <div className="flex items-center justify-between gap-4">
-                <DialogTitle className="text-2xl font-bold flex-grow">{selectedRecipe.title}</DialogTitle>
-                <div className="flex gap-2">
+              <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between">
+                <DialogTitle className="text-2xl font-bold">{selectedRecipe.title}</DialogTitle>
+                <div className="flex justify-center gap-2">
                   <Button
                     variant="outline"
                     size="icon"
@@ -210,7 +232,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                     variant="outline"
                     size="icon"
                     onClick={handleNextRecipe}
-                    disabled={currentRecipeIndex >= meals.length - 1}
+                    disabled={currentRecipeIndex >= allRecipes.length - 1}
                     className="rounded-full"
                   >
                     <ArrowRightCircle className="h-4 w-4" />
