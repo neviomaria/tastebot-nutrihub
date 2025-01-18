@@ -170,7 +170,16 @@ const BookDetail = () => {
                     e.currentTarget.src = "/placeholder.svg";
                   }}
                 />
-                {!book.isRegistered && (
+                {book.isRegistered ? (
+                  <div className="mt-6">
+                    <Button 
+                      onClick={() => navigate(`/book/${id}/recipes`)}
+                      className="w-full bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]"
+                    >
+                      View Book Recipes
+                    </Button>
+                  </div>
+                ) : (
                   <div className="mt-6 text-center">
                     <p className="text-muted-foreground mb-4">
                       Get access to this book's exclusive content and recipes
