@@ -27,11 +27,13 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     queryKey: ['recipe', selectedRecipeId],
     queryFn: async () => {
       if (!selectedRecipeId) return null;
-      const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${selectedRecipeId}`);
+      // Fetch all recipes once and find the one we need
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
-        throw new Error('Failed to fetch recipe');
+        throw new Error('Failed to fetch recipes');
       }
-      return await response.json();
+      const recipes = await response.json();
+      return recipes.find((r: any) => r.id === selectedRecipeId);
     },
     enabled: !!selectedRecipeId
   });
@@ -49,91 +51,39 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       </div>
       <div className="p-6">
         <div className="grid gap-4">
-          {meals.map((meal, index) => {
-            const { data: recipeDetails, isLoading: isLoadingDetails } = useQuery({
-              queryKey: ['recipe-details', meal.recipe.id],
-              queryFn: async () => {
-                try {
-                  const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${meal.recipe.id}`);
-                  if (!response.ok) {
-                    console.log('Failed to fetch recipe details:', meal.recipe.id);
-                    return null;
-                  }
-                  return await response.json();
-                } catch (error) {
-                  console.error('Error fetching recipe details:', error);
-                  return null;
-                }
-              }
-            });
-
-            const { data: recipeImage } = useQuery({
-              queryKey: ['recipe-image', recipeDetails?.featured_media],
-              queryFn: async () => {
-                if (!recipeDetails?.featured_media) {
-                  console.log('No featured media for recipe:', meal.recipe.id);
-                  return null;
-                }
-                try {
-                  const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${recipeDetails.featured_media}`);
-                  if (!response.ok) {
-                    console.log('Failed to fetch media:', recipeDetails.featured_media);
-                    return null;
-                  }
-                  const mediaData = await response.json();
-                  return mediaData.media_details?.sizes?.['recipe-app']?.source_url || mediaData.source_url;
-                } catch (error) {
-                  console.error('Error fetching media:', error);
-                  return null;
-                }
-              },
-              enabled: !!recipeDetails?.featured_media
-            });
-
-            return (
-              <div 
-                key={`${meal.recipe.id}-${index}`}
-                className="group cursor-pointer"
-                onClick={() => setSelectedRecipeId(meal.recipe.id)}
-              >
-                <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                    {isLoadingDetails ? (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <img
-                        src={recipeImage || "/placeholder.svg"}
-                        alt={meal.recipe.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        onError={(e) => {
-                          console.log('Image failed to load, using placeholder');
-                          e.currentTarget.src = "/placeholder.svg";
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div className="flex-grow">
-                    <span className="text-sm font-medium text-primary mb-1 block">
-                      {formatMealType(meal.meal_type)}
-                    </span>
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">
-                      {meal.recipe.title}
-                    </h3>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      <span>Prep: {meal.recipe.prep_time}</span>
-                      <span className="mx-2">•</span>
-                      <span>Cook: {meal.recipe.cook_time}</span>
-                      <span className="mx-2">•</span>
-                      <span>Servings: {meal.servings}</span>
-                    </div>
+          {meals.map((meal, index) => (
+            <div 
+              key={`${meal.recipe.id}-${index}`}
+              className="group cursor-pointer"
+              onClick={() => setSelectedRecipeId(meal.recipe.id)}
+            >
+              <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
+                <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                  <img
+                    src="/placeholder.svg"
+                    alt={meal.recipe.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="flex-grow">
+                  <span className="text-sm font-medium text-primary mb-1 block">
+                    {formatMealType(meal.meal_type)}
+                  </span>
+                  <h3 className="font-semibold group-hover:text-primary transition-colors">
+                    {meal.recipe.title}
+                  </h3>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    <span>Prep: {meal.recipe.prep_time}</span>
+                    <span className="mx-2">•</span>
+                    <span>Cook: {meal.recipe.cook_time}</span>
+                    <span className="mx-2">•</span>
+                    <span>Servings: {meal.servings}</span>
                   </div>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
