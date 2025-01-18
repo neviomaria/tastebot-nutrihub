@@ -23,6 +23,28 @@ interface MealPlanDayProps {
 export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
+  // First get the WordPress auth token
+  const { data: wpToken } = useQuery({
+    queryKey: ["wp-auth"],
+    queryFn: async () => {
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: process.env.WORDPRESS_USERNAME,
+          password: process.env.WORDPRESS_PASSWORD,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to authenticate with WordPress');
+      }
+      const data = await response.json();
+      return data.token;
+    },
+  });
+
   // Fetch all recipes once
   const { data: recipes, isLoading: isLoadingRecipes, isError: isErrorRecipes } = useQuery({
     queryKey: ["recipes"],
@@ -45,20 +67,29 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
 
   const selectedRecipe = selectedRecipeId ? recipeMap?.[selectedRecipeId] : null;
 
-  // Fetch media details when a recipe is selected
+  // Fetch media details when a recipe is selected, now with authentication
   const { data: mediaDetails, isLoading: isLoadingMedia } = useQuery({
-    queryKey: ["media", selectedRecipe?.acf?.recipe_image?.ID],
+    queryKey: ["media", selectedRecipe?.acf?.recipe_image?.ID, wpToken],
     queryFn: async () => {
-      if (!selectedRecipe?.acf?.recipe_image?.ID) return null;
+      if (!selectedRecipe?.acf?.recipe_image?.ID || !wpToken) return null;
+      
       const response = await fetch(
-        `https://brainscapebooks.com/wp-json/wp/v2/media/${selectedRecipe.acf.recipe_image.ID}`
+        `https://brainscapebooks.com/wp-json/wp/v2/media/${selectedRecipe.acf.recipe_image.ID}`,
+        {
+          headers: {
+            'Authorization': wpToken
+          }
+        }
       );
+      
       if (!response.ok) {
-        throw new Error("Failed to fetch media");
+        console.error('Media fetch error:', await response.text());
+        return null;
       }
+      
       return response.json();
     },
-    enabled: !!selectedRecipe?.acf?.recipe_image?.ID,
+    enabled: !!selectedRecipe?.acf?.recipe_image?.ID && !!wpToken,
   });
 
   const getRecipeImageUrl = (recipe: any) => {
