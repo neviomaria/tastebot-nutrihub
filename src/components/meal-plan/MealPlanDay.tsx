@@ -77,17 +77,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       }
     }
 
-    // If we don't have media details or recipe-app size, construct the URL
-    const baseUrl = recipe.acf.recipe_image?.url;
-    if (baseUrl) {
-      // Remove the file extension
-      const urlWithoutExtension = baseUrl.substring(0, baseUrl.lastIndexOf('.'));
-      // Add the recipe-app suffix and extension
-      const recipeAppUrl = `${urlWithoutExtension}-recipe-app${baseUrl.substring(baseUrl.lastIndexOf('.'))}`;
-      console.log('Constructed recipe-app URL:', recipeAppUrl);
-      return recipeAppUrl;
-    }
-
+    // If we don't have media details or recipe-app size, return a placeholder
     console.log('No URL found for recipe:', recipe?.id);
     return `No URL found for recipe ${recipe?.id}`;
   };
