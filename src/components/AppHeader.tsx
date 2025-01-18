@@ -25,7 +25,7 @@ export const AppHeader = () => {
       <span className="text-sm font-medium truncate hidden sm:block">
         {profile?.first_name} {profile?.last_name}
       </span>
-      <div className="flex items-start pt-1">
+      <div className="flex items-center">
         <ProfileHeader
           avatarUrl={profile?.avatar_url}
           firstName={profile?.first_name}
