@@ -148,7 +148,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                       }}
                     />
                   </div>
-                  <div className="flex-grow w-full md:w-auto">
+                  <div className="flex-grow">
                     <span className="text-sm font-medium text-primary mb-1 block">
                       {formatMealType(meal.meal_type)}
                     </span>
@@ -171,7 +171,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       </div>
 
       <Dialog open={!!selectedRecipeId} onOpenChange={() => setSelectedRecipeId(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto">
           {(isLoadingRecipes || (selectedRecipeId && isLoadingMedia)) ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -188,6 +188,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                 ingredients={selectedRecipe.acf?.ingredients || []}
                 instructions={selectedRecipe.acf?.instructions || []}
                 nutritionFacts={selectedRecipe.acf?.nutrition_facts}
+                imageUrl={getRecipeImageUrl(selectedRecipe)}
               />
             </div>
           ) : null}
