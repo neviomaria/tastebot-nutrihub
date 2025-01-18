@@ -47,22 +47,22 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
 
   // Fetch media details when a recipe is selected
   const { data: mediaDetails, isLoading: isLoadingMedia } = useQuery({
-    queryKey: ["media", selectedRecipe?.recipe_image?.ID],
+    queryKey: ["media", selectedRecipe?.acf?.recipe_image?.ID],
     queryFn: async () => {
-      if (!selectedRecipe?.recipe_image?.ID) return null;
+      if (!selectedRecipe?.acf?.recipe_image?.ID) return null;
       const response = await fetch(
-        `https://brainscapebooks.com/wp-json/wp/v2/media/${selectedRecipe.recipe_image.ID}`
+        `https://brainscapebooks.com/wp-json/wp/v2/media/${selectedRecipe.acf.recipe_image.ID}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch media");
       }
       return response.json();
     },
-    enabled: !!selectedRecipe?.recipe_image?.ID,
+    enabled: !!selectedRecipe?.acf?.recipe_image?.ID,
   });
 
   const getRecipeImageUrl = (recipe: any) => {
-    if (!recipe?.recipe_image?.ID) {
+    if (!recipe?.acf?.recipe_image?.ID) {
       console.log('No recipe image ID found for recipe:', recipe?.id);
       return `No image ID for recipe ${recipe?.id}`;
     }
@@ -82,7 +82,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     }
 
     console.log('Falling back to default URL for recipe:', recipe?.id);
-    return recipe.recipe_image?.url || `No URL found for recipe ${recipe?.id}`;
+    return recipe.acf.recipe_image?.url || `No URL found for recipe ${recipe?.id}`;
   };
 
   const formatMealType = (type: string) => {
