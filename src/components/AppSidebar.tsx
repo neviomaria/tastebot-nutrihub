@@ -206,7 +206,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         <SheetTrigger asChild>
           <Button
             variant="ghost"
-            className="lg:hidden fixed left-4 top-4 z-[60]"
+            className="lg:hidden fixed left-4 top-4 z-[60] !h-auto"
             size="icon"
           >
             <Menu className="h-6 w-6" />
