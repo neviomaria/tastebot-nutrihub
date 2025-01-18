@@ -27,7 +27,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     queryKey: ['recipe', selectedRecipeId],
     queryFn: async () => {
       if (!selectedRecipeId) return null;
-      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      const response = await fetch('https://brainscapebooks.com/wp-json/wp/v2/posts');
       if (!response.ok) {
         throw new Error('Failed to fetch recipes');
       }
@@ -55,7 +55,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
               queryKey: ['recipe-details', meal.recipe.id],
               queryFn: async () => {
                 try {
-                  const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${meal.recipe.id}`);
+                  const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/posts/${meal.recipe.id}`);
                   if (!response.ok) {
                     console.log('Failed to fetch recipe details:', meal.recipe.id);
                     return null;
