@@ -51,16 +51,30 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       <div className="p-6">
         <div className="grid gap-4">
           {meals.map((meal, index) => {
-            const { data: recipeImage } = useQuery({
-              queryKey: ['recipe-image', meal.recipe.id],
+            const { data: recipeDetails } = useQuery({
+              queryKey: ['recipe-details', meal.recipe.id],
               queryFn: async () => {
-                const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${meal.recipe.id}`);
+                const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${meal.recipe.id}`);
+                if (!response.ok) {
+                  throw new Error('Failed to fetch recipe details');
+                }
+                const recipeData = await response.json();
+                return recipeData;
+              }
+            });
+
+            const { data: recipeImage } = useQuery({
+              queryKey: ['recipe-image', recipeDetails?.featured_media],
+              queryFn: async () => {
+                if (!recipeDetails?.featured_media) throw new Error('No featured media');
+                const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${recipeDetails.featured_media}`);
                 if (!response.ok) {
                   throw new Error('Failed to fetch recipe image');
                 }
                 const mediaData = await response.json();
-                return mediaData.media_details.sizes['recipe-app'].source_url;
-              }
+                return mediaData.media_details.sizes['recipe-app']?.source_url || mediaData.source_url;
+              },
+              enabled: !!recipeDetails?.featured_media
             });
 
             return (
