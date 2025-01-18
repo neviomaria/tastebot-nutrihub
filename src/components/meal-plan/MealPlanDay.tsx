@@ -62,22 +62,20 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   });
 
   const getRecipeImageUrl = (recipe: any) => {
+    // First check if we have a recipe with image data
     if (!recipe?.acf?.recipe_image?.ID) {
       console.log('No recipe image ID found for recipe:', recipe?.id);
       return "/placeholder.svg";
     }
 
-    if (selectedRecipe?.id === recipe.id && mediaDetails) {
-      const recipeAppUrl = mediaDetails?.media_details?.sizes?.["recipe-app"]?.source_url;
-      if (recipeAppUrl) {
-        console.log('Found recipe-app URL:', recipeAppUrl);
-        return recipeAppUrl;
-      }
+    // If this is the selected recipe and we have media details
+    if (selectedRecipe?.id === recipe.id && mediaDetails?.media_details?.sizes?.["recipe-app"]?.source_url) {
+      console.log('Found recipe-app URL for recipe:', recipe.id);
+      return mediaDetails.media_details.sizes["recipe-app"].source_url;
     }
 
-    // If we don't have media details or recipe-app size, return a placeholder
-    console.log('No URL found for recipe:', recipe?.id);
-    return "/placeholder.svg";
+    // If we don't have media details yet or it's not the selected recipe, return the default image URL
+    return recipe.acf.recipe_image.url || "/placeholder.svg";
   };
 
   const formatMealType = (type: string) => {
