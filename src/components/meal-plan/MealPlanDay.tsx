@@ -23,20 +23,49 @@ interface MealPlanDayProps {
 export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
-  const { data: selectedRecipe, isLoading: isLoadingRecipe } = useQuery({
-    queryKey: ['recipe', selectedRecipeId],
+  // Fetch all recipes once
+  const { data: recipes, isLoading: isLoadingRecipes } = useQuery({
+    queryKey: ['recipes'],
     queryFn: async () => {
-      if (!selectedRecipeId) return null;
-      // Fetch all recipes once and find the one we need
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
         throw new Error('Failed to fetch recipes');
       }
-      const recipes = await response.json();
-      return recipes.find((r: any) => r.id === selectedRecipeId);
-    },
-    enabled: !!selectedRecipeId
+      return response.json();
+    }
   });
+
+  // When a recipe is selected, find it in the cached recipes data
+  const selectedRecipe = recipes?.find((r: any) => r.id === selectedRecipeId);
+
+  // If we have a selected recipe with an image ID, fetch the media details
+  const { data: mediaDetails, isLoading: isLoadingMedia } = useQuery({
+    queryKey: ['media', selectedRecipe?.recipe_image?.ID],
+    queryFn: async () => {
+      if (!selectedRecipe?.recipe_image?.ID) return null;
+      const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${selectedRecipe.recipe_image.ID}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch media');
+      }
+      return response.json();
+    },
+    enabled: !!selectedRecipe?.recipe_image?.ID
+  });
+
+  const getRecipeImageUrl = (recipe: any) => {
+    if (!recipe?.recipe_image?.ID) return "/placeholder.svg";
+    
+    // Try to get the recipe-app size URL from media details
+    const recipeAppUrl = mediaDetails?.media_details?.sizes?.['recipe-app']?.source_url;
+    if (recipeAppUrl) return recipeAppUrl;
+    
+    // Fallback to medium size if recipe-app is not available
+    const mediumUrl = mediaDetails?.media_details?.sizes?.medium?.source_url;
+    if (mediumUrl) return mediumUrl;
+    
+    // Final fallback to the original image URL
+    return recipe.recipe_image.url || "/placeholder.svg";
+  };
 
   const formatMealType = (type: string) => {
     return type.split('_').map(word => 
@@ -60,10 +89,13 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
               <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
                 <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
                   <img
-                    src="/placeholder.svg"
+                    src={recipes ? getRecipeImageUrl(recipes.find((r: any) => r.id === meal.recipe.id)) : "/placeholder.svg"}
                     alt={meal.recipe.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
                 <div className="flex-grow">
@@ -89,7 +121,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
 
       <Dialog open={!!selectedRecipeId} onOpenChange={() => setSelectedRecipeId(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {isLoadingRecipe ? (
+          {(isLoadingRecipes || (selectedRecipeId && isLoadingMedia)) ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
