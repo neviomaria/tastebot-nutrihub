@@ -62,17 +62,27 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
   });
 
   const getRecipeImageUrl = (recipe: any) => {
-    if (!recipe?.recipe_image?.ID) return "/placeholder.svg";
+    if (!recipe?.recipe_image?.ID) {
+      console.log('No recipe image ID found for recipe:', recipe?.id);
+      return `No image ID for recipe ${recipe?.id}`;
+    }
 
     if (selectedRecipe?.id === recipe.id && mediaDetails) {
       const recipeAppUrl = mediaDetails?.media_details?.sizes?.["recipe-app"]?.source_url;
-      if (recipeAppUrl) return recipeAppUrl;
+      if (recipeAppUrl) {
+        console.log('Found recipe-app URL:', recipeAppUrl);
+        return recipeAppUrl;
+      }
 
       const mediumUrl = mediaDetails?.media_details?.sizes?.medium?.source_url;
-      if (mediumUrl) return mediumUrl;
+      if (mediumUrl) {
+        console.log('Found medium URL:', mediumUrl);
+        return mediumUrl;
+      }
     }
 
-    return recipe.recipe_image?.url || "/placeholder.svg";
+    console.log('Falling back to default URL for recipe:', recipe?.id);
+    return recipe.recipe_image?.url || `No URL found for recipe ${recipe?.id}`;
   };
 
   const formatMealType = (type: string) => {
@@ -104,15 +114,9 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
               >
                 <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
                   <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                    <img
-                      src={getRecipeImageUrl(recipeMap?.[meal.recipe.id])}
-                      alt={meal.recipe.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
+                    <div className="w-full h-full bg-gray-100 p-2 text-xs break-all">
+                      {getRecipeImageUrl(recipeMap?.[meal.recipe.id])}
+                    </div>
                   </div>
                   <div className="flex-grow">
                     <span className="text-sm font-medium text-primary mb-1 block">
