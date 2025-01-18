@@ -90,6 +90,12 @@ const MealPlans = () => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid date";
+    return date.toLocaleDateString();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -120,14 +126,13 @@ const MealPlans = () => {
                 key={plan.id}
                 className="bg-white rounded-lg shadow-sm p-6 space-y-4"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-semibold">
-                      {new Date(plan.start_date).toLocaleDateString()} -{" "}
-                      {new Date(plan.end_date).toLocaleDateString()}
+                      {formatDate(plan.start_date)} - {formatDate(plan.end_date)}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {plan.daily_calories}
+                      {plan.daily_calories} calories per day
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
