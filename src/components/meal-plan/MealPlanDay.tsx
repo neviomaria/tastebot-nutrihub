@@ -51,28 +51,42 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       <div className="p-6">
         <div className="grid gap-4">
           {meals.map((meal, index) => {
-            const { data: recipeDetails } = useQuery({
+            const { data: recipeDetails, isLoading: isLoadingDetails } = useQuery({
               queryKey: ['recipe-details', meal.recipe.id],
               queryFn: async () => {
-                const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${meal.recipe.id}`);
-                if (!response.ok) {
-                  throw new Error('Failed to fetch recipe details');
+                try {
+                  const response = await fetch(`https://brainscapebooks.com/wp-json/custom/v1/recipes/${meal.recipe.id}`);
+                  if (!response.ok) {
+                    console.log('Failed to fetch recipe details:', meal.recipe.id);
+                    return null;
+                  }
+                  return await response.json();
+                } catch (error) {
+                  console.error('Error fetching recipe details:', error);
+                  return null;
                 }
-                const recipeData = await response.json();
-                return recipeData;
               }
             });
 
             const { data: recipeImage } = useQuery({
               queryKey: ['recipe-image', recipeDetails?.featured_media],
               queryFn: async () => {
-                if (!recipeDetails?.featured_media) throw new Error('No featured media');
-                const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${recipeDetails.featured_media}`);
-                if (!response.ok) {
-                  throw new Error('Failed to fetch recipe image');
+                if (!recipeDetails?.featured_media) {
+                  console.log('No featured media for recipe:', meal.recipe.id);
+                  return null;
                 }
-                const mediaData = await response.json();
-                return mediaData.media_details.sizes['recipe-app']?.source_url || mediaData.source_url;
+                try {
+                  const response = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${recipeDetails.featured_media}`);
+                  if (!response.ok) {
+                    console.log('Failed to fetch media:', recipeDetails.featured_media);
+                    return null;
+                  }
+                  const mediaData = await response.json();
+                  return mediaData.media_details?.sizes?.['recipe-app']?.source_url || mediaData.source_url;
+                } catch (error) {
+                  console.error('Error fetching media:', error);
+                  return null;
+                }
               },
               enabled: !!recipeDetails?.featured_media
             });
@@ -85,16 +99,22 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
               >
                 <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
                   <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                    <img
-                      src={recipeImage || "/placeholder.svg"}
-                      alt={meal.recipe.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        console.log('Image failed to load, using placeholder');
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
+                    {isLoadingDetails ? (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    ) : (
+                      <img
+                        src={recipeImage || "/placeholder.svg"}
+                        alt={meal.recipe.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          console.log('Image failed to load, using placeholder');
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                      />
+                    )}
                   </div>
                   <div className="flex-grow">
                     <span className="text-sm font-medium text-primary mb-1 block">
