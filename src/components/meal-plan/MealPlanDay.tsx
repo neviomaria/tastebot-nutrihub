@@ -68,21 +68,28 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     }
 
     if (selectedRecipe?.id === recipe.id && mediaDetails) {
+      // Try to get the recipe-app size first
       const recipeAppUrl = mediaDetails?.media_details?.sizes?.["recipe-app"]?.source_url;
       if (recipeAppUrl) {
         console.log('Found recipe-app URL:', recipeAppUrl);
+        // Return the recipe-app size URL directly
         return recipeAppUrl;
-      }
-
-      const mediumUrl = mediaDetails?.media_details?.sizes?.medium?.source_url;
-      if (mediumUrl) {
-        console.log('Found medium URL:', mediumUrl);
-        return mediumUrl;
       }
     }
 
-    console.log('Falling back to default URL for recipe:', recipe?.id);
-    return recipe.acf.recipe_image?.url || `No URL found for recipe ${recipe?.id}`;
+    // If we don't have media details or recipe-app size, construct the URL
+    const baseUrl = recipe.acf.recipe_image?.url;
+    if (baseUrl) {
+      // Remove the file extension
+      const urlWithoutExtension = baseUrl.substring(0, baseUrl.lastIndexOf('.'));
+      // Add the recipe-app suffix and extension
+      const recipeAppUrl = `${urlWithoutExtension}-recipe-app${baseUrl.substring(baseUrl.lastIndexOf('.'))}`;
+      console.log('Constructed recipe-app URL:', recipeAppUrl);
+      return recipeAppUrl;
+    }
+
+    console.log('No URL found for recipe:', recipe?.id);
+    return `No URL found for recipe ${recipe?.id}`;
   };
 
   const formatMealType = (type: string) => {
