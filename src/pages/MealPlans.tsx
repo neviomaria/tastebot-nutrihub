@@ -132,7 +132,7 @@ const MealPlans = () => {
                       {formatDate(plan.start_date)} - {formatDate(plan.end_date)}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {plan.daily_calories} calories per day
+                      {plan.daily_calories}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
