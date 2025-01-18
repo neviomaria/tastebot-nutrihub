@@ -68,11 +68,9 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
     }
 
     if (selectedRecipe?.id === recipe.id && mediaDetails) {
-      // Try to get the recipe-app size first
       const recipeAppUrl = mediaDetails?.media_details?.sizes?.["recipe-app"]?.source_url;
       if (recipeAppUrl) {
         console.log('Found recipe-app URL:', recipeAppUrl);
-        // Return the recipe-app size URL directly
         return recipeAppUrl;
       }
     }
@@ -111,9 +109,15 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
               >
                 <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
                   <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                    <div className="w-full h-full bg-gray-100 p-2 text-xs break-all">
-                      {getRecipeImageUrl(recipeMap?.[meal.recipe.id])}
-                    </div>
+                    <img
+                      src={getRecipeImageUrl(recipeMap?.[meal.recipe.id])}
+                      alt={meal.recipe.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.log('Image failed to load:', e.currentTarget.src);
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
                   </div>
                   <div className="flex-grow">
                     <span className="text-sm font-medium text-primary mb-1 block">
