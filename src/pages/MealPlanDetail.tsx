@@ -85,6 +85,12 @@ const MealPlanDetail = () => {
     return acc;
   }, {});
 
+  // Create an array of all days with their meals for navigation
+  const allDaysMeals = Object.entries(mealsByDay).map(([day, meals]) => ({
+    dayNumber: parseInt(day),
+    meals: meals as any[]
+  }));
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
@@ -126,6 +132,7 @@ const MealPlanDetail = () => {
             key={day}
             dayNumber={parseInt(day)}
             meals={meals as any}
+            allDaysMeals={allDaysMeals}
           />
         ))}
       </div>
