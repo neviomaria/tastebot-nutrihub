@@ -90,7 +90,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
       <div className="bg-primary px-6 py-3">
         <h2 className="text-xl font-semibold text-white">Day {dayNumber + 1}</h2>
       </div>
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         {isLoadingRecipes ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -105,8 +105,8 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                 className="group cursor-pointer"
                 onClick={() => setSelectedRecipeId(meal.recipe.id)}
               >
-                <div className="flex items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 rounded-lg hover:bg-secondary transition-colors">
+                  <div className="w-full md:w-24 h-48 md:h-24 rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={getRecipeImageUrl(recipeMap?.[meal.recipe.id])}
                       alt={meal.recipe.title}
@@ -117,7 +117,7 @@ export function MealPlanDay({ dayNumber, meals }: MealPlanDayProps) {
                       }}
                     />
                   </div>
-                  <div className="flex-grow">
+                  <div className="flex-grow w-full md:w-auto">
                     <span className="text-sm font-medium text-primary mb-1 block">
                       {formatMealType(meal.meal_type)}
                     </span>
