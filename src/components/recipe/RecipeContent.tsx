@@ -67,6 +67,13 @@ const formatQuantity = (quantity: number): string => {
   return quantity.toFixed(2);
 };
 
+const getRecipeImageSize = (url: string | undefined) => {
+  if (!url) return "/placeholder.svg";
+  const urlParts = url.split('.');
+  const extension = urlParts.pop();
+  return `${urlParts.join('.')}-768x768.${extension}`;
+};
+
 export function RecipeContent({ ingredients, instructions, nutritionFacts, defaultServings = 4, imageUrl }: RecipeContentProps) {
   const [servings, setServings] = useState(defaultServings);
 
@@ -82,7 +89,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
       {imageUrl && (
         <div className="w-full h-64 md:h-80 rounded-lg overflow-hidden">
           <img 
-            src={imageUrl} 
+            src={getRecipeImageSize(imageUrl)} 
             alt="Recipe" 
             className="w-full h-full object-cover"
             onError={(e) => {
