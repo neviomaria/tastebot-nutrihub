@@ -8,7 +8,7 @@ export function RecipeImage({ imageUrl, title }: RecipeImageProps) {
     if (!url) return "/placeholder.svg";
     const urlParts = url.split('.');
     const extension = urlParts.pop();
-    return `${urlParts.join('.')}-300x300.${extension}`;
+    return `${urlParts.join('.')}-768x768.${extension}`;
   };
 
   return (
