@@ -1,8 +1,8 @@
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { FavoriteButton } from "@/components/recipe/FavoriteButton";
 import { Button } from "@/components/ui/button";
 import { Speaker } from "lucide-react";
-import { useState } from "react";
 
 interface RecipeCardProps {
   title: string;
@@ -40,7 +40,7 @@ export function RecipeCard({
   };
 
   // Cleanup audio on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       audio.pause();
       audio.currentTime = 0;
