@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useFavorites } from "@/hooks/use-favorites";
 
 interface FavoriteButtonProps {
@@ -42,13 +41,13 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       size={size}
       onClick={handleToggleFavorite}
       disabled={isLoading}
-      className="group hover:bg-transparent h-9"
+      className="hover:bg-transparent p-0 h-9"
     >
       <Heart
         className={`h-4 w-4 ${
           isFavorite 
             ? 'fill-current text-[#ea384c]' 
-            : 'group-hover:fill-current text-[#9b87f5] group-hover:text-[#9b87f5]'
+            : 'text-muted-foreground hover:text-[#ea384c]'
         }`}
       />
       <span className="sr-only">

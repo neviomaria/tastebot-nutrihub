@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { FavoriteButton } from "@/components/recipe/FavoriteButton";
 import { Button } from "@/components/ui/button";
-import { Speaker } from "lucide-react";
+import { AudioLines } from "lucide-react";
 
 interface RecipeCardProps {
   title: string;
@@ -73,12 +73,12 @@ export function RecipeCard({
                 variant="ghost"
                 size="sm"
                 onClick={handlePlayAudio}
-                className="group hover:bg-transparent"
+                className="hover:bg-transparent p-0 h-9"
               >
-                <Speaker className={`h-4 w-4 ${
+                <AudioLines className={`h-4 w-4 ${
                   isPlaying 
                     ? 'text-primary' 
-                    : 'group-hover:text-primary'
+                    : 'text-muted-foreground hover:text-primary'
                 }`} />
                 <span className="sr-only">
                   {isPlaying ? 'Stop audio' : 'Play audio'}
