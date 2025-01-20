@@ -46,8 +46,8 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       <Heart
         className={`h-4 w-4 ${
           isFavorite 
-            ? 'fill-current text-[#ea384c]' 
-            : 'text-muted-foreground hover:text-[#ea384c]'
+            ? 'fill-current text-white' 
+            : 'text-muted-foreground hover:text-white'
         }`}
       />
       <span className="sr-only">
