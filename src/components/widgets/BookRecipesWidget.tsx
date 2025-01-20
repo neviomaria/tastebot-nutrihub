@@ -17,6 +17,7 @@ interface Recipe {
   acf: {
     prep_time: string;
     cook_time: string;
+    audio_recipe?: string;
     recipe_image: {
       url: string;
       sizes: {
@@ -75,6 +76,7 @@ export function BookRecipesWidget() {
                     difficulty="Easy"
                     recipeId={recipe.id}
                     onClick={() => navigate(`/recipe/${recipe.id}`)}
+                    audioUrl={recipe.acf.audio_recipe}
                   />
                 </CarouselItem>
               ))}

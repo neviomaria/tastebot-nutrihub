@@ -42,7 +42,7 @@ export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: Fav
       size={size}
       onClick={handleToggleFavorite}
       disabled={isLoading}
-      className="group hover:bg-transparent"
+      className="group hover:bg-transparent h-9"
     >
       <Heart
         className={`h-4 w-4 ${
