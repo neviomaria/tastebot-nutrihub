@@ -39,7 +39,6 @@ export function RecipeCard({
     setIsPlaying(!isPlaying);
   };
 
-  // Cleanup audio on unmount
   useEffect(() => {
     return () => {
       audio.pause();
@@ -71,9 +70,9 @@ export function RecipeCard({
             {audioUrl && (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={handlePlayAudio}
-                className="hover:bg-transparent p-0 h-9"
+                className="h-8 w-8 p-0"
               >
                 <AudioLines className={`h-4 w-4 ${
                   isPlaying 
@@ -85,7 +84,7 @@ export function RecipeCard({
                 </span>
               </Button>
             )}
-            <FavoriteButton recipeId={recipeId} />
+            <FavoriteButton recipeId={recipeId} size="icon" />
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
