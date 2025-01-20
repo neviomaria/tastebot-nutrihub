@@ -84,7 +84,7 @@ export function RecipeCard({
                 </span>
               </Button>
             )}
-            <FavoriteButton recipeId={recipeId} size="icon" />
+            <FavoriteButton recipeId={recipeId} />
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">

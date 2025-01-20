@@ -10,7 +10,7 @@ interface FavoriteButtonProps {
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
-export function FavoriteButton({ recipeId, size = "icon", variant = "ghost" }: FavoriteButtonProps) {
+export function FavoriteButton({ recipeId, size = "sm", variant = "ghost" }: FavoriteButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { favorites, toggleFavorite } = useFavorites();
@@ -41,7 +41,7 @@ export function FavoriteButton({ recipeId, size = "icon", variant = "ghost" }: F
       size={size}
       onClick={handleToggleFavorite}
       disabled={isLoading}
-      className="h-8 w-8 p-0"
+      className="h-8 w-8 p-0 hover:bg-transparent"
     >
       <Heart
         className={`h-4 w-4 ${
