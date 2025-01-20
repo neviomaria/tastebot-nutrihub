@@ -11,7 +11,7 @@ interface RecipeCardProps {
   difficulty: string;
   recipeId: number;
   onClick: () => void;
-  audioUrl?: string;
+  audio_recipe?: string;
 }
 
 export function RecipeCard({ 
@@ -21,14 +21,14 @@ export function RecipeCard({
   difficulty, 
   recipeId, 
   onClick,
-  audioUrl 
+  audio_recipe 
 }: RecipeCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audio] = useState(new Audio(audioUrl));
+  const [audio] = useState(new Audio(audio_recipe));
 
   const handlePlayAudio = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!audioUrl) return;
+    if (!audio_recipe) return;
 
     if (isPlaying) {
       audio.pause();
@@ -67,12 +67,12 @@ export function RecipeCard({
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-lg text-recipe-500">{title}</h3>
           <div className="flex items-center gap-2">
-            {audioUrl && (
+            {audio_recipe && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handlePlayAudio}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:bg-transparent"
               >
                 <AudioLines className={`h-4 w-4 ${
                   isPlaying 
