@@ -24,5 +24,6 @@ export interface Recipe {
     nutrition_facts: Array<{
       instructions_step: string;
     }>;
+    audio_recipe?: string;
   };
 }
