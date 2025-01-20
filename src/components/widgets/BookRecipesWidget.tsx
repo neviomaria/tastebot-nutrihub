@@ -76,7 +76,7 @@ export function BookRecipesWidget() {
                     difficulty="Easy"
                     recipeId={recipe.id}
                     onClick={() => navigate(`/recipe/${recipe.id}`)}
-                    audioUrl={recipe.acf.audio_recipe}
+                    audio_recipe={recipe.acf.audio_recipe}
                   />
                 </CarouselItem>
               ))}
