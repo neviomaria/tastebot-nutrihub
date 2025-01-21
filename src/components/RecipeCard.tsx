@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { FavoriteButton } from "@/components/recipe/FavoriteButton";
 import { Button } from "@/components/ui/button";
-import { AudioLines } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 
 interface RecipeCardProps {
   title: string;
@@ -40,7 +40,15 @@ export function RecipeCard({
   };
 
   useEffect(() => {
+    const handleEnded = () => {
+      setIsPlaying(false);
+      audio.currentTime = 0;
+    };
+
+    audio.addEventListener('ended', handleEnded);
+
     return () => {
+      audio.removeEventListener('ended', handleEnded);
       audio.pause();
       audio.currentTime = 0;
     };
@@ -74,11 +82,11 @@ export function RecipeCard({
                 onClick={handlePlayAudio}
                 className="h-8 w-8 p-0 hover:bg-transparent"
               >
-                <AudioLines className={`h-4 w-4 ${
-                  isPlaying 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground hover:text-primary'
-                }`} />
+                {isPlaying ? (
+                  <Pause className="h-4 w-4 text-primary" />
+                ) : (
+                  <Play className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                )}
                 <span className="sr-only">
                   {isPlaying ? 'Stop audio' : 'Play audio'}
                 </span>

@@ -8,8 +8,9 @@ import { useQuery } from "@tanstack/react-query";
 import { FavoriteButton } from "@/components/recipe/FavoriteButton";
 import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
 import { RecipeContent } from "@/components/recipe/RecipeContent";
-import { AudioLines, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Pause, Play } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 interface RecipeDetailsProps {
   recipe: Recipe;
@@ -18,25 +19,59 @@ interface RecipeDetailsProps {
 export function RecipeDetailsContent({ recipe }: RecipeDetailsProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audio] = useState(new Audio(recipe.acf.audio_recipe));
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
-  const handlePlayAudio = () => {
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  useEffect(() => {
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      audio.currentTime = 0;
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [audio]);
+
+  const handlePlayPause = () => {
     if (!recipe.acf.audio_recipe) return;
 
     if (isPlaying) {
       audio.pause();
-      audio.currentTime = 0;
     } else {
       audio.play();
     }
     setIsPlaying(!isPlaying);
   };
 
-  useEffect(() => {
-    return () => {
-      audio.pause();
-      audio.currentTime = 0;
-    };
-  }, [audio]);
+  const handleSliderChange = (value: number[]) => {
+    const newTime = value[0];
+    audio.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
 
   return (
     <div className="space-y-6">
@@ -49,23 +84,6 @@ export function RecipeDetailsContent({ recipe }: RecipeDetailsProps) {
           />
         </div>
         <div className="flex gap-2 items-center">
-          {recipe.acf.audio_recipe && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handlePlayAudio}
-              className="h-9 w-9 p-0 hover:bg-transparent"
-            >
-              <AudioLines className={`h-4 w-4 ${
-                isPlaying 
-                  ? 'text-primary' 
-                  : 'text-muted-foreground hover:text-primary'
-              }`} />
-              <span className="sr-only">
-                {isPlaying ? 'Stop audio' : 'Play audio'}
-              </span>
-            </Button>
-          )}
           <FavoriteButton 
             recipeId={recipe.id} 
             size="default" 
@@ -73,6 +91,40 @@ export function RecipeDetailsContent({ recipe }: RecipeDetailsProps) {
           />
         </div>
       </div>
+
+      {recipe.acf.audio_recipe && (
+        <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handlePlayPause}
+            className="h-10 w-10"
+          >
+            {isPlaying ? (
+              <Pause className="h-6 w-6 text-primary" />
+            ) : (
+              <Play className="h-6 w-6 text-primary" />
+            )}
+            <span className="sr-only">
+              {isPlaying ? 'Pause audio' : 'Play audio'}
+            </span>
+          </Button>
+          
+          <div className="flex-1 space-y-1">
+            <Slider
+              value={[currentTime]}
+              max={duration}
+              step={1}
+              onValueChange={handleSliderChange}
+              className="w-full"
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <RecipeMetadata
         prepTime={recipe.acf.prep_time}
