@@ -214,14 +214,6 @@ const BookDetail = () => {
                         <p>{book.description}</p>
                       </div>
                     )}
-                    <div className="mt-6">
-                      <Button 
-                        onClick={() => navigate(`/book/${id}/recipes`)}
-                        className="w-full bg-gradient-to-r from-[#9b87f5] to-[#8B5CF6] hover:from-[#8B5CF6] hover:to-[#7E69AB]"
-                      >
-                        View Book Recipes
-                      </Button>
-                    </div>
                   </>
                 ) : (
                   <>
