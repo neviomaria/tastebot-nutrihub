@@ -86,15 +86,7 @@ export const SignUpCouponForm = () => {
         };
       }
 
-      let redirectTo;
-      if (window.location.hostname === 'pybher.com') {
-        redirectTo = 'https://pybher.com/auth/callback';
-      } else if (window.location.hostname === '192.168.1.182') {
-        redirectTo = 'http://192.168.1.182:8080/auth/callback';
-      } else {
-        redirectTo = `${window.location.origin}/auth/callback`;
-      }
-      
+      const redirectTo = 'https://pybher.com/auth/callback';
       console.log('Redirect URL:', redirectTo);
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
