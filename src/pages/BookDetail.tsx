@@ -45,16 +45,33 @@ const BookDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: profile } = useQuery({
-    queryKey: ['profile'],
+  // Query to check if user has access to the book (either through profile or coupons)
+  const { data: hasAccess = false } = useQuery({
+    queryKey: ['bookAccess', id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('book_id')
-        .single();
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return false;
+
+        // Check profile table
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('book_id')
+          .single();
+
+        if (profile?.book_id === id) return true;
+
+        // Check user_coupons table
+        const { data: coupons } = await supabase
+          .from('user_coupons')
+          .select('book_id')
+          .eq('book_id', id);
+
+        return coupons && coupons.length > 0;
+      } catch (error) {
+        console.error("Error checking book access:", error);
+        return false;
+      }
     }
   });
 
@@ -76,16 +93,13 @@ const BookDetail = () => {
             console.error("Error fetching cover image:", error);
           }
         }
-
-        // Check if this book is registered to the user
-        const isRegistered = profile?.book_id === id;
         
         setBook({
           title: bookData.title.rendered,
           subtitle: bookData.acf.sottotitolo_per_sito,
           coverUrl,
           description: bookData.acf.descrizione_breve_libro,
-          isRegistered,
+          isRegistered: hasAccess,
           purchaseLinks: {
             kindle: bookData.acf.link_kindle,
             paperback: bookData.acf.link_ppb,
@@ -107,7 +121,7 @@ const BookDetail = () => {
     if (id) {
       fetchBookDetails();
     }
-  }, [toast, id, profile?.book_id]);
+  }, [toast, id, hasAccess]);
 
   if (loading) {
     return (
@@ -170,7 +184,7 @@ const BookDetail = () => {
                     e.currentTarget.src = "/placeholder.svg";
                   }}
                 />
-                {book.isRegistered ? (
+                {hasAccess ? (
                   <div className="mt-6">
                     <Button 
                       onClick={() => navigate(`/book/${id}/recipes`)}
@@ -193,7 +207,7 @@ const BookDetail = () => {
               <div>
                 <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
                 <p className="text-xl text-gray-600 mb-6">{book.subtitle}</p>
-                {book.isRegistered ? (
+                {hasAccess ? (
                   <>
                     {book.description && (
                       <div className="prose max-w-none mb-6">
