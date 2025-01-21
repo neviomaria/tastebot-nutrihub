@@ -19,15 +19,33 @@ import FavoriteRecipes from "@/pages/FavoriteRecipes";
 import MealPlans from "@/pages/MealPlans";
 import MealPlanDetail from "@/pages/MealPlanDetail";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ErrorBoundary } from "react-error-boundary";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
+// Move queryClient initialization outside of component
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      suspense: false, // Disable suspense mode
     },
   },
 });
+
+// Error Fallback component
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <Alert variant="destructive" className="m-4">
+      <AlertTitle>Something went wrong!</AlertTitle>
+      <AlertDescription className="mt-2">
+        <p className="mb-4">{error.message}</p>
+        <Button onClick={resetErrorBoundary}>Try again</Button>
+      </AlertDescription>
+    </Alert>
+  );
+}
 
 function AuthenticatedApp() {
   return (
@@ -78,15 +96,17 @@ function RouterApp() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <RouterApp />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <BrowserRouter>
+            <Toaster />
+            <Sonner />
+            <RouterApp />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
