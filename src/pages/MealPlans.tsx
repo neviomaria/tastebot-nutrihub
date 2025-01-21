@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreateMealPlanDialog } from "@/components/meal-plan/CreateMealPlanDialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,11 +16,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 const MealPlans = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [newTitle, setNewTitle] = useState("");
 
   const { data: mealPlans, isLoading } = useQuery({
     queryKey: ["meal-plans"],
@@ -90,6 +102,42 @@ const MealPlans = () => {
     }
   };
 
+  const handleRename = async () => {
+    if (!selectedPlanId || !newTitle.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('meal_plans')
+        .update({ title: newTitle.trim() })
+        .eq('id', selectedPlanId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Meal plan renamed successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["meal-plans"] });
+      setIsRenaming(false);
+      setSelectedPlanId(null);
+      setNewTitle("");
+    } catch (error) {
+      console.error('Error renaming meal plan:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to rename meal plan",
+      });
+    }
+  };
+
+  const openRenameDialog = (planId: string, currentTitle: string | null) => {
+    setSelectedPlanId(planId);
+    setNewTitle(currentTitle || `Meal Plan ${formatDate(mealPlans?.find(p => p.id === planId)?.start_date || '')}`);
+    setIsRenaming(true);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Invalid date";
@@ -128,11 +176,19 @@ const MealPlans = () => {
               >
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold">
-                      {formatDate(plan.start_date)} - {formatDate(plan.end_date)}
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      {plan.title || `${formatDate(plan.start_date)} - ${formatDate(plan.end_date)}`}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openRenameDialog(plan.id, plan.title)}
+                        className="h-8 w-8"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {plan.daily_calories}
+                      {plan.daily_calories && `${plan.daily_calories} calories per day`}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -173,6 +229,36 @@ const MealPlans = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={isRenaming} onOpenChange={(open) => {
+        if (!open) {
+          setIsRenaming(false);
+          setSelectedPlanId(null);
+          setNewTitle("");
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Meal Plan</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="Enter new name"
+              className="w-full"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRenaming(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRename}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

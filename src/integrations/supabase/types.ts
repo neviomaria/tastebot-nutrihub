@@ -102,6 +102,7 @@ export type Database = {
           start_date: string
           status: string | null
           time_constraint: string | null
+          title: string | null
           user_id: string
         }
         Insert: {
@@ -119,6 +120,7 @@ export type Database = {
           start_date: string
           status?: string | null
           time_constraint?: string | null
+          title?: string | null
           user_id: string
         }
         Update: {
@@ -136,6 +138,7 @@ export type Database = {
           start_date?: string
           status?: string | null
           time_constraint?: string | null
+          title?: string | null
           user_id?: string
         }
         Relationships: []
