@@ -157,9 +157,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               <div key={item.title}>
                 <MenuLink item={item} />
                 {item.title === "My Books" && userBooks.length > 0 && (
-                  <div className="ml-3 mt-0.5 space-y-0.5">
+                  <div className="mt-2 space-y-2">
                     {userBooks.map((book) => (
-                      <div key={book.book_id} className="space-y-0.5">
+                      <div key={book.book_id} className="bg-white rounded-lg p-2 shadow-sm border">
                         <Link
                           to={`/book/${book.book_id}`}
                           onClick={handleMenuClick}
@@ -170,7 +170,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
                         <Link
                           to={`/book/${book.book_id}/recipes`}
                           onClick={handleMenuClick}
-                          className="block rounded-lg px-2 py-1 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50 ml-2"
+                          className="block rounded-lg px-2 py-1 text-sm text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50"
                         >
                           Book Recipes
                         </Link>
