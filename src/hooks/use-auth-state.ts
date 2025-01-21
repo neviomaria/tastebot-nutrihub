@@ -36,6 +36,9 @@ export const useAuthState = () => {
 
   useEffect(() => {
     let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1 second
 
     const initializeAuth = async () => {
       try {
@@ -47,6 +50,12 @@ export const useAuthState = () => {
         if (sessionError) {
           console.error("Session error:", sessionError);
           if (mounted) {
+            if (retryCount < maxRetries) {
+              retryCount++;
+              console.log(`Retrying auth initialization (${retryCount}/${maxRetries})...`);
+              setTimeout(initializeAuth, retryDelay);
+              return;
+            }
             setIsAuthenticated(false);
             handleSignOut();
           }
@@ -68,6 +77,12 @@ export const useAuthState = () => {
         if (userError) {
           console.error("User verification error:", userError);
           if (mounted) {
+            if (retryCount < maxRetries) {
+              retryCount++;
+              console.log(`Retrying user verification (${retryCount}/${maxRetries})...`);
+              setTimeout(initializeAuth, retryDelay);
+              return;
+            }
             setIsAuthenticated(false);
             handleSignOut();
           }
@@ -91,6 +106,13 @@ export const useAuthState = () => {
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (!mounted) return;
+        
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Retrying after error (${retryCount}/${maxRetries})...`);
+          setTimeout(initializeAuth, retryDelay);
+          return;
+        }
         
         setIsAuthenticated(false);
         handleSignOut();
