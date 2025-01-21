@@ -22,18 +22,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ErrorBoundary } from "react-error-boundary";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { StrictMode } from "react";
 
-// Move queryClient initialization outside of component
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
-
-// Error Fallback component
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <Alert variant="destructive" className="m-4">
@@ -71,7 +61,6 @@ function AuthenticatedApp() {
 function RouterApp() {
   const { isAuthenticated } = useAuthState();
 
-  // Show nothing while checking auth state
   if (isAuthenticated === null) {
     return null;
   }
@@ -94,18 +83,30 @@ function RouterApp() {
 }
 
 function App() {
+  // Create a new QueryClient instance for each app instance
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      },
+    },
+  });
+
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <BrowserRouter>
-            <Toaster />
-            <Sonner />
-            <RouterApp />
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <StrictMode>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <BrowserRouter>
+              <Toaster />
+              <Sonner />
+              <RouterApp />
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </StrictMode>
   );
 }
 
