@@ -10,8 +10,12 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
   const { toast } = useToast();
 
   const handleAuthError = () => {
-    localStorage.removeItem('supabase.auth.token');
-    navigate('/auth', { replace: true, state: { from: location.pathname } });
+    try {
+      sessionStorage.removeItem('supabase.auth.token');
+      navigate('/auth', { replace: true, state: { from: location.pathname } });
+    } catch (error) {
+      console.error('Error handling auth error:', error);
+    }
   };
 
   useEffect(() => {
@@ -30,6 +34,7 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
         }
 
         if (!session) {
+          console.log("No active session found");
           if (mounted) {
             handleAuthError();
           }
@@ -94,8 +99,19 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
 
     checkAuth();
 
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
+      if (event === 'SIGNED_OUT') {
+        handleAuthError();
+      } else if (!session) {
+        handleAuthError();
+      }
+    });
+
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
   }, [navigate, location, toast]);
 
