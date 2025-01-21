@@ -29,13 +29,12 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      suspense: false, // Disable suspense mode
     },
   },
 });
 
 // Error Fallback component
-function ErrorFallback({ error, resetErrorBoundary }) {
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <Alert variant="destructive" className="m-4">
       <AlertTitle>Something went wrong!</AlertTitle>
