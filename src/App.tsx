@@ -22,7 +22,16 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { ErrorBoundary } from "react-error-boundary";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { StrictMode } from "react";
+
+// Create a single QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -83,30 +92,18 @@ function RouterApp() {
 }
 
 function App() {
-  // Create a new QueryClient instance for each app instance
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      },
-    },
-  });
-
   return (
-    <StrictMode>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <QueryClientProvider client={queryClient}>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
           <TooltipProvider>
-            <BrowserRouter>
-              <Toaster />
-              <Sonner />
-              <RouterApp />
-            </BrowserRouter>
+            <Toaster />
+            <Sonner />
+            <RouterApp />
           </TooltipProvider>
-        </QueryClientProvider>
-      </ErrorBoundary>
-    </StrictMode>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
