@@ -1,4 +1,4 @@
-import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BasicInfoFields } from "./BasicInfoFields";
 import { DietarySection } from "./sections/DietarySection";
 import { AllergiesSection } from "./sections/AllergiesSection";
@@ -32,26 +32,26 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
   ];
 
   const handleNext = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     if (currentTabIndex < tabs.length - 1) {
       setCurrentTabIndex(currentTabIndex + 1);
     }
   };
 
   const handlePrev = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     if (currentTabIndex > 0) {
       setCurrentTabIndex(currentTabIndex - 1);
     }
   };
 
   const handleTabClick = (e: React.MouseEvent, index: number) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     setCurrentTabIndex(index);
   };
 
   return (
-    <>
+    <Tabs value={tabs[currentTabIndex].value} className="w-full">
       {/* Desktop Tabs */}
       <div className="hidden md:block">
         <TabsList className="w-full">
@@ -80,7 +80,7 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           
-          <span className="font-medium">
+          <span className="font-medium capitalize">
             {tabs[currentTabIndex].label}
           </span>
           
@@ -96,46 +96,46 @@ export const ProfileFormTabs = ({ form }: ProfileFormTabsProps) => {
       </div>
 
       <div className="max-w-full overflow-x-hidden px-1">
-        <div hidden={currentTabIndex !== 0} className="mt-6">
+        <TabsContent value="profile" className="mt-6">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">* Required fields</p>
             <BasicInfoFields form={form} />
           </div>
-        </div>
+        </TabsContent>
 
-        <div hidden={currentTabIndex !== 1} className="mt-6">
+        <TabsContent value="dietary" className="mt-6">
           <div className="space-y-6">
             <DietarySection form={form} />
             <AllergiesSection form={form} />
           </div>
-        </div>
+        </TabsContent>
 
-        <div hidden={currentTabIndex !== 2} className="mt-6">
+        <TabsContent value="cooking" className="mt-6">
           <div className="space-y-6">
             <CookingPreferencesSection form={form} />
             <CuisineSection form={form} />
           </div>
-        </div>
+        </TabsContent>
 
-        <div hidden={currentTabIndex !== 3} className="mt-6">
+        <TabsContent value="medical" className="mt-6">
           <div className="space-y-6">
             <HealthSection form={form} />
             <ActivitySection form={form} />
             <MedicalSection form={form} />
           </div>
-        </div>
+        </TabsContent>
 
-        <div hidden={currentTabIndex !== 4} className="mt-6">
+        <TabsContent value="shopping" className="mt-6">
           <div className="space-y-6">
             <PlanningSection form={form} />
             <ShoppingPreferencesSection form={form} />
           </div>
-        </div>
+        </TabsContent>
 
-        <div hidden={currentTabIndex !== 5} className="mt-6">
+        <TabsContent value="religious" className="mt-6">
           <ReligiousRestrictionsSection form={form} />
-        </div>
+        </TabsContent>
       </div>
-    </>
+    </Tabs>
   );
 };
