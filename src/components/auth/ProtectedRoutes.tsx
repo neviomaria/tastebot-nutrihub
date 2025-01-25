@@ -11,7 +11,7 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
 
   const handleAuthError = () => {
     try {
-      sessionStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('supabase.auth.token');
       navigate('/auth', { replace: true, state: { from: location.pathname } });
     } catch (error) {
       console.error('Error handling auth error:', error);
@@ -97,8 +97,19 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
       }
     };
 
+    // Initial auth check
     checkAuth();
 
+    // Set up visibility change listener
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAuth();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
@@ -111,6 +122,7 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
 
     return () => {
       mounted = false;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       subscription.unsubscribe();
     };
   }, [navigate, location, toast]);
