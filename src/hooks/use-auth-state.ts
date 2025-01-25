@@ -10,9 +10,6 @@ export const useAuthState = () => {
 
   const handleSignOut = async () => {
     try {
-      // First clear any stored session data
-      localStorage.removeItem('supabase.auth.token');
-      
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Sign out error:", error);
@@ -23,12 +20,10 @@ export const useAuthState = () => {
         });
       }
 
-      // Always set authenticated to false and redirect, even if there was an error
       setIsAuthenticated(false);
       navigate('/auth');
     } catch (error) {
       console.error("Error during sign out:", error);
-      // Force clear auth state even on error
       setIsAuthenticated(false);
       navigate('/auth');
     }
@@ -44,7 +39,6 @@ export const useAuthState = () => {
       try {
         console.log("Initializing auth state...");
         
-        // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -64,14 +58,12 @@ export const useAuthState = () => {
 
         if (!mounted) return;
 
-        // If no session exists, user is not authenticated
         if (!session) {
           console.log("No active session found");
           setIsAuthenticated(false);
           return;
         }
 
-        // Verify the session is still valid with a separate call
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError) {
@@ -122,15 +114,6 @@ export const useAuthState = () => {
     // Initial auth check
     initializeAuth();
 
-    // Set up visibility change listener
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        initializeAuth();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
     // Set up auth state change listener
     const {
       data: { subscription },
@@ -139,28 +122,28 @@ export const useAuthState = () => {
       
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
-        localStorage.removeItem('supabase.auth.token');
-        if (event === 'SIGNED_OUT') {
-          toast({
-            title: "Signed out",
-            description: "You have been signed out successfully.",
-          });
-          navigate('/auth');
-        }
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully.",
+        });
+        navigate('/auth');
       } else if (event === 'SIGNED_IN') {
         setIsAuthenticated(true);
+        // Only show welcome toast on actual sign in
         toast({
           title: "Signed in",
           description: "Welcome back!",
         });
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Just update the auth state without showing a toast
+        setIsAuthenticated(true);
       }
     });
 
     return () => {
       mounted = false;
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       subscription.unsubscribe();
     };
   }, [toast, navigate]);
