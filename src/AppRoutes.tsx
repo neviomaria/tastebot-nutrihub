@@ -22,19 +22,25 @@ const AppRoutes = () => {
       <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* Protected routes */}
-      <Route element={<ProtectedRoutes />}>
-        <Route path="/" element={<Index />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/complete-profile" element={<CompleteProfile />} />
-        <Route path="/book/:id" element={<BookDetail />} />
-        <Route path="/book/:id/recipes" element={<BookRecipes />} />
-        <Route path="/my-books" element={<MyBooks />} />
-        <Route path="/my-coupons" element={<MyCoupons />} />
-        <Route path="/recipe/:id" element={<RecipeDetail />} />
-        <Route path="/favorites" element={<FavoriteRecipes />} />
-        <Route path="/meal-plans" element={<MealPlans />} />
-        <Route path="/meal-plan/:id" element={<MealPlanDetail />} />
-      </Route>
+      <Route
+        element={
+          <ProtectedRoutes>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/complete-profile" element={<CompleteProfile />} />
+              <Route path="/book/:id" element={<BookDetail />} />
+              <Route path="/book/:id/recipes" element={<BookRecipes />} />
+              <Route path="/my-books" element={<MyBooks />} />
+              <Route path="/my-coupons" element={<MyCoupons />} />
+              <Route path="/recipe/:id" element={<RecipeDetail />} />
+              <Route path="/favorites" element={<FavoriteRecipes />} />
+              <Route path="/meal-plans" element={<MealPlans />} />
+              <Route path="/meal-plan/:id" element={<MealPlanDetail />} />
+            </Routes>
+          </ProtectedRoutes>
+        }
+      />
     </Routes>
   );
 };
