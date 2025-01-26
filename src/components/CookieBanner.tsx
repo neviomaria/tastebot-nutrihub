@@ -4,8 +4,8 @@ export const CookieBanner = () => {
   return (
     <CookieConsent
       location="bottom"
-      buttonText="Accetta"
-      declineButtonText="Rifiuta"
+      buttonText="Accept"
+      declineButtonText="Decline"
       enableDeclineButton
       style={{
         background: "#2B373B",
@@ -28,8 +28,8 @@ export const CookieBanner = () => {
         padding: "8px 16px",
       }}
     >
-      Utilizziamo i cookie per migliorare la tua esperienza sul nostro sito. Continuando a utilizzare questo sito, accetti la nostra{" "}
-      <a href="/privacy-policy" className="text-primary-hover underline">
+      We use cookies to enhance your experience on our website. By continuing to use this site, you accept our{" "}
+      <a href="#" className="text-primary-hover underline">
         Privacy Policy
       </a>
       .

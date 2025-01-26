@@ -222,9 +222,9 @@ export const SignUpCouponForm = () => {
           }}
         />
         <Label htmlFor="privacy" className="text-sm text-gray-600">
-          Ho letto e accetto la{" "}
+          I have read and accept the{" "}
           <a
-            href="/privacy-policy"
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:text-primary-hover underline"
