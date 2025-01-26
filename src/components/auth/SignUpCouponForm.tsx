@@ -4,14 +4,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSearchParams } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const signUpSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   coupon_code: z.string().optional(),
+  privacyAccepted: z.boolean().refine((val) => val === true, {
+    message: "You must accept the Privacy Policy to continue",
+  }),
 });
 
 type SignUpValues = z.infer<typeof signUpSchema>;
@@ -27,6 +32,7 @@ export const SignUpCouponForm = () => {
       email: "",
       password: "",
       coupon_code: searchParams.get("coupon") || "",
+      privacyAccepted: false,
     },
   });
 
@@ -38,11 +44,20 @@ export const SignUpCouponForm = () => {
   }, [searchParams, form]);
 
   const onSubmit = async (values: SignUpValues) => {
+    if (!values.privacyAccepted) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You must accept the Privacy Policy to continue",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       console.log("Starting signup with values:", {
         email: values.email,
-        couponCode: values.coupon_code 
+        couponCode: values.coupon_code,
       });
 
       if (!values.email) {
@@ -119,7 +134,6 @@ export const SignUpCouponForm = () => {
         return;
       }
 
-      // If we have a valid coupon, add it to user_coupons table
       if (bookData && authData.user) {
         const { error: couponError } = await supabase
           .from('user_coupons')
@@ -132,7 +146,6 @@ export const SignUpCouponForm = () => {
 
         if (couponError) {
           console.error("Error saving coupon:", couponError);
-          // Don't return here, we still want to complete signup
         }
       }
 
@@ -199,6 +212,32 @@ export const SignUpCouponForm = () => {
           </p>
         )}
       </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="privacy"
+          {...form.register("privacyAccepted")}
+          onCheckedChange={(checked) => {
+            form.setValue("privacyAccepted", checked === true);
+          }}
+        />
+        <Label htmlFor="privacy" className="text-sm text-gray-600">
+          Ho letto e accetto la{" "}
+          <a
+            href="/privacy-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary-hover underline"
+          >
+            Privacy Policy
+          </a>
+        </Label>
+      </div>
+      {form.formState.errors.privacyAccepted && (
+        <p className="text-sm text-red-500">
+          {form.formState.errors.privacyAccepted.message}
+        </p>
+      )}
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Creating account..." : "Sign Up"}
