@@ -2,6 +2,7 @@ import { Beef, Egg, Brain, Banana, Milk, LeafyGreen, Heart, Gauge, Carrot, Fish,
 import { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface RecipeContentProps {
   ingredients: Array<{ ingredient_item: string }>;
@@ -77,6 +78,17 @@ const getRecipeImageSize = (url: string | undefined) => {
 export function RecipeContent({ ingredients, instructions, nutritionFacts, defaultServings = 4, imageUrl }: RecipeContentProps) {
   const [servings, setServings] = useState(defaultServings);
 
+  const handleServingsChange = (value: string) => {
+    const newValue = parseInt(value);
+    if (!isNaN(newValue) && newValue > 0) {
+      setServings(newValue);
+    }
+  };
+
+  const adjustServings = (increment: boolean) => {
+    setServings(prev => Math.max(1, increment ? prev + 1 : prev - 1));
+  };
+
   const scaleIngredient = (ingredient: string, scale: number) => {
     const { quantity, unit, rest } = parseIngredientQuantity(ingredient);
     const scaledQuantity = quantity * scale;
@@ -106,14 +118,32 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
             <label htmlFor="servings" className="text-sm text-gray-600 whitespace-nowrap">
               Adjust servings:
             </label>
-            <Input
-              id="servings"
-              type="number"
-              min="1"
-              value={servings}
-              onChange={(e) => setServings(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-20"
-            />
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => adjustServings(false)}
+              >
+                -
+              </Button>
+              <Input
+                id="servings"
+                type="number"
+                min="1"
+                value={servings}
+                onChange={(e) => handleServingsChange(e.target.value)}
+                className="w-16 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => adjustServings(true)}
+              >
+                +
+              </Button>
+            </div>
           </div>
         </div>
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
