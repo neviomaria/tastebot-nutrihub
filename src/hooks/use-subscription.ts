@@ -18,7 +18,26 @@ export const useSubscription = (): UseSubscriptionReturn => {
   useEffect(() => {
     const checkSubscription = async () => {
       try {
-        const { data: { error } } = await supabase.functions.invoke('check-subscription');
+        // Get the current session first
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!session) {
+          console.log('No active session found');
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke('check-subscription', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        });
         
         if (error) {
           console.error('Error checking subscription:', error);
@@ -50,8 +69,24 @@ export const useSubscription = (): UseSubscriptionReturn => {
 
   const createCheckoutSession = async (priceId: string, planType: SubscriptionPlan): Promise<string | null> => {
     try {
+      // Get the current session first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        return null;
+      }
+
+      if (!session) {
+        console.log('No active session found');
+        return null;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId, planType }
+        body: { priceId, planType },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
       });
 
       if (error) {
