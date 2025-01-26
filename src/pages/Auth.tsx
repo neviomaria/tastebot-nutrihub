@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { ViewType } from "@supabase/auth-ui-shared";
 import { SignUpCouponForm } from "@/components/auth/SignUpCouponForm";
-import { SubscriptionPlans } from "@/components/auth/SubscriptionPlans";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -59,17 +58,9 @@ const AuthPage = () => {
       </div>
 
       {view === "sign_up" && (
-        <>
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold text-center mb-6">
-              Scegli il tuo piano
-            </h3>
-            <SubscriptionPlans />
-          </div>
-          <div className="mb-6">
-            <SignUpCouponForm />
-          </div>
-        </>
+        <div className="mb-6">
+          <SignUpCouponForm />
+        </div>
       )}
 
       <Auth
