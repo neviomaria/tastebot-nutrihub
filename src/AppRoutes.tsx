@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { ProtectedRoutes } from "@/components/auth/ProtectedRoutes";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import Auth from "@/pages/Auth";
@@ -19,13 +19,13 @@ import Timers from "@/pages/Timers";
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route element={<AuthLayout />}>
+      <Route element={<AuthLayout><Outlet /></AuthLayout>}>
         <Route index element={<Auth />} />
         <Route path="auth" element={<Auth />} />
         <Route path="auth/callback" element={<AuthCallback />} />
       </Route>
 
-      <Route element={<ProtectedRoutes />}>
+      <Route element={<ProtectedRoutes><Outlet /></ProtectedRoutes>}>
         <Route path="/" element={<Index />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/complete-profile" element={<CompleteProfile />} />
