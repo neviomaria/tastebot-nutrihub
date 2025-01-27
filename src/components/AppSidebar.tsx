@@ -144,7 +144,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    active={location.pathname === item.path}
+                    isActive={location.pathname === item.path}
                   >
                     <Link
                       to={item.path}
@@ -223,7 +223,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
-                      active={location.pathname === item.path}
+                      isActive={location.pathname === item.path}
                     >
                       <Link
                         to={item.path}
