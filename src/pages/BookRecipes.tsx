@@ -173,8 +173,8 @@ const BookRecipes = () => {
   const tabs = Object.keys(groupedRecipes);
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="p-6 w-full">
+      <div className="max-w-7xl mx-auto w-full">
         <Link to={`/book/${id}`}>
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
