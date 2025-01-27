@@ -19,9 +19,10 @@ import Timers from "@/pages/Timers";
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/auth" element={<AuthLayout />}>
+      <Route element={<AuthLayout />}>
         <Route index element={<Auth />} />
-        <Route path="callback" element={<AuthCallback />} />
+        <Route path="auth" element={<Auth />} />
+        <Route path="auth/callback" element={<AuthCallback />} />
       </Route>
 
       <Route element={<ProtectedRoutes />}>
