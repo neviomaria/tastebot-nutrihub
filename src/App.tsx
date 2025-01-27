@@ -14,9 +14,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <SidebarProvider>
-          <div className="min-h-screen flex">
+          <div className="flex min-h-screen">
             <AppSidebar>
-              <div className="flex-1 w-full">
+              <div className="flex-1 w-full h-full">
                 <AppRoutes />
               </div>
             </AppSidebar>
