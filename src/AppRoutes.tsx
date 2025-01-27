@@ -6,6 +6,12 @@ import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import RecipeDetail from "@/pages/RecipeDetail";
 import Timers from "@/pages/Timers";
+import MyCoupons from "@/pages/MyCoupons";
+import MyBooks from "@/pages/MyBooks";
+import FavoriteRecipes from "@/pages/FavoriteRecipes";
+import MealPlans from "@/pages/MealPlans";
+import BookDetail from "@/pages/BookDetail";
+import BookRecipes from "@/pages/BookRecipes";
 
 interface ProtectedRoutesProps {
   children: React.ReactNode;
@@ -65,6 +71,54 @@ const AppRoutes = () => {
         element={
           <ProtectedRoutes>
             <Timers />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/my-coupons"
+        element={
+          <ProtectedRoutes>
+            <MyCoupons />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/my-books"
+        element={
+          <ProtectedRoutes>
+            <MyBooks />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/favorite-recipes"
+        element={
+          <ProtectedRoutes>
+            <FavoriteRecipes />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/meal-plans"
+        element={
+          <ProtectedRoutes>
+            <MealPlans />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/book/:id"
+        element={
+          <ProtectedRoutes>
+            <BookDetail />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/book/:id/recipes"
+        element={
+          <ProtectedRoutes>
+            <BookRecipes />
           </ProtectedRoutes>
         }
       />
