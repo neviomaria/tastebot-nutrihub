@@ -31,6 +31,8 @@ const MealPlanDetail = () => {
   const { data: mealPlan, isLoading } = useQuery({
     queryKey: ["meal-plan", id],
     queryFn: async () => {
+      if (!id) return null;
+
       const { data, error } = await supabase
         .from("meal_plans")
         .select(`
@@ -47,11 +49,12 @@ const MealPlanDetail = () => {
           )
         `)
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     },
+    enabled: !!id,
   });
 
   const currentIndex = allMealPlans?.findIndex(plan => plan.id === id) ?? -1;
@@ -103,7 +106,9 @@ const MealPlanDetail = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold">Meal Plan</h1>
+          <h1 className="text-3xl font-bold">
+            {mealPlan.title || `Meal Plan (${new Date(mealPlan.start_date).toLocaleDateString()} - ${new Date(mealPlan.end_date).toLocaleDateString()})`}
+          </h1>
           <Button
             variant="ghost"
             size="icon"
