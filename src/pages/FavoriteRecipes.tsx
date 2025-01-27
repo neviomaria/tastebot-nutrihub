@@ -11,7 +11,7 @@ const FavoriteRecipes = () => {
   const { favorites, isLoadingFavorites } = useFavorites();
 
   const { data: wpRecipes, isLoading: isLoadingRecipes } = useQuery({
-    queryKey: ['wordpress-recipes', favorites], // Add favorites to queryKey to refetch when they change
+    queryKey: ['wordpress-recipes', favorites],
     queryFn: async () => {
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
@@ -25,12 +25,11 @@ const FavoriteRecipes = () => {
 
   const isLoading = isLoadingRecipes || isLoadingFavorites;
 
-  // Filter recipes based on current favorites
   const favoriteRecipes = wpRecipes?.filter(recipe => favorites.includes(recipe.id)) || [];
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="w-full p-6">
         <h1 className="text-2xl font-bold mb-4">Favorite Recipes</h1>
         <div className="text-center">Loading your favorite recipes...</div>
       </div>
@@ -38,7 +37,7 @@ const FavoriteRecipes = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="w-full p-6">
       <h1 className="text-2xl font-bold mb-4">Favorite Recipes</h1>
       {favoriteRecipes.length === 0 ? (
         <div className="text-center text-gray-600">
