@@ -15,9 +15,10 @@ function App() {
       <BrowserRouter>
         <SidebarProvider>
           <div className="min-h-screen flex w-full">
-            <AppSidebar>
+            <AppSidebar />
+            <main className="flex-1">
               <AppRoutes />
-            </AppSidebar>
+            </main>
           </div>
         </SidebarProvider>
         <Toaster />
