@@ -53,7 +53,13 @@ export default function Timers() {
 
   const createTimer = useMutation({
     mutationFn: async (data: TimerFormData) => {
-      const { error } = await supabase.from("timers").insert([data]);
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      
+      const { error } = await supabase.from("timers").insert([{
+        ...data,
+        user_id: userData.user.id
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {
