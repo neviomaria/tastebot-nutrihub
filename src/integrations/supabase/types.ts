@@ -290,36 +290,6 @@ export type Database = {
         }
         Relationships: []
       }
-      timers: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          duration: number
-          id: string
-          title: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          duration: number
-          id?: string
-          title: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          duration?: number
-          id?: string
-          title?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_coupons: {
         Row: {
           book_id: string

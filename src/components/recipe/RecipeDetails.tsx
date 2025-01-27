@@ -11,7 +11,6 @@ import { RecipeContent } from "@/components/recipe/RecipeContent";
 import { Button } from "@/components/ui/button";
 import { Pause, Play } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { Timer } from "@/components/timer/Timer";
 
 interface RecipeDetailsProps {
   recipe: Recipe;
@@ -85,10 +84,6 @@ export function RecipeDetailsContent({ recipe }: RecipeDetailsProps) {
           />
         </div>
         <div className="flex gap-2 items-center">
-          <Timer 
-            duration={recipe.acf.cook_time ? parseInt(recipe.acf.cook_time) * 60 : 0} 
-            className="mr-4"
-          />
           <FavoriteButton 
             recipeId={recipe.id} 
             size="default" 
