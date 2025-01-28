@@ -47,7 +47,7 @@ export function BookRecipesWidget() {
 
   const getRecipeImage = (recipe: Recipe) => {
     if (!recipe.acf.recipe_image) return '/placeholder.svg';
-    return recipe.acf.recipe_image.sizes?.['recipe-app'] || recipe.acf.recipe_image.url;
+    return recipe.acf.recipe_image.url;
   };
 
   console.log("[BookRecipesWidget] Current recipes data:", recipes?.length || 0);
