@@ -61,8 +61,8 @@ export function AppSidebar() {
             <span className="text-xl">Pybher</span>
           </Link>
         </SidebarHeader>
-        <SidebarContent>
-          <ScrollArea className="flex-1 px-4">
+        <SidebarContent className="bg-purple-900">
+          <ScrollArea className="flex-1 px-4 bg-purple-900">
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
@@ -119,7 +119,7 @@ export function AppSidebar() {
                 <span className="text-xl">Pybher</span>
               </Link>
             </div>
-            <ScrollArea className="flex-1 px-4">
+            <ScrollArea className="flex-1 px-4 bg-purple-900">
               <SidebarMenu>
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
