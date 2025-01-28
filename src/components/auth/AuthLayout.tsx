@@ -7,10 +7,10 @@ interface AuthLayoutProps {
 export const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen w-full flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-primary text-auth-text p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary p-12 flex-col justify-between">
         <div>
-          <h1 className="text-4xl font-bold mb-6">Meal Planner</h1>
-          <p className="text-xl opacity-90 leading-relaxed">
+          <h1 className="text-4xl font-bold text-white mb-6">Meal Planner</h1>
+          <p className="text-xl text-white/90 leading-relaxed">
             Your personal meal planning assistant, included with your book purchase.
             Enter your book coupon code to access exclusive content.
           </p>
@@ -19,7 +19,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
               <svg
-                className="w-6 h-6"
+                className="w-6 h-6 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -34,8 +34,8 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold">Personalized Plans</h3>
-              <p className="opacity-75">
+              <h3 className="font-semibold text-white">Personalized Plans</h3>
+              <p className="text-white/75">
                 Get customized meal plans based on your preferences
               </p>
             </div>
@@ -43,7 +43,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
               <svg
-                className="w-6 h-6"
+                className="w-6 h-6 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -58,8 +58,8 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold">Save Time</h3>
-              <p className="opacity-75">
+              <h3 className="font-semibold text-white">Save Time</h3>
+              <p className="text-white/75">
                 Plan your meals for the week in minutes
               </p>
             </div>

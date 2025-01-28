@@ -1,10 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
-import { AuthLayout } from "@/components/auth/AuthLayout";
 import { ViewType } from "@supabase/auth-ui-shared";
+import { supabase } from "@/integrations/supabase/client";
 import { SignUpCouponForm } from "@/components/auth/SignUpCouponForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,10 +20,6 @@ const AuthPage = () => {
     });
   }, [navigate]);
 
-  const handleViewChange = (newView: ViewType) => {
-    setView(newView);
-  };
-
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.auth.signInWithPassword({
@@ -39,37 +32,33 @@ const AuthPage = () => {
   };
 
   return (
-    <AuthLayout>
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome to Pybher
-        </h2>
-        <p className="text-gray-600">
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold text-gray-900">Welcome to Pybher</h2>
+        <p className="text-gray-600 mt-2">
           {view === "sign_in" ? "Sign in to your account" : "Create your account"}
         </p>
       </div>
 
-      <div className="flex justify-center space-x-4 mb-6">
+      <div className="flex gap-2">
         <Button
-          onClick={() => handleViewChange("sign_in")}
+          onClick={() => setView("sign_in")}
           variant={view === "sign_in" ? "default" : "outline"}
-          className="w-24"
+          className="flex-1"
         >
           Sign In
         </Button>
         <Button
-          onClick={() => handleViewChange("sign_up")}
+          onClick={() => setView("sign_up")}
           variant={view === "sign_up" ? "default" : "outline"}
-          className="w-24"
+          className="flex-1"
         >
           Sign Up
         </Button>
       </div>
 
       {view === "sign_up" ? (
-        <div className="mb-6">
-          <SignUpCouponForm />
-        </div>
+        <SignUpCouponForm />
       ) : (
         <form onSubmit={handleSignIn} className="space-y-4">
           <div>
@@ -101,15 +90,19 @@ const AuthPage = () => {
           <Button type="submit" className="w-full">
             Sign In
           </Button>
-          <div className="text-center space-y-2 mt-4">
-            <a href="#" className="text-sm text-primary hover:underline block">
+          <div className="text-center space-y-2">
+            <button
+              type="button"
+              onClick={() => navigate("/auth/reset-password")}
+              className="text-sm text-primary hover:underline block"
+            >
               Forgot your password?
-            </a>
+            </button>
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <button
                 type="button"
-                onClick={() => handleViewChange("sign_up")}
+                onClick={() => setView("sign_up")}
                 className="text-primary hover:underline"
               >
                 Sign up
@@ -118,7 +111,7 @@ const AuthPage = () => {
           </div>
         </form>
       )}
-    </AuthLayout>
+    </div>
   );
 };
 
