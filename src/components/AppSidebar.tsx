@@ -63,7 +63,7 @@ export function AppSidebar() {
         </SidebarHeader>
         <SidebarContent className="bg-purple-900">
           <ScrollArea className="flex-1 px-4 bg-purple-900">
-            <SidebarMenu>
+            <SidebarMenu className="pt-4">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -72,7 +72,7 @@ export function AppSidebar() {
                   >
                     <Link
                       to={item.path}
-                      className="flex items-center gap-2 text-white hover:bg-purple-700"
+                      className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:font-bold"
                       onClick={handleMenuClick}
                     >
                       <item.icon className="h-4 w-4" />
@@ -120,7 +120,7 @@ export function AppSidebar() {
               </Link>
             </div>
             <ScrollArea className="flex-1 px-4 bg-purple-900">
-              <SidebarMenu>
+              <SidebarMenu className="pt-4">
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
@@ -129,7 +129,7 @@ export function AppSidebar() {
                     >
                       <Link
                         to={item.path}
-                        className="flex items-center gap-2 text-white hover:bg-purple-700"
+                        className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:font-bold"
                         onClick={handleMenuClick}
                       >
                         <item.icon className="h-4 w-4" />
