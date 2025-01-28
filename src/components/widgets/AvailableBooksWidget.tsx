@@ -70,9 +70,7 @@ export function AvailableBooksWidget() {
     enabled: !!profile,
   });
 
-  console.log("[AvailableBooksWidget] Current books data:", books);
-
-  const getBookCoverUrl = (book: Book) => {
+  const getBookCoverUrl = async (book: Book) => {
     console.log("[AvailableBooksWidget] Getting cover for book:", book.title.rendered);
     
     if (!book.acf?.copertina_libro) {
@@ -80,17 +78,45 @@ export function AvailableBooksWidget() {
       return "/placeholder.svg";
     }
 
-    // Try to get the cover-app size first, then medium size, then fall back to full URL
-    const coverUrl = 
-      book.acf.copertina_libro.sizes?.['cover-app']?.source_url ||
-      book.acf.copertina_libro.sizes?.['medium']?.source_url ||
-      book.acf.copertina_libro.url;
+    try {
+      const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
+      if (!mediaResponse.ok) {
+        console.error('Failed to fetch media details:', mediaResponse.statusText);
+        return "/placeholder.svg";
+      }
+      const media = await mediaResponse.json();
+      
+      // Try to get the cover-app size first, then medium size, then fall back to full URL
+      const coverUrl = 
+        media.media_details?.sizes?.['cover-app']?.source_url ||
+        media.media_details?.sizes?.['medium']?.source_url ||
+        media.source_url;
 
-    console.log("[AvailableBooksWidget] Using cover URL:", coverUrl);
-    return coverUrl || "/placeholder.svg";
+      console.log("[AvailableBooksWidget] Using cover URL:", coverUrl);
+      return coverUrl || "/placeholder.svg";
+    } catch (error) {
+      console.error('Error fetching book cover:', error);
+      return "/placeholder.svg";
+    }
   };
 
-  if (isLoading) {
+  const { data: bookCovers = {}, isLoading: isLoadingCovers } = useQuery({
+    queryKey: ['book-covers', books.map(book => book.id)],
+    queryFn: async () => {
+      console.log("[AvailableBooksWidget] Fetching book covers");
+      const covers: Record<number, string> = {};
+      
+      await Promise.all(books.map(async (book) => {
+        covers[book.id] = await getBookCoverUrl(book);
+      }));
+      
+      console.log("[AvailableBooksWidget] Book covers:", covers);
+      return covers;
+    },
+    enabled: books.length > 0,
+  });
+
+  if (isLoading || isLoadingCovers) {
     return (
       <Card>
         <CardHeader>
@@ -112,6 +138,7 @@ export function AvailableBooksWidget() {
     return null;
   }
 
+  console.log("[AvailableBooksWidget] Rendering component with books:", books.length);
   return (
     <Card>
       <CardHeader>
@@ -136,12 +163,12 @@ export function AvailableBooksWidget() {
                     <div className="grid grid-cols-1 md:grid-cols-[1fr,1.5fr] gap-4">
                       <div className="relative">
                         <img
-                          src={getBookCoverUrl(book)}
+                          src={bookCovers[book.id] || "/placeholder.svg"}
                           alt={book.title.rendered}
                           className="w-full h-full object-cover aspect-[3/4]"
                           loading="lazy"
                           onError={(e) => {
-                            console.log('[AvailableBooksWidget] Image failed to load:', getBookCoverUrl(book));
+                            console.log('[AvailableBooksWidget] Image failed to load:', bookCovers[book.id]);
                             e.currentTarget.src = "/placeholder.svg";
                           }}
                         />
