@@ -1,10 +1,11 @@
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Index = () => {
   const { isAuthenticated } = useAuthState();
   const { toast } = useToast();
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   
   useEffect(() => {
     if (isAuthenticated === false) {
@@ -16,10 +17,19 @@ const Index = () => {
     }
   }, [isAuthenticated, toast]);
 
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-purple-600 flex items-center justify-center">
-        <div className="text-white text-6xl font-bold animate-bounce">
+      <div className="min-h-screen bg-yellow-400 flex items-center justify-center">
+        <div className="text-black text-6xl font-bold animate-bounce">
           LOADING...
         </div>
       </div>
@@ -31,19 +41,19 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-purple-600 p-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-12">
-        <h1 className="text-7xl font-black text-purple-600 mb-8 text-center">
-          DEPLOYMENT TEST
+    <div className="min-h-screen bg-yellow-400 p-8">
+      <div className="max-w-4xl mx-auto bg-black rounded-xl shadow-2xl p-12">
+        <h1 className="text-7xl font-black text-yellow-400 mb-8 text-center">
+          DEPLOYMENT TEST - YELLOW VERSION
         </h1>
-        <div className="text-2xl text-center space-y-4">
+        <div className="text-2xl text-center space-y-4 text-yellow-400">
           <p>
-            If you can see this purple page with large text,
+            If you can see this YELLOW page with BLACK background,
             <br />
             the deployment is working!
           </p>
-          <p className="text-purple-600 font-bold">
-            Time: {new Date().toLocaleTimeString()}
+          <p className="text-4xl font-bold">
+            Current Time: {currentTime}
           </p>
         </div>
       </div>
