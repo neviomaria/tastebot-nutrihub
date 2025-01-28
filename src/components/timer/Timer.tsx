@@ -53,30 +53,57 @@ export function Timer({ duration, isCountdown = true, onComplete, className }: T
     return () => clearInterval(interval);
   }, [isRunning, isCountdown, duration, onComplete]);
 
+  const progress = isCountdown 
+    ? (time / duration) * 100 
+    : ((duration - time) / duration) * 100;
+
   return (
-    <div className={cn("flex flex-col items-center gap-4", className)}>
-      <div className="flex items-center gap-2">
-        <TimerIcon className="h-5 w-5" />
-        <span className="text-2xl font-mono">{formatTime(time)}</span>
+    <div className={cn("flex flex-col items-center", className)}>
+      <div className="relative">
+        <svg className="w-16 h-16 transform -rotate-90">
+          <circle
+            cx="32"
+            cy="32"
+            r="28"
+            className="stroke-muted-foreground/20"
+            strokeWidth="4"
+            fill="none"
+          />
+          <circle
+            cx="32"
+            cy="32"
+            r="28"
+            className="stroke-primary transition-all duration-300"
+            strokeWidth="4"
+            fill="none"
+            strokeDasharray={175.93}
+            strokeDashoffset={175.93 * (progress / 100)}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-sm font-mono">{formatTime(time)}</span>
+        </div>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-1 mt-2">
         <Button
           variant="outline"
           size="icon"
+          className="h-8 w-8"
           onClick={() => setIsRunning(!isRunning)}
         >
           {isRunning ? (
-            <Pause className="h-4 w-4" />
+            <Pause className="h-3 w-3" />
           ) : (
-            <Play className="h-4 w-4" />
+            <Play className="h-3 w-3" />
           )}
         </Button>
         <Button
           variant="outline"
           size="icon"
+          className="h-8 w-8"
           onClick={reset}
         >
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="h-3 w-3" />
         </Button>
       </div>
     </div>
