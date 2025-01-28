@@ -55,6 +55,11 @@ const Index = () => {
           <p className="text-4xl font-bold">
             Current Time: {currentTime}
           </p>
+          <div className="mt-8 p-4 bg-yellow-400 text-black rounded-lg">
+            <p className="font-mono">Debug Info:</p>
+            <p className="font-mono">Auth State: {String(isAuthenticated)}</p>
+            <p className="font-mono">Last Render: {new Date().toISOString()}</p>
+          </div>
         </div>
       </div>
     </div>
