@@ -28,11 +28,12 @@ function AppContent() {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log("[AppContent] Starting session check...");
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Current session status:", session ? "Active" : "No session", error || "");
+        console.log("[AppContent] Session check result:", session ? "Active" : "No session", error || "");
         
         if (error) {
-          console.error("Session check error:", error);
+          console.error("[AppContent] Session check error:", error);
           toast({
             variant: "destructive",
             title: "Session Error",
@@ -43,20 +44,20 @@ function AppContent() {
         }
 
         if (!session) {
-          console.log("No active session found");
+          console.log("[AppContent] No active session found");
           return;
         }
 
-        console.log("Session user:", session.user.email);
+        console.log("[AppContent] Session user:", session.user.email);
       } catch (error) {
-        console.error("Session check failed:", error);
+        console.error("[AppContent] Session check failed:", error);
       }
     };
 
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session?.user?.email || "No user");
+      console.log("[AppContent] Auth state changed:", event, session?.user?.email || "No user");
       
       if (event === 'SIGNED_OUT') {
         queryClient.clear();
@@ -67,6 +68,8 @@ function AppContent() {
       subscription.unsubscribe();
     };
   }, [toast]);
+
+  console.log("[AppContent] Current auth state:", isAuthenticated);
 
   return (
     <SidebarProvider>

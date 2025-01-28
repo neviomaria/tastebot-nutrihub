@@ -12,10 +12,10 @@ const Index = () => {
   const { toast } = useToast();
   
   useEffect(() => {
-    console.log("Index page mounted, auth status:", isAuthenticated);
+    console.log("[Index] Component mounted, auth status:", isAuthenticated);
     
     if (isAuthenticated === false) {
-      console.log("User not authenticated, showing toast");
+      console.log("[Index] User not authenticated, showing toast");
       toast({
         variant: "destructive",
         title: "Authentication Required",
@@ -24,11 +24,14 @@ const Index = () => {
       return;
     }
     
-    console.log("Attempting to render dashboard widgets");
+    console.log("[Index] Attempting to render dashboard widgets");
   }, [isAuthenticated, toast]);
+
+  console.log("[Index] Rendering with auth state:", isAuthenticated);
 
   // Only render content when authentication state is determined
   if (isAuthenticated === null) {
+    console.log("[Index] Auth state is null, showing loading");
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -37,9 +40,11 @@ const Index = () => {
   }
 
   if (isAuthenticated === false) {
+    console.log("[Index] Auth state is false, returning null");
     return null;
   }
 
+  console.log("[Index] Rendering dashboard content");
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
