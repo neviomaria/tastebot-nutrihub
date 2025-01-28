@@ -1,12 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, User, Book, LayoutDashboard, Ticket, LogOut, Heart, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AppHeader } from "./AppHeader";
 import {
   Sidebar,
   SidebarContent,
@@ -22,19 +21,12 @@ interface MenuItem {
   path: string;
 }
 
-interface UserBook {
-  book_id: string;
-  book_title: string;
-}
-
 export function AppSidebar() {
   const { toast } = useToast();
-  const [userBooks, setUserBooks] = useState<UserBook[]>([]);
   const location = useLocation();
   const [openMobile, setOpenMobile] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string>('Loading...');
 
-  const baseMenuItems: MenuItem[] = [
+  const menuItems: MenuItem[] = [
     { title: "Dashboard", icon: LayoutDashboard, path: "/" },
     { title: "Profile", icon: User, path: "/profile" },
     { title: "My Books", icon: Book, path: "/my-books" },
@@ -43,90 +35,11 @@ export function AppSidebar() {
     { title: "Meal Plans", icon: Calendar, path: "/meal-plans" },
   ];
 
-  const [menuItems] = useState<MenuItem[]>(baseMenuItems);
-
-  useEffect(() => {
-    const fetchUserBooks = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setDebugInfo('No user found');
-          throw new Error("No user found");
-        }
-
-        setDebugInfo(`User found: ${user.email}`);
-
-        // Fetch book from profile
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("book_id, book_title")
-          .eq("id", user.id)
-          .single();
-
-        if (profileError) {
-          console.error("Error fetching profile:", profileError);
-          setDebugInfo(`Profile error: ${profileError.message}`);
-          throw profileError;
-        }
-
-        // Fetch books from user_coupons
-        const { data: userCoupons, error: couponsError } = await supabase
-          .from("user_coupons")
-          .select("book_id, book_title")
-          .eq("user_id", user.id);
-
-        if (couponsError) {
-          console.error("Error fetching user coupons:", couponsError);
-          setDebugInfo(`Coupons error: ${couponsError.message}`);
-          throw couponsError;
-        }
-
-        // Combine books from both sources, avoiding duplicates
-        let allBooks: UserBook[] = [];
-        
-        // Add profile book if it exists
-        if (profile?.book_id && profile?.book_title) {
-          allBooks.push({
-            book_id: profile.book_id,
-            book_title: profile.book_title
-          });
-        }
-
-        // Add books from user_coupons, avoiding duplicates
-        if (userCoupons) {
-          userCoupons.forEach(coupon => {
-            if (!allBooks.some(book => book.book_id === coupon.book_id)) {
-              allBooks.push({
-                book_id: coupon.book_id,
-                book_title: coupon.book_title
-              });
-            }
-          });
-        }
-
-        setUserBooks(allBooks);
-      } catch (error) {
-        console.error("Error in fetchUserBooks:", error);
-        setDebugInfo(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load user books",
-        });
-      }
-    };
-
-    fetchUserBooks();
-  }, [toast]);
-
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setDebugInfo('Logged out successfully');
     } catch (error) {
-      console.error("Error signing out:", error);
-      setDebugInfo(`Logout error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast({
         variant: "destructive",
         title: "Error",
@@ -149,11 +62,6 @@ export function AppSidebar() {
           </Link>
         </SidebarHeader>
         <SidebarContent>
-          <div className="p-4 bg-purple-800 text-white text-sm">
-            <p>Debug Info:</p>
-            <p className="break-all">{debugInfo}</p>
-            <p>Current Path: {location.pathname}</p>
-          </div>
           <ScrollArea className="flex-1 px-4">
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -210,11 +118,6 @@ export function AppSidebar() {
               >
                 <span className="text-xl">Pybher</span>
               </Link>
-            </div>
-            <div className="p-4 bg-purple-800 text-white text-sm">
-              <p>Debug Info:</p>
-              <p className="break-all">{debugInfo}</p>
-              <p>Current Path: {location.pathname}</p>
             </div>
             <ScrollArea className="flex-1 px-4">
               <SidebarMenu>
