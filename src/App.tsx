@@ -12,12 +12,13 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const { isAuthenticated } = useAuthState();
+  console.log("AppContent rendering, isAuthenticated:", isAuthenticated);
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         {isAuthenticated && <AppSidebar />}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto bg-background min-h-screen">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto bg-background min-h-screen w-full">
           <AppRoutes />
         </main>
       </div>

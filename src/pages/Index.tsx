@@ -4,6 +4,8 @@ import { BookRecipesWidget } from "@/components/widgets/BookRecipesWidget";
 import { AvailableBooksWidget } from "@/components/widgets/AvailableBooksWidget";
 
 const Index = () => {
+  console.log("Rendering Index page");
+  
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
