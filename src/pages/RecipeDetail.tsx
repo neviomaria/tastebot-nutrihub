@@ -132,14 +132,16 @@ const RecipeDetail = () => {
 
   return (
     <div className="min-h-screen p-6">
-      <RecipeHeader
-        onPrevious={() => handleNavigation('prev')}
-        onNext={() => handleNavigation('next')}
-        mealType={recipe?.acf?.pasto}
-      />
+      <div className="mb-6 md:mb-0">
+        <RecipeHeader
+          onPrevious={() => handleNavigation('prev')}
+          onNext={() => handleNavigation('next')}
+          mealType={recipe?.acf?.pasto}
+        />
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="relative">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="relative md:sticky md:top-6 pt-4 md:pt-0">
           <RecipeImage
             imageUrl={recipe.acf.recipe_image?.url}
             title={recipe.title}

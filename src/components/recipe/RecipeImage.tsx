@@ -12,7 +12,7 @@ export function RecipeImage({ imageUrl, title }: RecipeImageProps) {
   };
 
   return (
-    <div className="sticky top-6">
+    <div>
       {imageUrl && (
         <div className="aspect-[3/4] w-full rounded-lg overflow-hidden">
           <img
