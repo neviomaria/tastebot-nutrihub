@@ -1,4 +1,4 @@
-import { Clock, Users, Flame, ArrowDown, ArrowUp } from "lucide-react";
+import { Clock, Users, Flame, Play, RotateCcw } from "lucide-react";
 import { Timer } from "@/components/timer/Timer";
 
 interface RecipeMetadataProps {
@@ -14,7 +14,7 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6 px-6 bg-white rounded-lg shadow-sm">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6 px-4 bg-white rounded-lg shadow-sm">
       <div className="flex items-center gap-4">
         <div className="bg-secondary p-3 rounded-lg">
           <Users className="w-5 h-5 text-primary" />
@@ -38,8 +38,8 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
               duration={convertTimeToSeconds(prepTime)} 
             />
             <div className="flex flex-col gap-1">
-              <ArrowUp className="h-4 w-4 text-primary" />
-              <ArrowDown className="h-4 w-4 text-primary" />
+              <Play className="h-4 w-4 text-primary cursor-pointer" />
+              <RotateCcw className="h-4 w-4 text-primary cursor-pointer" />
             </div>
           </div>
         </div>
@@ -58,8 +58,8 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
               duration={convertTimeToSeconds(cookTime)} 
             />
             <div className="flex flex-col gap-1">
-              <ArrowUp className="h-4 w-4 text-primary" />
-              <ArrowDown className="h-4 w-4 text-primary" />
+              <Play className="h-4 w-4 text-primary cursor-pointer" />
+              <RotateCcw className="h-4 w-4 text-primary cursor-pointer" />
             </div>
           </div>
         </div>
