@@ -1,4 +1,4 @@
-import { Clock, Users, Flame, Play, RotateCcw } from "lucide-react";
+import { Clock, Users, Flame } from "lucide-react";
 import { Timer } from "@/components/timer/Timer";
 
 interface RecipeMetadataProps {
@@ -32,15 +32,9 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
           <span className="font-medium block text-gray-600 text-sm">Prep Time</span>
           <p className="mt-0.5 font-semibold">{prepTime}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Timer 
-            duration={convertTimeToSeconds(prepTime)} 
-          />
-          <div className="flex flex-col gap-1">
-            <Play className="h-4 w-4 text-primary cursor-pointer" />
-            <RotateCcw className="h-4 w-4 text-primary cursor-pointer" />
-          </div>
-        </div>
+        <Timer 
+          duration={convertTimeToSeconds(prepTime)} 
+        />
       </div>
       <div className="flex items-center gap-4">
         <div className="bg-secondary p-3 rounded-lg">
@@ -50,15 +44,9 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
           <span className="font-medium block text-gray-600 text-sm">Cook Time</span>
           <p className="mt-0.5 font-semibold">{cookTime}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Timer 
-            duration={convertTimeToSeconds(cookTime)} 
-          />
-          <div className="flex flex-col gap-1">
-            <Play className="h-4 w-4 text-primary cursor-pointer" />
-            <RotateCcw className="h-4 w-4 text-primary cursor-pointer" />
-          </div>
-        </div>
+        <Timer 
+          duration={convertTimeToSeconds(cookTime)} 
+        />
       </div>
     </div>
   );
