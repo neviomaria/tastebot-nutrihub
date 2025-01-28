@@ -98,7 +98,7 @@ export function AppSidebar() {
       </Sidebar>
 
       {/* Mobile Header with Menu and Profile */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-purple-900 border-b border-purple-800">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-purple-900">
         <div className="flex items-center justify-between px-4 h-16">
           <Sheet open={openMobile} onOpenChange={setOpenMobile}>
             <SheetTrigger asChild>
