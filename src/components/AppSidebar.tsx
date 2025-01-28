@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, User, Book, LayoutDashboard, Ticket, LogOut, Heart, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AppHeader } from "./AppHeader";
 import {
   Sidebar,
   SidebarContent,
@@ -96,63 +97,71 @@ export function AppSidebar() {
         </SidebarContent>
       </Sidebar>
 
-      {/* Mobile Sidebar */}
-      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            className="lg:hidden fixed left-4 top-4 z-[60] bg-purple-900 text-white"
-            size="icon"
-          >
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle Menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0 bg-purple-900">
-          <div className="flex h-full flex-col">
-            <div className="h-[60px] flex items-center px-6 border-b border-purple-800">
-              <Link
-                to="/"
-                className="flex items-center gap-2 font-semibold text-white"
-                onClick={handleMenuClick}
-              >
-                <span className="text-xl">Pybher</span>
-              </Link>
-            </div>
-            <ScrollArea className="flex-1 px-4 py-6 bg-purple-900">
-              <SidebarMenu>
-                {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.title} className="mb-2">
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname === item.path}
-                    >
-                      <Link
-                        to={item.path}
-                        className="flex items-center gap-3 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold rounded-md px-4 py-3 text-lg"
-                        onClick={handleMenuClick}
-                      >
-                        <item.icon className="h-5 w-5" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </ScrollArea>
-            <div className="border-t border-purple-800 p-4">
+      {/* Mobile Header with Menu and Profile */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-purple-900 border-b border-purple-800">
+        <div className="flex items-center justify-between px-4 h-16">
+          <Sheet open={openMobile} onOpenChange={setOpenMobile}>
+            <SheetTrigger asChild>
               <Button
                 variant="ghost"
-                className="w-full justify-start text-white hover:bg-purple-700 py-3 text-lg"
-                onClick={handleLogout}
+                className="text-white hover:bg-purple-700"
+                size="icon"
               >
-                <LogOut className="mr-3 h-5 w-5" />
-                Logout
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle Menu</span>
               </Button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-0 bg-purple-900">
+              <div className="flex h-full flex-col">
+                <div className="h-[60px] flex items-center px-6 border-b border-purple-800">
+                  <Link
+                    to="/"
+                    className="flex items-center gap-2 font-semibold text-white"
+                    onClick={handleMenuClick}
+                  >
+                    <span className="text-xl">Pybher</span>
+                  </Link>
+                </div>
+                <ScrollArea className="flex-1 px-4 py-6 bg-purple-900">
+                  <SidebarMenu>
+                    {menuItems.map((item) => (
+                      <SidebarMenuItem key={item.title} className="mb-2">
+                        <SidebarMenuButton
+                          asChild
+                          isActive={location.pathname === item.path}
+                        >
+                          <Link
+                            to={item.path}
+                            className="flex items-center gap-3 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold rounded-md px-4 py-3 text-lg"
+                            onClick={handleMenuClick}
+                          >
+                            <item.icon className="h-5 w-5" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </ScrollArea>
+                <div className="border-t border-purple-800 p-4">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-white hover:bg-purple-700 py-3 text-lg"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-3 h-5 w-5" />
+                    Logout
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+          <AppHeader />
+        </div>
+      </div>
+
+      {/* Mobile Content Padding */}
+      <div className="lg:hidden h-16" />
     </>
   );
 }
