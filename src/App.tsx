@@ -5,14 +5,60 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./AppRoutes";
 import "./App.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function AppContent() {
   const { isAuthenticated } = useAuthState();
-  console.log("AppContent rendering, isAuthenticated:", isAuthenticated);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Current session status:", session ? "Active" : "No session", error || "");
+        
+        if (error) {
+          console.error("Session check error:", error);
+          toast({
+            variant: "destructive",
+            title: "Session Error",
+            description: "Please try logging in again",
+          });
+          await supabase.auth.signOut();
+          return;
+        }
+      } catch (error) {
+        console.error("Session check failed:", error);
+      }
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email || "No user");
+      
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        queryClient.clear();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   return (
     <SidebarProvider>
