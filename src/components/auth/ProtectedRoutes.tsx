@@ -11,6 +11,8 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
 
   const handleAuthError = () => {
     try {
+      // Clear any existing session data
+      supabase.auth.signOut();
       navigate('/auth', { replace: true, state: { from: location.pathname } });
     } catch (error) {
       console.error('Error handling auth error:', error);
@@ -22,10 +24,13 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
 
     const checkAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Checking auth state...");
         
-        if (error) {
-          console.error("Session check error:", error);
+        // Get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session check error:", sessionError);
           if (mounted) {
             handleAuthError();
           }
@@ -40,10 +45,19 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
           return;
         }
 
-        // Verify session is still valid with a separate call
+        // Verify the session is still valid
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
+        
+        if (userError) {
           console.error("User verification error:", userError);
+          if (mounted) {
+            handleAuthError();
+          }
+          return;
+        }
+
+        if (!user) {
+          console.log("No user found in session");
           if (mounted) {
             handleAuthError();
           }
@@ -79,6 +93,8 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
           return;
         }
 
+        console.log("Auth check completed successfully");
+
       } catch (error) {
         console.error("Auth check error:", error);
         if (mounted) {
@@ -101,12 +117,14 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, "Session:", session?.user?.email);
+      
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || !session) {
         handleAuthError();
-      } else if (!session) {
-        handleAuthError();
+      } else if (event === 'SIGNED_IN') {
+        checkAuth();
       }
     });
 
