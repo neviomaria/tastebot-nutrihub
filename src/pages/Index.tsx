@@ -12,6 +12,7 @@ const Index = () => {
   const { toast } = useToast();
   
   useEffect(() => {
+    console.log("[Index] useEffect running, isAuthenticated:", isAuthenticated);
     if (isAuthenticated === false) {
       toast({
         variant: "destructive",
@@ -24,6 +25,7 @@ const Index = () => {
   console.log("[Index] Auth state:", isAuthenticated);
 
   if (isAuthenticated === null) {
+    console.log("[Index] Loading state");
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -32,6 +34,7 @@ const Index = () => {
   }
 
   if (isAuthenticated === false) {
+    console.log("[Index] Not authenticated");
     return null;
   }
 

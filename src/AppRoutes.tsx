@@ -17,10 +17,11 @@ import RecipeDetail from "@/pages/RecipeDetail";
 import Timers from "@/pages/Timers";
 
 export default function AppRoutes() {
+  console.log("[AppRoutes] Rendering routes");
+  
   return (
     <Routes>
       <Route element={<AuthLayout><Outlet /></AuthLayout>}>
-        <Route index element={<Auth />} />
         <Route path="auth" element={<Auth />} />
         <Route path="auth/callback" element={<AuthCallback />} />
       </Route>
