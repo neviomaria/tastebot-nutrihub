@@ -72,7 +72,7 @@ export function AppSidebar() {
                   >
                     <Link
                       to={item.path}
-                      className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:font-bold"
+                      className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold"
                       onClick={handleMenuClick}
                     >
                       <item.icon className="h-4 w-4" />
@@ -129,7 +129,7 @@ export function AppSidebar() {
                     >
                       <Link
                         to={item.path}
-                        className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:font-bold"
+                        className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold"
                         onClick={handleMenuClick}
                       >
                         <item.icon className="h-4 w-4" />
