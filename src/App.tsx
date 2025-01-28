@@ -6,7 +6,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import AppRoutes from "./AppRoutes";
 import "./App.css";
@@ -24,12 +24,18 @@ const queryClient = new QueryClient({
 function AppContent() {
   const { isAuthenticated } = useAuthState();
   const { toast } = useToast();
+  const [isInitialized, setIsInitialized] = useState(false);
   
   useEffect(() => {
+    let mounted = true;
+    
     const checkSession = async () => {
       try {
         console.log("[AppContent] Starting session check...");
         const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
         console.log("[AppContent] Session check result:", session ? "Active" : "No session", error || "");
         
         if (error) {
@@ -40,17 +46,23 @@ function AppContent() {
             description: "Please try logging in again",
           });
           await supabase.auth.signOut();
+          setIsInitialized(true);
           return;
         }
 
         if (!session) {
           console.log("[AppContent] No active session found");
+          setIsInitialized(true);
           return;
         }
 
         console.log("[AppContent] Session user:", session.user.email);
+        setIsInitialized(true);
       } catch (error) {
         console.error("[AppContent] Session check failed:", error);
+        if (mounted) {
+          setIsInitialized(true);
+        }
       }
     };
 
@@ -65,11 +77,20 @@ function AppContent() {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [toast]);
 
-  console.log("[AppContent] Current auth state:", isAuthenticated);
+  console.log("[AppContent] Current auth state:", isAuthenticated, "Initialized:", isInitialized);
+
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
