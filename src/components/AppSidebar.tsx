@@ -32,9 +32,10 @@ export function AppSidebar() {
   const [userBooks, setUserBooks] = useState<UserBook[]>([]);
   const location = useLocation();
   const [openMobile, setOpenMobile] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('Loading...');
 
   const baseMenuItems: MenuItem[] = [
-    { title: "Dashboard", icon: LayoutDashboard, path: "/" },
+    { title: "Dashboard TEST", icon: LayoutDashboard, path: "/" },
     { title: "Profile", icon: User, path: "/profile" },
     { title: "My Books", icon: Book, path: "/my-books" },
     { title: "My Coupons", icon: Ticket, path: "/my-coupons" },
@@ -48,7 +49,12 @@ export function AppSidebar() {
     const fetchUserBooks = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("No user found");
+        if (!user) {
+          setDebugInfo('No user found');
+          throw new Error("No user found");
+        }
+
+        setDebugInfo(`User found: ${user.email}`);
 
         // Fetch book from profile
         const { data: profile, error: profileError } = await supabase
@@ -59,6 +65,7 @@ export function AppSidebar() {
 
         if (profileError) {
           console.error("Error fetching profile:", profileError);
+          setDebugInfo(`Profile error: ${profileError.message}`);
           throw profileError;
         }
 
@@ -70,6 +77,7 @@ export function AppSidebar() {
 
         if (couponsError) {
           console.error("Error fetching user coupons:", couponsError);
+          setDebugInfo(`Coupons error: ${couponsError.message}`);
           throw couponsError;
         }
 
@@ -99,6 +107,7 @@ export function AppSidebar() {
         setUserBooks(allBooks);
       } catch (error) {
         console.error("Error in fetchUserBooks:", error);
+        setDebugInfo(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
         toast({
           variant: "destructive",
           title: "Error",
@@ -114,8 +123,10 @@ export function AppSidebar() {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      setDebugInfo('Logged out successfully');
     } catch (error) {
       console.error("Error signing out:", error);
+      setDebugInfo(`Logout error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast({
         variant: "destructive",
         title: "Error",
@@ -131,13 +142,18 @@ export function AppSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <Sidebar className="hidden lg:flex">
-        <SidebarHeader className="h-[60px] flex items-center px-6 border-b">
-          <Link to="/" className="flex items-center gap-2 font-semibold">
-            <span className="text-xl">Pybher</span>
+      <Sidebar className="hidden lg:flex bg-purple-900">
+        <SidebarHeader className="h-[60px] flex items-center px-6 border-b bg-purple-800">
+          <Link to="/" className="flex items-center gap-2 font-semibold text-white">
+            <span className="text-xl">Pybher TEST</span>
           </Link>
         </SidebarHeader>
         <SidebarContent>
+          <div className="p-4 bg-purple-800 text-white text-sm">
+            <p>Debug Info:</p>
+            <p className="break-all">{debugInfo}</p>
+            <p>Current Path: {location.pathname}</p>
+          </div>
           <ScrollArea className="flex-1 px-4">
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -148,43 +164,21 @@ export function AppSidebar() {
                   >
                     <Link
                       to={item.path}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 text-white hover:bg-purple-700"
                       onClick={handleMenuClick}
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
-                  {item.title === "My Books" && userBooks.length > 0 && (
-                    <div className="mt-2 space-y-2 pl-6">
-                      {userBooks.map((book) => (
-                        <div key={book.book_id} className="space-y-1">
-                          <Link
-                            to={`/book/${book.book_id}`}
-                            onClick={handleMenuClick}
-                            className="block text-sm text-muted-foreground hover:text-foreground"
-                          >
-                            {book.book_title}
-                          </Link>
-                          <Link
-                            to={`/book/${book.book_id}/recipes`}
-                            onClick={handleMenuClick}
-                            className="block text-sm text-muted-foreground hover:text-foreground"
-                          >
-                            Book Recipes
-                          </Link>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </ScrollArea>
-          <div className="sticky bottom-0 border-t p-4 mt-auto">
+          <div className="sticky bottom-0 border-t p-4 mt-auto bg-purple-800">
             <Button
               variant="ghost"
-              className="w-full justify-start text-muted-foreground hover:text-foreground"
+              className="w-full justify-start text-white hover:bg-purple-700"
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -199,23 +193,28 @@ export function AppSidebar() {
         <SheetTrigger asChild>
           <Button
             variant="ghost"
-            className="lg:hidden fixed left-4 top-4 z-[60]"
+            className="lg:hidden fixed left-4 top-4 z-[60] bg-purple-900 text-white"
             size="icon"
           >
             <Menu className="h-6 w-6" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0">
+        <SheetContent side="left" className="w-[300px] p-0 bg-purple-900">
           <div className="flex h-full flex-col">
-            <div className="h-[60px] flex items-center px-6 border-b">
+            <div className="h-[60px] flex items-center px-6 border-b bg-purple-800">
               <Link
                 to="/"
-                className="flex items-center gap-2 font-semibold"
+                className="flex items-center gap-2 font-semibold text-white"
                 onClick={handleMenuClick}
               >
-                <span className="text-xl">Pybher</span>
+                <span className="text-xl">Pybher TEST</span>
               </Link>
+            </div>
+            <div className="p-4 bg-purple-800 text-white text-sm">
+              <p>Debug Info:</p>
+              <p className="break-all">{debugInfo}</p>
+              <p>Current Path: {location.pathname}</p>
             </div>
             <ScrollArea className="flex-1 px-4">
               <SidebarMenu>
@@ -227,7 +226,7 @@ export function AppSidebar() {
                     >
                       <Link
                         to={item.path}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 text-white hover:bg-purple-700"
                         onClick={handleMenuClick}
                       >
                         <item.icon className="h-4 w-4" />
@@ -238,10 +237,10 @@ export function AppSidebar() {
                 ))}
               </SidebarMenu>
             </ScrollArea>
-            <div className="border-t p-4">
+            <div className="border-t p-4 bg-purple-800">
               <Button
                 variant="ghost"
-                className="w-full justify-start text-muted-foreground hover:text-foreground"
+                className="w-full justify-start text-white hover:bg-purple-700"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
