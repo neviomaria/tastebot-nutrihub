@@ -8,11 +8,12 @@ import { useAuthState } from "@/hooks/use-auth-state";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
+  console.log("[Index] Starting component render");
   const { isAuthenticated } = useAuthState();
   const { toast } = useToast();
   
   useEffect(() => {
-    console.log("[Index] Component mounted, auth status:", isAuthenticated);
+    console.log("[Index] useEffect triggered, auth status:", isAuthenticated);
     
     if (isAuthenticated === false) {
       console.log("[Index] User not authenticated, showing toast");
@@ -27,7 +28,7 @@ const Index = () => {
     console.log("[Index] Attempting to render dashboard widgets");
   }, [isAuthenticated, toast]);
 
-  console.log("[Index] Rendering with auth state:", isAuthenticated);
+  console.log("[Index] Current render cycle - Auth state:", isAuthenticated);
 
   // Only render content when authentication state is determined
   if (isAuthenticated === null) {
@@ -44,7 +45,7 @@ const Index = () => {
     return null;
   }
 
-  console.log("[Index] Rendering dashboard content");
+  console.log("[Index] Rendering dashboard content with widgets");
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -52,8 +53,12 @@ const Index = () => {
         <div className="space-y-8">
           {/* Profile and Books Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ProfileCompletionWidget />
-            <UserBooksWidget />
+            <div className="w-full">
+              <ProfileCompletionWidget />
+            </div>
+            <div className="w-full">
+              <UserBooksWidget />
+            </div>
           </div>
           
           {/* Recipes Row */}
