@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Timer as TimerIcon, Play, Pause, RotateCcw } from "lucide-react";
+import { Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TimerProps {
@@ -58,7 +58,7 @@ export function Timer({ duration, isCountdown = true, onComplete, className }: T
     : ((duration - time) / duration) * 100;
 
   return (
-    <div className={cn("flex flex-col items-center", className)}>
+    <div className={cn("flex items-center gap-2", className)}>
       <div className="relative">
         <svg className="w-16 h-16 transform -rotate-90">
           <circle
@@ -84,7 +84,7 @@ export function Timer({ duration, isCountdown = true, onComplete, className }: T
           <span className="text-sm font-mono">{formatTime(time)}</span>
         </div>
       </div>
-      <div className="flex gap-1 mt-2">
+      <div className="flex flex-col gap-1">
         <Button
           variant="outline"
           size="icon"
