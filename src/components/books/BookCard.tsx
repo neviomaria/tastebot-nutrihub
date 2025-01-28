@@ -13,8 +13,8 @@ export const BookCard = ({ id, title, coverUrl }: BookCardProps) => {
   const navigate = useNavigate();
 
   return (
-    <Card key={id} className="overflow-hidden">
-      <CardContent className="p-0">
+    <Card key={id} className="overflow-hidden h-full">
+      <CardContent className="p-0 flex flex-col h-full">
         <div className="relative">
           <img
             src={coverUrl}
@@ -27,7 +27,7 @@ export const BookCard = ({ id, title, coverUrl }: BookCardProps) => {
             }}
           />
         </div>
-        <div className="py-4 px-4 flex flex-col">
+        <div className="py-4 px-4 flex flex-col flex-grow">
           <h2 className="text-lg font-semibold mb-2 line-clamp-2">{title}</h2>
           <div className="mt-auto space-y-2">
             <Button 
