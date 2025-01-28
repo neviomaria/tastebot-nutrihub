@@ -1,9 +1,4 @@
 import { useEffect } from "react";
-import { ProfileCompletionWidget } from "@/components/widgets/ProfileCompletionWidget";
-import { UserBooksWidget } from "@/components/widgets/UserBooksWidget";
-import { BookRecipesWidget } from "@/components/widgets/BookRecipesWidget";
-import { AvailableBooksWidget } from "@/components/widgets/AvailableBooksWidget";
-import { ExternalContentWidget } from "@/components/widgets/ExternalContentWidget";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,32 +47,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Welcome to Pybher</h1>
-        <div className="space-y-8">
-          {/* Profile and Books Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="w-full" key="profile-widget">
-              <ProfileCompletionWidget />
-            </div>
-            <div className="w-full" key="user-books-widget">
-              <UserBooksWidget />
-            </div>
-          </div>
-          
-          {/* Recipes Row */}
-          <div className="w-full" key="book-recipes-widget">
-            <BookRecipesWidget />
-          </div>
-          
-          {/* Available Books Row */}
-          <div className="w-full" key="available-books-widget">
-            <AvailableBooksWidget />
-          </div>
-
-          {/* External Content Row */}
-          <div className="w-full" key="external-content-widget">
-            <ExternalContentWidget />
-          </div>
+        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+          <h1 className="text-3xl font-bold mb-4">Welcome to Pybher</h1>
+          <p className="text-lg text-gray-600">
+            Your personal recipe and meal planning assistant
+          </p>
         </div>
       </div>
     </div>
