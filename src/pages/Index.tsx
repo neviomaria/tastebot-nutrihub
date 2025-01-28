@@ -13,7 +13,7 @@ const Index = () => {
   useEffect(() => {
     console.log("Index page mounted, auth status:", isAuthenticated);
     
-    if (!isAuthenticated) {
+    if (isAuthenticated === false) {
       console.log("User not authenticated, showing toast");
       toast({
         variant: "destructive",
@@ -26,23 +26,28 @@ const Index = () => {
     console.log("Attempting to render dashboard widgets");
   }, [isAuthenticated, toast]);
 
-  if (!isAuthenticated) {
+  // Only render content when authentication state is determined
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated === false) {
     return null;
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Welcome to Pybher</h1>
         <div className="space-y-8">
           {/* Profile and Books Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="w-full">
-              <ProfileCompletionWidget />
-            </div>
-            <div className="w-full">
-              <UserBooksWidget />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ProfileCompletionWidget />
+            <UserBooksWidget />
           </div>
           
           {/* Recipes Row */}
