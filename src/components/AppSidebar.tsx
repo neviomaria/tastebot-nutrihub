@@ -72,7 +72,7 @@ export function AppSidebar() {
                   >
                     <Link
                       to={item.path}
-                      className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold"
+                      className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold rounded-md px-3 py-2"
                       onClick={handleMenuClick}
                     >
                       <item.icon className="h-4 w-4" />
@@ -110,7 +110,7 @@ export function AppSidebar() {
         </SheetTrigger>
         <SheetContent side="left" className="w-[300px] p-0 bg-purple-900">
           <div className="flex h-full flex-col">
-            <div className="h-[60px] flex items-center px-6 border-b bg-purple-800">
+            <div className="h-[60px] flex items-center px-6 border-b border-purple-800">
               <Link
                 to="/"
                 className="flex items-center gap-2 font-semibold text-white"
@@ -119,20 +119,20 @@ export function AppSidebar() {
                 <span className="text-xl">Pybher</span>
               </Link>
             </div>
-            <ScrollArea className="flex-1 px-4 bg-purple-900">
-              <SidebarMenu className="pt-4">
+            <ScrollArea className="flex-1 px-4 py-6 bg-purple-900">
+              <SidebarMenu>
                 {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title} className="mb-2">
                     <SidebarMenuButton
                       asChild
                       isActive={location.pathname === item.path}
                     >
                       <Link
                         to={item.path}
-                        className="flex items-center gap-2 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold"
+                        className="flex items-center gap-3 text-white hover:bg-purple-700 data-[active=true]:bg-purple-700 data-[active=true]:font-bold rounded-md px-4 py-3 text-lg"
                         onClick={handleMenuClick}
                       >
-                        <item.icon className="h-4 w-4" />
+                        <item.icon className="h-5 w-5" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -140,13 +140,13 @@ export function AppSidebar() {
                 ))}
               </SidebarMenu>
             </ScrollArea>
-            <div className="border-t p-4 bg-purple-800">
+            <div className="border-t border-purple-800 p-4">
               <Button
                 variant="ghost"
-                className="w-full justify-start text-white hover:bg-purple-700"
+                className="w-full justify-start text-white hover:bg-purple-700 py-3 text-lg"
                 onClick={handleLogout}
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-3 h-5 w-5" />
                 Logout
               </Button>
             </div>
