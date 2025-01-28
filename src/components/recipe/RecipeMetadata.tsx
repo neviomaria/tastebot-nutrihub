@@ -1,4 +1,4 @@
-import { Clock, Users, Flame, ArrowRight } from "lucide-react";
+import { Clock, Users, Flame, ArrowDown, ArrowUp } from "lucide-react";
 import { Timer } from "@/components/timer/Timer";
 
 interface RecipeMetadataProps {
@@ -8,7 +8,6 @@ interface RecipeMetadataProps {
 }
 
 export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMetadataProps) {
-  // Convert time strings (e.g. "20 minutes") to seconds
   const convertTimeToSeconds = (timeString: string) => {
     const number = parseInt(timeString);
     return number ? number * 60 : 0;
@@ -38,7 +37,10 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
             <Timer 
               duration={convertTimeToSeconds(prepTime)} 
             />
-            <ArrowRight className="h-4 w-4 text-primary" />
+            <div className="flex flex-col gap-1">
+              <ArrowUp className="h-4 w-4 text-primary" />
+              <ArrowDown className="h-4 w-4 text-primary" />
+            </div>
           </div>
         </div>
       </div>
@@ -55,7 +57,10 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
             <Timer 
               duration={convertTimeToSeconds(cookTime)} 
             />
-            <ArrowRight className="h-4 w-4 text-primary" />
+            <div className="flex flex-col gap-1">
+              <ArrowUp className="h-4 w-4 text-primary" />
+              <ArrowDown className="h-4 w-4 text-primary" />
+            </div>
           </div>
         </div>
       </div>
