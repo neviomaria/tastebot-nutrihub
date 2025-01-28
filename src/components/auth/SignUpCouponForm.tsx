@@ -101,7 +101,9 @@ export const SignUpCouponForm = () => {
         };
       }
 
-      const redirectTo = 'https://pybher.com/auth/callback';
+      // Get the current window location origin
+      const origin = window.location.origin;
+      const redirectTo = `${origin}/auth/callback`;
       console.log('Redirect URL:', redirectTo);
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
