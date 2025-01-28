@@ -7,6 +7,7 @@ import { BookRecipesWidget } from "@/components/widgets/BookRecipesWidget";
 import { AvailableBooksWidget } from "@/components/widgets/AvailableBooksWidget";
 
 const Index = () => {
+  console.log("[Index] Starting render");
   const { isAuthenticated } = useAuthState();
   const { toast } = useToast();
   
@@ -20,6 +21,8 @@ const Index = () => {
     }
   }, [isAuthenticated, toast]);
 
+  console.log("[Index] Auth state:", isAuthenticated);
+
   if (isAuthenticated === null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -32,8 +35,9 @@ const Index = () => {
     return null;
   }
 
+  console.log("[Index] Rendering dashboard");
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 bg-background min-h-screen">
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       
       {/* Profile Completion Section */}
