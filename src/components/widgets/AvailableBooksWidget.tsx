@@ -23,17 +23,20 @@ interface Book {
 }
 
 export function AvailableBooksWidget() {
+  console.log("[AvailableBooksWidget] Starting render");
   const navigate = useNavigate();
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
+      console.log("[AvailableBooksWidget] Fetching profile");
       const { data, error } = await supabase
         .from('profiles')
         .select('book_id')
         .single();
       
       if (error) throw error;
+      console.log("[AvailableBooksWidget] Profile data:", data);
       return data;
     }
   });
@@ -41,45 +44,22 @@ export function AvailableBooksWidget() {
   const { data: books = [], isLoading } = useQuery({
     queryKey: ['available-books'],
     queryFn: async () => {
+      console.log("[AvailableBooksWidget] Fetching available books");
       const response = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri');
       if (!response.ok) throw new Error('Failed to fetch books');
       const allBooks: Book[] = await response.json();
       
-      // Filter cookbooks and exclude user's owned book
-      return allBooks.filter(book => 
+      const filteredBooks = allBooks.filter(book => 
         book.acf?.cookbook === 'Yes' && 
         book.id.toString() !== profile?.book_id
       );
+      console.log("[AvailableBooksWidget] Filtered books:", filteredBooks);
+      return filteredBooks;
     },
     enabled: !!profile,
   });
 
-  const { data: bookCovers = {} } = useQuery({
-    queryKey: ['book-covers', books],
-    queryFn: async () => {
-      const covers: Record<number, string> = {};
-      
-      for (const book of books) {
-        if (book.acf?.copertina_libro) {
-          try {
-            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${book.acf.copertina_libro}`);
-            if (mediaResponse.ok) {
-              const media = await mediaResponse.json();
-              covers[book.id] = media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url;
-            }
-          } catch (error) {
-            console.error(`Failed to fetch cover for book ${book.id}:`, error);
-            covers[book.id] = "/placeholder.svg";
-          }
-        } else {
-          covers[book.id] = "/placeholder.svg";
-        }
-      }
-      
-      return covers;
-    },
-    enabled: books.length > 0,
-  });
+  console.log("[AvailableBooksWidget] Current books data:", books);
 
   if (isLoading) {
     return (
@@ -127,12 +107,12 @@ export function AvailableBooksWidget() {
                     <div className="grid grid-cols-1 md:grid-cols-[1fr,1.5fr] gap-4">
                       <div className="relative">
                         <img
-                          src={bookCovers[book.id] || "/placeholder.svg"}
+                          src={book.acf?.copertina_libro || "/placeholder.svg"}
                           alt={book.title.rendered}
                           className="w-full h-full object-cover aspect-[3/4]"
                           loading="lazy"
                           onError={(e) => {
-                            console.log('Image failed to load:', bookCovers[book.id]);
+                            console.log('Image failed to load:', book.acf?.copertina_libro);
                             e.currentTarget.src = "/placeholder.svg";
                           }}
                         />

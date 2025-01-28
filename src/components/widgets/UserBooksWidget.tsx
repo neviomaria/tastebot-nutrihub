@@ -12,20 +12,21 @@ interface BookAccess {
 }
 
 export function UserBooksWidget() {
-  console.log("Rendering UserBooksWidget");
+  console.log("[UserBooksWidget] Starting render");
   const { toast } = useToast();
 
   const { data: books = [], isLoading, error } = useQuery({
     queryKey: ['userBooks'],
     queryFn: async () => {
+      console.log("[UserBooksWidget] Fetching books data");
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          console.log('No user found in UserBooksWidget');
+          console.log('[UserBooksWidget] No user found');
           return [];
         }
 
-        console.log('Fetching books for user:', user.id);
+        console.log('[UserBooksWidget] Fetching books for user:', user.id);
         
         // Fetch profile book
         const { data: profile, error: profileError } = await supabase
@@ -69,53 +70,20 @@ export function UserBooksWidget() {
           });
         }
 
-        console.log('All books retrieved:', allBooks);
+        console.log('[UserBooksWidget] Books retrieved:', allBooks);
         return allBooks;
       } catch (error) {
-        console.error('Error in books fetch:', error);
+        console.error('[UserBooksWidget] Error in books fetch:', error);
         throw error;
       }
     },
     retry: 1
   });
 
-  const { data: bookCovers = [], isLoading: isLoadingCovers } = useQuery({
-    queryKey: ['bookCovers', books.map(book => book.book_id)],
-    queryFn: async () => {
-      try {
-        const coverUrls = await Promise.all(books.map(async (book) => {
-          try {
-            const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.book_id}`);
-            if (!bookResponse.ok) {
-              console.error('Failed to fetch book details:', bookResponse.statusText);
-              return "/placeholder.svg";
-            }
-            const bookData = await bookResponse.json();
-            if (!bookData.acf?.copertina_libro) {
-              return "/placeholder.svg";
-            }
-            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${bookData.acf.copertina_libro}`);
-            if (!mediaResponse.ok) {
-              return "/placeholder.svg";
-            }
-            const media = await mediaResponse.json();
-            return media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || "/placeholder.svg";
-          } catch (error) {
-            console.error('Error fetching book cover:', error);
-            return "/placeholder.svg";
-          }
-        }));
-        return coverUrls;
-      } catch (error) {
-        console.error('Error fetching book covers:', error);
-        return books.map(() => "/placeholder.svg");
-      }
-    },
-    enabled: books.length > 0,
-    staleTime: 1000 * 60 * 30 // Cache for 30 minutes
-  });
+  console.log("[UserBooksWidget] Current books data:", books);
 
   if (error) {
+    console.error("[UserBooksWidget] Error state:", error);
     toast({
       variant: "destructive",
       title: "Error",
@@ -125,6 +93,7 @@ export function UserBooksWidget() {
   }
 
   if (isLoading) {
+    console.log("[UserBooksWidget] Loading state");
     return (
       <Card>
         <CardHeader>
@@ -142,6 +111,7 @@ export function UserBooksWidget() {
     );
   }
 
+  console.log("[UserBooksWidget] Rendering component with books:", books.length);
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -152,7 +122,7 @@ export function UserBooksWidget() {
       </CardHeader>
       <CardContent>
         {books.length > 0 ? (
-          <BooksList books={books} bookCovers={bookCovers} />
+          <BooksList books={books} bookCovers={[]} />
         ) : (
           <EmptyBooksList />
         )}

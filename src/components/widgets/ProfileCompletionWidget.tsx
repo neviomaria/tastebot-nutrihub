@@ -8,20 +8,21 @@ import { getProfileCompletion } from "@/hooks/profile/use-profile-validation";
 import { ArrowRight } from "lucide-react";
 
 export const ProfileCompletionWidget = () => {
-  console.log("Rendering ProfileCompletionWidget");
+  console.log("[ProfileCompletionWidget] Starting render");
   const navigate = useNavigate();
   const form = useForm<ProfileFormValues>();
   
   useProfileData(form);
   
   const values = form.getValues();
-  console.log("Profile values:", values);
+  console.log("[ProfileCompletionWidget] Profile values:", values);
   const percentage = getProfileCompletion(values);
-  console.log("Profile completion percentage:", percentage);
+  console.log("[ProfileCompletionWidget] Profile completion percentage:", percentage);
   
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
+  console.log("[ProfileCompletionWidget] Rendering component");
   return (
     <Card className="overflow-hidden bg-gradient-to-br from-white to-purple-50/30 shadow-sm hover:shadow transition-all duration-300">
       <CardContent className="p-6">

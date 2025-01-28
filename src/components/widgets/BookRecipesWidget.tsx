@@ -28,24 +28,24 @@ interface Recipe {
 }
 
 export function BookRecipesWidget() {
+  console.log("[BookRecipesWidget] Starting render");
   const navigate = useNavigate();
 
   const { data: recipes, isLoading } = useQuery({
     queryKey: ['book-recipes'],
     queryFn: async () => {
+      console.log("[BookRecipesWidget] Fetching recipes");
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
         throw new Error('Failed to fetch recipes');
       }
       const data: Recipe[] = await response.json();
+      console.log("[BookRecipesWidget] Recipes fetched:", data.length);
       return data.slice(0, 5); // Get first 5 recipes for the carousel
     }
   });
 
-  const getRecipeImage = (recipe: Recipe) => {
-    if (!recipe.acf.recipe_image) return '/placeholder.svg';
-    return recipe.acf.recipe_image.url;
-  };
+  console.log("[BookRecipesWidget] Current recipes data:", recipes?.length || 0);
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
@@ -71,7 +71,7 @@ export function BookRecipesWidget() {
                 <CarouselItem key={recipe.id} className="md:basis-1/2 lg:basis-1/3">
                   <RecipeCard
                     title={recipe.title}
-                    image={getRecipeImage(recipe)}
+                    image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
                     cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                     difficulty="Easy"
                     recipeId={recipe.id}

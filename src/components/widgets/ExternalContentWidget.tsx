@@ -3,16 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const ExternalContentWidget = () => {
+  console.log("[ExternalContentWidget] Starting render");
+  
   const { data, isLoading, error } = useQuery({
     queryKey: ["external-content"],
     queryFn: async () => {
+      console.log("[ExternalContentWidget] Fetching external content");
       const { data: functionData, error } = await supabase.functions.invoke('fetch-external-content')
-      if (error) throw error
-      return functionData
+      if (error) throw error;
+      console.log("[ExternalContentWidget] External content fetched:", functionData);
+      return functionData;
     },
   });
 
   if (isLoading) {
+    console.log("[ExternalContentWidget] Loading state");
     return (
       <Card className="w-full bg-white shadow-sm">
         <CardHeader>
@@ -23,6 +28,7 @@ export const ExternalContentWidget = () => {
   }
 
   if (error) {
+    console.error("[ExternalContentWidget] Error state:", error);
     return (
       <Card className="w-full bg-white shadow-sm">
         <CardHeader>
@@ -35,6 +41,7 @@ export const ExternalContentWidget = () => {
     );
   }
 
+  console.log("[ExternalContentWidget] Rendering with data:", data);
   return (
     <Card className="w-full bg-white shadow-sm">
       <CardHeader>
