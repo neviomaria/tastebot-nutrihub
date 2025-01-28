@@ -6,10 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { ViewType } from "@supabase/auth-ui-shared";
 import { SignUpCouponForm } from "@/components/auth/SignUpCouponForm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const AuthPage = () => {
   const navigate = useNavigate();
   const [view, setView] = useState<ViewType>("sign_in");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
@@ -21,6 +25,17 @@ const AuthPage = () => {
 
   const handleViewChange = (newView: ViewType) => {
     setView(newView);
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      console.error("Error signing in:", error.message);
+    }
   };
 
   return (
@@ -35,26 +50,20 @@ const AuthPage = () => {
       </div>
 
       <div className="flex justify-center space-x-4 mb-6">
-        <button
+        <Button
           onClick={() => handleViewChange("sign_in")}
-          className={`px-4 py-2 rounded-md ${
-            view === "sign_in"
-              ? "bg-primary text-white"
-              : "bg-gray-100 text-gray-600"
-          }`}
+          variant={view === "sign_in" ? "default" : "outline"}
+          className="w-24"
         >
           Sign In
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => handleViewChange("sign_up")}
-          className={`px-4 py-2 rounded-md ${
-            view === "sign_up"
-              ? "bg-primary text-white"
-              : "bg-gray-100 text-gray-600"
-          }`}
+          variant={view === "sign_up" ? "default" : "outline"}
+          className="w-24"
         >
           Sign Up
-        </button>
+        </Button>
       </div>
 
       {view === "sign_up" ? (
@@ -62,58 +71,52 @@ const AuthPage = () => {
           <SignUpCouponForm />
         </div>
       ) : (
-        <Auth
-          supabaseClient={supabase}
-          view="sign_in"
-          appearance={{
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: "#9747FF",
-                  brandAccent: "#8A35FF",
-                  inputBackground: "#F4F7FE",
-                  inputText: "#1B2559",
-                  inputBorder: "#E6EDF9",
-                },
-                borderWidths: {
-                  buttonBorderWidth: "0px",
-                  inputBorderWidth: "1px",
-                },
-                radii: {
-                  borderRadiusButton: "8px",
-                  buttonBorderRadius: "8px",
-                  inputBorderRadius: "8px",
-                },
-              },
-            },
-            className: {
-              container: "w-full",
-              button: "w-full bg-primary hover:bg-primary-hover text-white",
-              input: "w-full bg-auth-input text-secondary-foreground",
-              label: "text-gray-700",
-              message: "text-sm text-red-500",
-              anchor: "text-primary hover:text-primary-hover",
-            },
-          }}
-          localization={{
-            variables: {
-              sign_up: {
-                email_label: "Email",
-                password_label: "Password",
-                button_label: "Sign Up",
-                link_text: "Don't have an account? Sign up",
-              },
-              sign_in: {
-                email_label: "Email",
-                password_label: "Password",
-                button_label: "Sign In",
-                link_text: "Already have an account? Sign in",
-              },
-            },
-          }}
-          providers={[]}
-        />
+        <form onSubmit={handleSignIn} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full">
+            Sign In
+          </Button>
+          <div className="text-center space-y-2 mt-4">
+            <a href="#" className="text-sm text-primary hover:underline block">
+              Forgot your password?
+            </a>
+            <p className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => handleViewChange("sign_up")}
+                className="text-primary hover:underline"
+              >
+                Sign up
+              </button>
+            </p>
+          </div>
+        </form>
       )}
     </AuthLayout>
   );
