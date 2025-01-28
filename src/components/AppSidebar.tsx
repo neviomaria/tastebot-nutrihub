@@ -55,9 +55,9 @@ export function AppSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <Sidebar className="hidden lg:flex bg-purple-900">
-        <SidebarHeader className="h-[60px] flex items-center px-6 border-b bg-purple-800">
-          <Link to="/" className="flex items-center gap-2 font-semibold text-white">
+      <Sidebar className="hidden lg:flex">
+        <SidebarHeader className="h-[60px] flex items-center px-6 border-b">
+          <Link to="/" className="flex items-center gap-2 font-semibold text-sidebar-text">
             <span className="text-xl">Pybher</span>
           </Link>
         </SidebarHeader>
@@ -72,7 +72,7 @@ export function AppSidebar() {
                   >
                     <Link
                       to={item.path}
-                      className="flex items-center gap-2 text-white hover:bg-purple-700"
+                      className="flex items-center gap-2 text-sidebar-text hover:bg-sidebar-hover"
                       onClick={handleMenuClick}
                     >
                       <item.icon className="h-4 w-4" />
@@ -83,10 +83,10 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </ScrollArea>
-          <div className="sticky bottom-0 border-t p-4 mt-auto bg-purple-800">
+          <div className="sticky bottom-0 border-t p-4 mt-auto">
             <Button
               variant="ghost"
-              className="w-full justify-start text-white hover:bg-purple-700"
+              className="w-full justify-start text-sidebar-text hover:bg-sidebar-hover"
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -101,19 +101,19 @@ export function AppSidebar() {
         <SheetTrigger asChild>
           <Button
             variant="ghost"
-            className="lg:hidden fixed left-4 top-4 z-[60] bg-purple-900 text-white"
+            className="lg:hidden fixed left-4 top-4 z-[60]"
             size="icon"
           >
             <Menu className="h-6 w-6" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0 bg-purple-900">
+        <SheetContent side="left" className="w-[300px] p-0">
           <div className="flex h-full flex-col">
-            <div className="h-[60px] flex items-center px-6 border-b bg-purple-800">
+            <div className="h-[60px] flex items-center px-6 border-b">
               <Link
                 to="/"
-                className="flex items-center gap-2 font-semibold text-white"
+                className="flex items-center gap-2 font-semibold text-sidebar-text"
                 onClick={handleMenuClick}
               >
                 <span className="text-xl">Pybher</span>
@@ -129,7 +129,7 @@ export function AppSidebar() {
                     >
                       <Link
                         to={item.path}
-                        className="flex items-center gap-2 text-white hover:bg-purple-700"
+                        className="flex items-center gap-2 text-sidebar-text hover:bg-sidebar-hover"
                         onClick={handleMenuClick}
                       >
                         <item.icon className="h-4 w-4" />
@@ -140,10 +140,10 @@ export function AppSidebar() {
                 ))}
               </SidebarMenu>
             </ScrollArea>
-            <div className="border-t p-4 bg-purple-800">
+            <div className="border-t p-4">
               <Button
                 variant="ghost"
-                className="w-full justify-start text-white hover:bg-purple-700"
+                className="w-full justify-start text-sidebar-text hover:bg-sidebar-hover"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
