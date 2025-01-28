@@ -22,6 +22,7 @@ interface Recipe {
       url: string;
       sizes: {
         'recipe-app': string;
+        medium: string;
       };
     };
   };
@@ -40,14 +41,25 @@ export function BookRecipesWidget() {
         throw new Error('Failed to fetch recipes');
       }
       const data: Recipe[] = await response.json();
-      console.log("[BookRecipesWidget] Recipes fetched:", data.length);
+      console.log("[BookRecipesWidget] Recipes fetched:", data);
       return data.slice(0, 5); // Get first 5 recipes for the carousel
     }
   });
 
   const getRecipeImage = (recipe: Recipe) => {
-    if (!recipe.acf.recipe_image) return '/placeholder.svg';
-    return recipe.acf.recipe_image.url;
+    console.log("[BookRecipesWidget] Getting image for recipe:", recipe.title);
+    if (!recipe.acf?.recipe_image) {
+      console.log("[BookRecipesWidget] No recipe image found, using placeholder");
+      return '/placeholder.svg';
+    }
+    
+    // Try to get the recipe-app size first, then medium size, then fall back to full URL
+    const imageUrl = recipe.acf.recipe_image.sizes?.['recipe-app'] || 
+                    recipe.acf.recipe_image.sizes?.['medium'] || 
+                    recipe.acf.recipe_image.url;
+    
+    console.log("[BookRecipesWidget] Using image URL:", imageUrl);
+    return imageUrl;
   };
 
   console.log("[BookRecipesWidget] Current recipes data:", recipes?.length || 0);
