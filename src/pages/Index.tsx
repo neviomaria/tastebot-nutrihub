@@ -31,8 +31,8 @@ const Index = () => {
   if (isAuthenticated === null) {
     console.log("[Index] Auth state is null, showing loading spinner");
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary"></div>
       </div>
     );
   }
@@ -45,13 +45,22 @@ const Index = () => {
 
   console.log("[Index] Rendering dashboard content");
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-          <h1 className="text-3xl font-bold mb-4">Welcome to Pybher</h1>
-          <p className="text-lg text-gray-600">
+    <div className="min-h-screen bg-gradient-primary">
+      <div className="container mx-auto px-4 py-16">
+        <div className="bg-white rounded-xl shadow-2xl p-12 text-center transform hover:scale-105 transition-transform duration-300">
+          <h1 className="text-5xl font-bold mb-6 text-primary">Welcome to Pybher</h1>
+          <p className="text-xl text-gray-600">
             Your personal recipe and meal planning assistant
           </p>
+          <div className="mt-8 p-4 bg-secondary rounded-lg">
+            <p className="text-lg text-secondary-foreground">
+              Debug Info:
+              <br />
+              Authentication State: {String(isAuthenticated)}
+              <br />
+              Render Time: {new Date().toISOString()}
+            </p>
+          </div>
         </div>
       </div>
     </div>
