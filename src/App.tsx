@@ -16,6 +16,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
     },
   },
 });
@@ -40,6 +41,13 @@ function AppContent() {
           await supabase.auth.signOut();
           return;
         }
+
+        if (!session) {
+          console.log("No active session found");
+          return;
+        }
+
+        console.log("Session user:", session.user.email);
       } catch (error) {
         console.error("Session check failed:", error);
       }
