@@ -1,11 +1,14 @@
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { ProfileCompletionWidget } from "@/components/widgets/ProfileCompletionWidget";
+import { UserBooksWidget } from "@/components/widgets/UserBooksWidget";
+import { BookRecipesWidget } from "@/components/widgets/BookRecipesWidget";
+import { AvailableBooksWidget } from "@/components/widgets/AvailableBooksWidget";
 
 const Index = () => {
   const { isAuthenticated } = useAuthState();
   const { toast } = useToast();
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   
   useEffect(() => {
     if (isAuthenticated === false) {
@@ -17,21 +20,10 @@ const Index = () => {
     }
   }, [isAuthenticated, toast]);
 
-  // Update time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-yellow-400 flex items-center justify-center">
-        <div className="text-black text-6xl font-bold animate-bounce">
-          LOADING...
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -41,27 +33,31 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-yellow-400 p-8">
-      <div className="max-w-4xl mx-auto bg-black rounded-xl shadow-2xl p-12">
-        <h1 className="text-7xl font-black text-yellow-400 mb-8 text-center">
-          DEPLOYMENT TEST - YELLOW VERSION
-        </h1>
-        <div className="text-2xl text-center space-y-4 text-yellow-400">
-          <p>
-            If you can see this YELLOW page with BLACK background,
-            <br />
-            the deployment is working!
-          </p>
-          <p className="text-4xl font-bold">
-            Current Time: {currentTime}
-          </p>
-          <div className="mt-8 p-4 bg-yellow-400 text-black rounded-lg">
-            <p className="font-mono">Debug Info:</p>
-            <p className="font-mono">Auth State: {String(isAuthenticated)}</p>
-            <p className="font-mono">Last Render: {new Date().toISOString()}</p>
-          </div>
+    <div className="container mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      
+      {/* Profile Completion Section */}
+      <section className="mb-8">
+        <ProfileCompletionWidget />
+      </section>
+      
+      {/* Books and Recipes Grid */}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        {/* User's Books */}
+        <div className="space-y-6">
+          <UserBooksWidget />
+        </div>
+        
+        {/* Featured Recipes */}
+        <div className="space-y-6">
+          <BookRecipesWidget />
         </div>
       </div>
+      
+      {/* Available Books Section */}
+      <section className="mt-8">
+        <AvailableBooksWidget />
+      </section>
     </div>
   );
 };
