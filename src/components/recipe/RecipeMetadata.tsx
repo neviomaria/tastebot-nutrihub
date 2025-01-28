@@ -1,4 +1,4 @@
-import { Clock, Users, Flame } from "lucide-react";
+import { Clock, Users, Flame, ArrowRight } from "lucide-react";
 import { Timer } from "@/components/timer/Timer";
 
 interface RecipeMetadataProps {
@@ -15,7 +15,7 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6 px-8 bg-white rounded-lg shadow-sm">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6 px-6 bg-white rounded-lg shadow-sm">
       <div className="flex items-center gap-4">
         <div className="bg-secondary p-3 rounded-lg">
           <Users className="w-5 h-5 text-primary" />
@@ -34,10 +34,12 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
             <span className="font-medium block text-gray-600 text-sm">Prep Time</span>
             <p className="mt-0.5 font-semibold">{prepTime}</p>
           </div>
-          <Timer 
-            duration={convertTimeToSeconds(prepTime)} 
-            className="ml-2"
-          />
+          <div className="flex items-center gap-2">
+            <Timer 
+              duration={convertTimeToSeconds(prepTime)} 
+            />
+            <ArrowRight className="h-4 w-4 text-primary" />
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-4">
@@ -49,10 +51,12 @@ export function RecipeMetadata({ prepTime, cookTime, servings = "4" }: RecipeMet
             <span className="font-medium block text-gray-600 text-sm">Cook Time</span>
             <p className="mt-0.5 font-semibold">{cookTime}</p>
           </div>
-          <Timer 
-            duration={convertTimeToSeconds(cookTime)} 
-            className="ml-2"
-          />
+          <div className="flex items-center gap-2">
+            <Timer 
+              duration={convertTimeToSeconds(cookTime)} 
+            />
+            <ArrowRight className="h-4 w-4 text-primary" />
+          </div>
         </div>
       </div>
     </div>
