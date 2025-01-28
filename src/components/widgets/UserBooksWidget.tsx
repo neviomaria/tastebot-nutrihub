@@ -15,7 +15,7 @@ export function UserBooksWidget() {
   console.log("[UserBooksWidget] Starting render");
   const { toast } = useToast();
 
-  const { data: books = [], isLoading, error } = useQuery({
+  const { data: books = [], isLoading: isLoadingBooks, error: booksError } = useQuery({
     queryKey: ['userBooks'],
     queryFn: async () => {
       console.log("[UserBooksWidget] Fetching books data");
@@ -80,10 +80,44 @@ export function UserBooksWidget() {
     retry: 1
   });
 
-  console.log("[UserBooksWidget] Current books data:", books);
+  const { data: bookCovers = [], isLoading: isLoadingCovers } = useQuery({
+    queryKey: ['bookCovers', books.map(book => book.book_id)],
+    queryFn: async () => {
+      try {
+        const coverUrls = await Promise.all(books.map(async (book) => {
+          try {
+            const bookResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/libri/${book.book_id}`);
+            if (!bookResponse.ok) {
+              console.error('Failed to fetch book details:', bookResponse.statusText);
+              return "/placeholder.svg";
+            }
+            const bookData = await bookResponse.json();
+            if (!bookData.acf?.copertina_libro) {
+              return "/placeholder.svg";
+            }
+            const mediaResponse = await fetch(`https://brainscapebooks.com/wp-json/wp/v2/media/${bookData.acf.copertina_libro}`);
+            if (!mediaResponse.ok) {
+              return "/placeholder.svg";
+            }
+            const media = await mediaResponse.json();
+            return media.media_details?.sizes?.["cover-app"]?.source_url || media.source_url || "/placeholder.svg";
+          } catch (error) {
+            console.error('Error fetching book cover:', error);
+            return "/placeholder.svg";
+          }
+        }));
+        return coverUrls;
+      } catch (error) {
+        console.error('Error fetching book covers:', error);
+        return books.map(() => "/placeholder.svg");
+      }
+    },
+    enabled: books.length > 0,
+    staleTime: 1000 * 60 * 30 // Cache for 30 minutes
+  });
 
-  if (error) {
-    console.error("[UserBooksWidget] Error state:", error);
+  if (booksError) {
+    console.error("[UserBooksWidget] Error state:", booksError);
     toast({
       variant: "destructive",
       title: "Error",
@@ -91,6 +125,8 @@ export function UserBooksWidget() {
     });
     return null;
   }
+
+  const isLoading = isLoadingBooks || isLoadingCovers;
 
   if (isLoading) {
     console.log("[UserBooksWidget] Loading state");
@@ -122,7 +158,7 @@ export function UserBooksWidget() {
       </CardHeader>
       <CardContent>
         {books.length > 0 ? (
-          <BooksList books={books} bookCovers={[]} />
+          <BooksList books={books} bookCovers={bookCovers} />
         ) : (
           <EmptyBooksList />
         )}
