@@ -8,9 +8,28 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     persistSession: true,
     storageKey: 'supabase.auth.token',
-    storage: window?.localStorage,
+    storage: localStorage,
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce'
   },
 });
+
+// Initialize session from storage on client load
+const initSession = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Error initializing session:', error);
+      return;
+    }
+    if (session) {
+      console.log('Session initialized successfully');
+    }
+  } catch (error) {
+    console.error('Failed to initialize session:', error);
+  }
+};
+
+// Call initSession when the client is imported
+initSession();
