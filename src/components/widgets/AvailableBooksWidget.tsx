@@ -16,7 +16,17 @@ interface Book {
   id: number;
   title: { rendered: string };
   acf: {
-    copertina_libro?: string;
+    copertina_libro?: {
+      url?: string;
+      sizes?: {
+        'cover-app'?: {
+          source_url?: string;
+        };
+        medium?: {
+          source_url?: string;
+        };
+      };
+    };
     sottotitolo_per_sito?: string;
     cookbook?: string;
   };
@@ -48,6 +58,7 @@ export function AvailableBooksWidget() {
       const response = await fetch('https://brainscapebooks.com/wp-json/wp/v2/libri');
       if (!response.ok) throw new Error('Failed to fetch books');
       const allBooks: Book[] = await response.json();
+      console.log("[AvailableBooksWidget] All books:", allBooks);
       
       const filteredBooks = allBooks.filter(book => 
         book.acf?.cookbook === 'Yes' && 
@@ -60,6 +71,24 @@ export function AvailableBooksWidget() {
   });
 
   console.log("[AvailableBooksWidget] Current books data:", books);
+
+  const getBookCoverUrl = (book: Book) => {
+    console.log("[AvailableBooksWidget] Getting cover for book:", book.title.rendered);
+    
+    if (!book.acf?.copertina_libro) {
+      console.log("[AvailableBooksWidget] No cover found, using placeholder");
+      return "/placeholder.svg";
+    }
+
+    // Try to get the cover-app size first, then medium size, then fall back to full URL
+    const coverUrl = 
+      book.acf.copertina_libro.sizes?.['cover-app']?.source_url ||
+      book.acf.copertina_libro.sizes?.['medium']?.source_url ||
+      book.acf.copertina_libro.url;
+
+    console.log("[AvailableBooksWidget] Using cover URL:", coverUrl);
+    return coverUrl || "/placeholder.svg";
+  };
 
   if (isLoading) {
     return (
@@ -107,12 +136,12 @@ export function AvailableBooksWidget() {
                     <div className="grid grid-cols-1 md:grid-cols-[1fr,1.5fr] gap-4">
                       <div className="relative">
                         <img
-                          src={book.acf?.copertina_libro || "/placeholder.svg"}
+                          src={getBookCoverUrl(book)}
                           alt={book.title.rendered}
                           className="w-full h-full object-cover aspect-[3/4]"
                           loading="lazy"
                           onError={(e) => {
-                            console.log('Image failed to load:', book.acf?.copertina_libro);
+                            console.log('[AvailableBooksWidget] Image failed to load:', getBookCoverUrl(book));
                             e.currentTarget.src = "/placeholder.svg";
                           }}
                         />
