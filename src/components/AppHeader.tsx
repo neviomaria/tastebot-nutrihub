@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileHeader } from "./profile/ProfileHeader";
+import { Link } from "react-router-dom";
 
 export const AppHeader = () => {
   const { data: profile } = useQuery({
@@ -25,13 +26,13 @@ export const AppHeader = () => {
       <span className="text-sm font-medium truncate hidden sm:block text-white">
         {profile?.first_name} {profile?.last_name}
       </span>
-      <div className="flex items-center">
+      <Link to="/profile" className="flex items-center">
         <ProfileHeader
           avatarUrl={profile?.avatar_url}
           firstName={profile?.first_name}
           lastName={profile?.last_name}
         />
-      </div>
+      </Link>
     </div>
   );
 };
