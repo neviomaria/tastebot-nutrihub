@@ -33,22 +33,22 @@ const Index = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       
-      {/* Profile Completion Section */}
-      <section>
-        <ProfileCompletionWidget />
-      </section>
-      
-      {/* Books and Recipes Grid */}
+      {/* First Row: Profile and My Books */}
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <ProfileCompletionWidget />
         <UserBooksWidget />
-        <BookRecipesWidget />
       </div>
       
-      {/* Available Books Section */}
-      <section className="mt-8">
+      {/* Second Row: Featured Recipes */}
+      <section>
+        <BookRecipesWidget />
+      </section>
+      
+      {/* Third Row: Available Books */}
+      <section>
         <AvailableBooksWidget />
       </section>
     </div>
