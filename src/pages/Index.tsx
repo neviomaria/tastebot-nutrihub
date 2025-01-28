@@ -3,6 +3,7 @@ import { ProfileCompletionWidget } from "@/components/widgets/ProfileCompletionW
 import { UserBooksWidget } from "@/components/widgets/UserBooksWidget";
 import { BookRecipesWidget } from "@/components/widgets/BookRecipesWidget";
 import { AvailableBooksWidget } from "@/components/widgets/AvailableBooksWidget";
+import { ExternalContentWidget } from "@/components/widgets/ExternalContentWidget";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useToast } from "@/hooks/use-toast";
 
@@ -58,6 +59,11 @@ const Index = () => {
           {/* Available Books Row */}
           <div className="w-full">
             <AvailableBooksWidget />
+          </div>
+
+          {/* External Content Row */}
+          <div className="w-full">
+            <ExternalContentWidget />
           </div>
         </div>
       </div>
