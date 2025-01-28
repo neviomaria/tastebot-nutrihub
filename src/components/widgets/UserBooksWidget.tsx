@@ -12,6 +12,7 @@ interface BookAccess {
 }
 
 export function UserBooksWidget() {
+  console.log("Rendering UserBooksWidget");
   const { toast } = useToast();
 
   const { data: books = [], isLoading, error } = useQuery({

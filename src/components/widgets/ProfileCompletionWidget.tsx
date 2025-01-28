@@ -8,13 +8,16 @@ import { getProfileCompletion } from "@/hooks/profile/use-profile-validation";
 import { ArrowRight } from "lucide-react";
 
 export const ProfileCompletionWidget = () => {
+  console.log("Rendering ProfileCompletionWidget");
   const navigate = useNavigate();
   const form = useForm<ProfileFormValues>();
   
   useProfileData(form);
   
   const values = form.getValues();
+  console.log("Profile values:", values);
   const percentage = getProfileCompletion(values);
+  console.log("Profile completion percentage:", percentage);
   
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
