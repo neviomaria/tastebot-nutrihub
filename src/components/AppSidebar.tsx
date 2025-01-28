@@ -35,7 +35,7 @@ export function AppSidebar() {
   const [debugInfo, setDebugInfo] = useState<string>('Loading...');
 
   const baseMenuItems: MenuItem[] = [
-    { title: "Dashboard TEST", icon: LayoutDashboard, path: "/" },
+    { title: "Dashboard", icon: LayoutDashboard, path: "/" },
     { title: "Profile", icon: User, path: "/profile" },
     { title: "My Books", icon: Book, path: "/my-books" },
     { title: "My Coupons", icon: Ticket, path: "/my-coupons" },
@@ -142,14 +142,14 @@ export function AppSidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <Sidebar className="hidden lg:flex bg-purple-900">
-        <SidebarHeader className="h-[60px] flex items-center px-6 border-b bg-purple-800">
+      <Sidebar className="hidden lg:flex">
+        <SidebarHeader className="h-[60px] flex items-center px-6 border-b border-white/10">
           <Link to="/" className="flex items-center gap-2 font-semibold text-white">
-            <span className="text-xl">Pybher TEST</span>
+            <span className="text-xl">Pybher</span>
           </Link>
         </SidebarHeader>
         <SidebarContent>
-          <div className="p-4 bg-purple-800 text-white text-sm">
+          <div className="p-4 text-white/70 text-sm">
             <p>Debug Info:</p>
             <p className="break-all">{debugInfo}</p>
             <p>Current Path: {location.pathname}</p>
@@ -164,7 +164,7 @@ export function AppSidebar() {
                   >
                     <Link
                       to={item.path}
-                      className="flex items-center gap-2 text-white hover:bg-purple-700"
+                      className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
                       onClick={handleMenuClick}
                     >
                       <item.icon className="h-4 w-4" />
@@ -175,10 +175,10 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </ScrollArea>
-          <div className="sticky bottom-0 border-t p-4 mt-auto bg-purple-800">
+          <div className="sticky bottom-0 border-t border-white/10 p-4 mt-auto">
             <Button
               variant="ghost"
-              className="w-full justify-start text-white hover:bg-purple-700"
+              className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10"
               onClick={handleLogout}
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -193,25 +193,25 @@ export function AppSidebar() {
         <SheetTrigger asChild>
           <Button
             variant="ghost"
-            className="lg:hidden fixed left-4 top-4 z-[60] bg-purple-900 text-white"
+            className="lg:hidden fixed left-4 top-4 z-[60] text-white"
             size="icon"
           >
             <Menu className="h-6 w-6" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0 bg-purple-900">
+        <SheetContent side="left" className="w-[300px] p-0">
           <div className="flex h-full flex-col">
-            <div className="h-[60px] flex items-center px-6 border-b bg-purple-800">
+            <div className="h-[60px] flex items-center px-6 border-b border-white/10">
               <Link
                 to="/"
                 className="flex items-center gap-2 font-semibold text-white"
                 onClick={handleMenuClick}
               >
-                <span className="text-xl">Pybher TEST</span>
+                <span className="text-xl">Pybher</span>
               </Link>
             </div>
-            <div className="p-4 bg-purple-800 text-white text-sm">
+            <div className="p-4 text-white/70 text-sm">
               <p>Debug Info:</p>
               <p className="break-all">{debugInfo}</p>
               <p>Current Path: {location.pathname}</p>
@@ -226,7 +226,7 @@ export function AppSidebar() {
                     >
                       <Link
                         to={item.path}
-                        className="flex items-center gap-2 text-white hover:bg-purple-700"
+                        className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
                         onClick={handleMenuClick}
                       >
                         <item.icon className="h-4 w-4" />
@@ -237,10 +237,10 @@ export function AppSidebar() {
                 ))}
               </SidebarMenu>
             </ScrollArea>
-            <div className="border-t p-4 bg-purple-800">
+            <div className="border-t border-white/10 p-4">
               <Button
                 variant="ghost"
-                className="w-full justify-start text-white hover:bg-purple-700"
+                className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
