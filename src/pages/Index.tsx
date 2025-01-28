@@ -3,17 +3,17 @@ import { useAuthState } from "@/hooks/use-auth-state";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  console.log("[Index] ========== RENDER START ==========");
+  console.log("🔴 [Index] ========== RENDER START ==========");
   const { isAuthenticated } = useAuthState();
   const { toast } = useToast();
   
-  console.log("[Index] Current authentication state:", isAuthenticated);
+  console.log("🔴 [Index] Current authentication state:", isAuthenticated);
   
   useEffect(() => {
-    console.log("[Index] useEffect triggered with auth state:", isAuthenticated);
+    console.log("🔴 [Index] useEffect triggered with auth state:", isAuthenticated);
     
     if (isAuthenticated === false) {
-      console.log("[Index] User not authenticated, showing toast");
+      console.log("🔴 [Index] User not authenticated, showing toast");
       toast({
         variant: "destructive",
         title: "Authentication Required",
@@ -23,42 +23,44 @@ const Index = () => {
     }
     
     if (isAuthenticated === true) {
-      console.log("[Index] User is authenticated, proceeding with render");
+      console.log("🔴 [Index] User is authenticated, proceeding with render");
     }
   }, [isAuthenticated, toast]);
 
   // Loading state
   if (isAuthenticated === null) {
-    console.log("[Index] Auth state is null, showing loading spinner");
+    console.log("🔴 [Index] Auth state is null, showing loading spinner");
     return (
-      <div className="min-h-screen bg-gradient-primary flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary"></div>
+      <div className="min-h-screen bg-red-500 flex items-center justify-center">
+        <div className="text-white text-4xl font-bold">LOADING...</div>
       </div>
     );
   }
 
   // Not authenticated state
   if (isAuthenticated === false) {
-    console.log("[Index] Auth state is false, returning null");
+    console.log("🔴 [Index] Auth state is false, returning null");
     return null;
   }
 
-  console.log("[Index] Rendering dashboard content");
+  console.log("🔴 [Index] Rendering dashboard content");
   return (
-    <div className="min-h-screen bg-gradient-primary">
+    <div className="min-h-screen bg-red-500">
       <div className="container mx-auto px-4 py-16">
-        <div className="bg-white rounded-xl shadow-2xl p-12 text-center transform hover:scale-105 transition-transform duration-300">
-          <h1 className="text-5xl font-bold mb-6 text-primary">Welcome to Pybher</h1>
-          <p className="text-xl text-gray-600">
-            Your personal recipe and meal planning assistant
+        <div className="bg-white rounded-xl shadow-2xl p-12 text-center">
+          <h1 className="text-6xl font-bold mb-6 text-red-500">TEST PAGE</h1>
+          <p className="text-3xl text-gray-600">
+            If you can see this red page, the deployment is working!
           </p>
-          <div className="mt-8 p-4 bg-secondary rounded-lg">
-            <p className="text-lg text-secondary-foreground">
+          <div className="mt-8 p-4 bg-red-100 rounded-lg">
+            <p className="text-xl">
               Debug Info:
               <br />
               Authentication State: {String(isAuthenticated)}
               <br />
               Render Time: {new Date().toISOString()}
+              <br />
+              User Email: {window.localStorage.getItem('supabase.auth.token') ? 'Token exists' : 'No token'}
             </p>
           </div>
         </div>
