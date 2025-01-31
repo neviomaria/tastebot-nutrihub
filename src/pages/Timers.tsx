@@ -74,6 +74,21 @@ const Timers = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) throw userError;
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to create timers",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const duration = convertToSeconds(formData.duration, timeUnit);
       const { data, error } = await supabase
         .from("timers")
@@ -82,6 +97,7 @@ const Timers = () => {
             title: formData.title,
             description: formData.description,
             duration,
+            user_id: user.id,
           },
         ])
         .select()
