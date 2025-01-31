@@ -43,11 +43,18 @@ export const useProfileData = (form: UseFormReturn<ProfileFormValues>) => {
           // Update all form fields with profile data
           Object.entries(profile).forEach(([key, value]) => {
             if (key in form.getValues()) {
+              // Skip boolean values as they're not part of our form schema
+              if (typeof value === 'boolean') {
+                return;
+              }
+              
               // Ensure email is never set to null
               if (key === 'email') {
                 form.setValue(key as keyof ProfileFormValues, value || user.email || "");
               } else {
-                form.setValue(key as keyof ProfileFormValues, value);
+                // Only set the value if it's a valid type for our form
+                const formKey = key as keyof ProfileFormValues;
+                form.setValue(formKey, value as any);
               }
             }
           });
