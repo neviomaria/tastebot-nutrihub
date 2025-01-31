@@ -426,28 +426,33 @@ export default function ShoppingLists() {
   });
 
   const prepareWhatsAppShare = (list: ShoppingList) => {
-    const title = encodeURIComponent(`📝 Shopping List from Pybher: ${list.title}`);
+    const title = encodeURIComponent(`Shopping List: ${list.title}`);
     const items = list.items
       ?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`)
       .join('\n- ');
-    const marketingMessage = "\n\n🌟 Create your own shopping lists and meal plans at https://pybher.com";
-    const encodedItems = encodeURIComponent(`${items}${marketingMessage}`);
+    const encodedItems = encodeURIComponent(items || '');
     const text = `${title}\n\n- ${encodedItems}`;
     return `https://wa.me/?text=${text}`;
+  };
+
+  const shareViaWhatsApp = (list: ShoppingList) => {
+    const whatsappUrl = prepareWhatsAppShare(list);
+    window.open(whatsappUrl, '_blank');
+    setShareDialogOpen(false);
+    toast({
+      title: "Success",
+      description: "Opening WhatsApp to share the list!",
+    });
   };
 
   const handleShare = async (list: ShoppingList) => {
     if (navigator.share) {
       try {
-        const items = list.items?.map(item => 
-          `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`
-        ).join('\n- ');
-        
-        const marketingMessage = "\n\n🌟 Create your own shopping lists and meal plans at https://pybher.com";
-        const text = `📝 Shopping List: ${list.title}\n\n- ${items}${marketingMessage}`;
+        const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('\n- ');
+        const text = `Shopping List: ${list.title}\n\n- ${items}`;
         
         await navigator.share({
-          title: `Shopping List from Pybher: ${list.title}`,
+          title: `Shopping List: ${list.title}`,
           text: text,
         });
         
@@ -456,18 +461,17 @@ export default function ShoppingLists() {
           description: "List shared successfully!",
         });
       } catch (error) {
-        // Don't show error for user cancellation
         if ((error as Error).name !== 'AbortError') {
           console.error('Error sharing:', error);
           toast({
             title: "Error",
-            description: "Failed to share the list. Please try the alternative sharing methods below.",
+            description: "Failed to share the list.",
             variant: "destructive",
           });
         }
       }
     } else {
-      // Show dialog with WhatsApp and Email options if native sharing is not available
+      // Show dialog to choose between WhatsApp and Email
       setSelectedList(list);
       setShareDialogOpen(true);
     }
