@@ -48,12 +48,11 @@ const handler = async (req: Request): Promise<Response> => {
           <td style="padding: 12px; border-bottom: 1px solid #eee;">
             ${item.ingredient}
           </td>
-          <td style="padding: 12px; border-bottom: 1px solid #eee; color: #666;">
-            ${item.quantity || '-'}
-          </td>
-          <td style="padding: 12px; border-bottom: 1px solid #eee;">
-            ${item.checked ? '✓' : ''}
-          </td>
+          ${item.quantity ? `
+            <td style="padding: 12px; border-bottom: 1px solid #eee; color: #666;">
+              ${item.quantity}
+            </td>
+          ` : ''}
         </tr>
       `)
       .join("");
@@ -76,8 +75,9 @@ const handler = async (req: Request): Promise<Response> => {
             <thead>
               <tr style="background-color: #f8f9fa;">
                 <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Item</th>
-                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Quantity</th>
-                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Completed</th>
+                ${shoppingList.shopping_list_items.some((item: any) => item.quantity) ? `
+                  <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Quantity</th>
+                ` : ''}
               </tr>
             </thead>
             <tbody>
