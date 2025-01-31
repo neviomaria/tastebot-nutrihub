@@ -268,7 +268,10 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
         </ul>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full md:w-auto">
+            <Button 
+              variant="outline" 
+              className="w-full md:w-auto bg-[#7E22CE] text-white hover:bg-[#7E22CE]/90"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add to Shopping List
             </Button>

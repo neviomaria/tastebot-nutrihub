@@ -25,7 +25,8 @@ interface ShoppingList {
 
 export default function ShoppingLists() {
   const [newListTitle, setNewListTitle] = useState("");
-  const [newItem, setNewItem] = useState("");
+  const [editingListId, setEditingListId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
   const [selectedList, setSelectedList] = useState<ShoppingList | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -170,6 +171,42 @@ export default function ShoppingLists() {
     }
   });
 
+  const updateListTitle = useMutation({
+    mutationFn: async ({ listId, title }: { listId: string; title: string }) => {
+      const { data, error } = await supabase
+        .from('shopping_lists')
+        .update({ title })
+        .eq('id', listId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+      setEditingListId(null);
+      setEditingTitle("");
+      toast({
+        title: "Success",
+        description: "List renamed successfully.",
+      });
+    }
+  });
+
+  const handleRename = (e: React.FormEvent, listId: string) => {
+    e.preventDefault();
+    if (!editingTitle.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a title for the list.",
+      });
+      return;
+    }
+    updateListTitle.mutate({ listId, title: editingTitle });
+  };
+
   const handleCreateList = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newListTitle.trim()) {
@@ -244,11 +281,38 @@ export default function ShoppingLists() {
                 className={`hover:shadow-lg transition-shadow cursor-pointer ${
                   selectedList?.id === list.id ? 'ring-2 ring-primary' : ''
                 }`}
-                onClick={() => setSelectedList(list)}
+                onClick={() => {
+                  if (editingListId !== list.id) {
+                    setSelectedList(list);
+                  }
+                }}
               >
                 <CardHeader className="p-4">
                   <CardTitle className="flex justify-between items-center text-lg">
-                    <span>{list.title}</span>
+                    {editingListId === list.id ? (
+                      <form onSubmit={(e) => handleRename(e, list.id)} className="flex-1 mr-2">
+                        <Input
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') {
+                              setEditingListId(null);
+                              setEditingTitle("");
+                            }
+                          }}
+                          autoFocus
+                        />
+                      </form>
+                    ) : (
+                      <span 
+                        onDoubleClick={() => {
+                          setEditingListId(list.id);
+                          setEditingTitle(list.title);
+                        }}
+                      >
+                        {list.title}
+                      </span>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
