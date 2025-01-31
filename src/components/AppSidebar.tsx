@@ -15,7 +15,7 @@ import {
 
 export function AppSidebar() {
   return (
-    <Sidebar className="border-r">
+    <Sidebar className="border-r bg-sidebar">
       <ScrollArea className="h-full">
         <div className="space-y-4 py-4">
           <div className="px-3 py-2">
@@ -23,7 +23,7 @@ export function AppSidebar() {
               <NavLink to="/" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <Home className="h-4 w-4" />
                   Dashboard
@@ -32,7 +32,7 @@ export function AppSidebar() {
               <NavLink to="/profile" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <User className="h-4 w-4" />
                   Profile
@@ -41,7 +41,7 @@ export function AppSidebar() {
               <NavLink to="/my-books" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <Book className="h-4 w-4" />
                   My Books
@@ -50,7 +50,7 @@ export function AppSidebar() {
               <NavLink to="/my-coupons" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <Ticket className="h-4 w-4" />
                   My Coupons
@@ -59,7 +59,7 @@ export function AppSidebar() {
               <NavLink to="/favorite-recipes" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <Heart className="h-4 w-4" />
                   Favorite Recipes
@@ -68,7 +68,7 @@ export function AppSidebar() {
               <NavLink to="/meal-plans" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <CalendarDays className="h-4 w-4" />
                   Meal Plans
@@ -77,7 +77,7 @@ export function AppSidebar() {
               <NavLink to="/timers" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <Timer className="h-4 w-4" />
                   Timers
@@ -86,7 +86,7 @@ export function AppSidebar() {
               <NavLink to="/shopping-lists" className="block">
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
                 >
                   <ShoppingBag className="h-4 w-4" />
                   Shopping Lists
