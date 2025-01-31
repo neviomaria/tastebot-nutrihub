@@ -168,6 +168,7 @@ export type Database = {
           last_name: string | null
           meal_preferences: string[] | null
           medical_conditions: string[] | null
+          onboarding_completed: boolean | null
           other_allergies: string | null
           other_cuisines: string | null
           other_dietary_preferences: string | null
@@ -201,6 +202,7 @@ export type Database = {
           last_name?: string | null
           meal_preferences?: string[] | null
           medical_conditions?: string[] | null
+          onboarding_completed?: boolean | null
           other_allergies?: string | null
           other_cuisines?: string | null
           other_dietary_preferences?: string | null
@@ -234,6 +236,7 @@ export type Database = {
           last_name?: string | null
           meal_preferences?: string[] | null
           medical_conditions?: string[] | null
+          onboarding_completed?: boolean | null
           other_allergies?: string | null
           other_cuisines?: string | null
           other_dietary_preferences?: string | null
