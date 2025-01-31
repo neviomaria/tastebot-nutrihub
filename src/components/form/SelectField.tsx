@@ -29,23 +29,23 @@ export const SelectField = ({ form, name, label, options }: SelectFieldProps) =>
       render={({ field }) => (
         <FormItem>
           {label && <FormLabel>{label}</FormLabel>}
-          <Select 
-            onValueChange={field.onChange}
-            defaultValue={field.value}
-          >
-            <FormControl>
+          <FormControl>
+            <Select 
+              onValueChange={field.onChange}
+              value={field.value}
+            >
               <SelectTrigger className="bg-white">
                 <SelectValue placeholder={label ? `Select ${label.toLowerCase()}` : "Select option"} />
               </SelectTrigger>
-            </FormControl>
-            <SelectContent className="bg-white">
-              {options.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              <SelectContent className="bg-white">
+                {options.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormControl>
           <FormMessage />
         </FormItem>
       )}
