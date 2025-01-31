@@ -59,9 +59,9 @@ const handler = async (req: Request): Promise<Response> => {
       .join("");
 
     const emailResponse = await resend.emails.send({
-      from: "Lista della Spesa <onboarding@resend.dev>",
+      from: "Shopping List <onboarding@resend.dev>",
       to: [recipientEmail],
-      subject: `Lista della Spesa: ${shoppingList.title}`,
+      subject: `Shopping List: ${shoppingList.title}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
           <h1 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
@@ -69,15 +69,15 @@ const handler = async (req: Request): Promise<Response> => {
           </h1>
           
           <p style="color: #666; margin-bottom: 20px;">
-            Ecco la tua lista della spesa!
+            Here's your shopping list!
           </p>
           
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <thead>
               <tr style="background-color: #f8f9fa;">
-                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Articolo</th>
-                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Quantità</th>
-                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Completato</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Item</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Quantity</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Completed</th>
               </tr>
             </thead>
             <tbody>
@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
           </table>
           
           <p style="color: #666; margin-top: 30px; font-size: 14px; text-align: center;">
-            Lista generata il ${new Date().toLocaleDateString('it-IT', {
+            List generated on ${new Date().toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
@@ -95,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 12px;">
-            <p>Questa email è stata inviata automaticamente dal tuo account.</p>
+            <p>This email was automatically sent from your account.</p>
           </div>
         </div>
       `,
