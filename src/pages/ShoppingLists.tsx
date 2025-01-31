@@ -425,6 +425,23 @@ export default function ShoppingLists() {
     }
   });
 
+  const prepareWhatsAppShare = (list: ShoppingList) => {
+    const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('%0A- ');
+    const text = `Shopping List: ${list.title}%0A%0A- ${items}`;
+    const whatsappUrl = `https://wa.me/?text=${text}`;
+    return whatsappUrl;
+  };
+
+  const shareViaWhatsApp = (list: ShoppingList) => {
+    const whatsappUrl = prepareWhatsAppShare(list);
+    window.open(whatsappUrl, '_blank');
+    setShareDialogOpen(false);
+    toast({
+      title: "Success",
+      description: "Opening WhatsApp to share the list!",
+    });
+  };
+
   const handleShare = async (list: ShoppingList) => {
     if (navigator.share) {
       try {
@@ -454,23 +471,6 @@ export default function ShoppingLists() {
       // Show dialog to choose between WhatsApp and Email
       setSelectedList(list);
       setShareDialogOpen(true);
-
-      // Prepare WhatsApp sharing
-      const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('%0A- ');
-      const text = `Shopping List: ${list.title}%0A%0A- ${items}`;
-      const whatsappUrl = `https://wa.me/?text=${text}`;
-      
-      // Add WhatsApp button to share dialog
-      const shareViaWhatsApp = () => {
-        window.open(whatsappUrl, '_blank');
-        setShareDialogOpen(false);
-        toast({
-          title: "Success",
-          description: "Opening WhatsApp to share the list!",
-        });
-      };
-
-      return { whatsappUrl, shareViaWhatsApp };
     }
   };
 
@@ -716,8 +716,7 @@ export default function ShoppingLists() {
               <Button
                 onClick={() => {
                   if (!selectedList) return;
-                  const { shareViaWhatsApp } = handleShare(selectedList);
-                  shareViaWhatsApp();
+                  shareViaWhatsApp(selectedList);
                 }}
                 className="w-full"
               >
