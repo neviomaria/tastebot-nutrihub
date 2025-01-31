@@ -80,6 +80,15 @@ const getRecipeImageSize = (url: string | undefined) => {
   return `${urlParts.join('.')}-768x768.${extension}`;
 };
 
+const scaleIngredient = (ingredient: string, scale: number): string => {
+  const { quantity, unit, rest } = parseIngredientQuantity(ingredient);
+  const scaledQuantity = quantity * scale;
+  if (unit) {
+    return `${formatQuantity(scaledQuantity)} ${unit} ${rest}`;
+  }
+  return `${formatQuantity(scaledQuantity)} ${rest}`;
+};
+
 export function RecipeContent({ ingredients, instructions, nutritionFacts, defaultServings = 4, imageUrl }: RecipeContentProps) {
   const [servings, setServings] = useState(defaultServings);
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
