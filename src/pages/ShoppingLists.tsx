@@ -28,6 +28,7 @@ export default function ShoppingLists() {
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [selectedList, setSelectedList] = useState<ShoppingList | null>(null);
+  const [newItem, setNewItem] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -145,7 +146,6 @@ export default function ShoppingLists() {
 
   const deleteList = useMutation({
     mutationFn: async (listId: string) => {
-      // First delete all items in the list
       const { error: itemsError } = await supabase
         .from('shopping_list_items')
         .delete()
@@ -153,7 +153,6 @@ export default function ShoppingLists() {
 
       if (itemsError) throw itemsError;
 
-      // Then delete the list itself
       const { error: listError } = await supabase
         .from('shopping_lists')
         .delete()
