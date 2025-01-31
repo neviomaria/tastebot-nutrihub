@@ -426,10 +426,13 @@ export default function ShoppingLists() {
   });
 
   const prepareWhatsAppShare = (list: ShoppingList) => {
-    const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('%0A- ');
-    const text = `Shopping List: ${list.title}%0A%0A- ${items}`;
-    const whatsappUrl = `https://wa.me/?text=${text}`;
-    return whatsappUrl;
+    const title = encodeURIComponent(`Shopping List: ${list.title}`);
+    const items = list.items
+      ?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`)
+      .join('\n- ');
+    const encodedItems = encodeURIComponent(items || '');
+    const text = `${title}\n\n- ${encodedItems}`;
+    return `https://wa.me/?text=${text}`;
   };
 
   const shareViaWhatsApp = (list: ShoppingList) => {
