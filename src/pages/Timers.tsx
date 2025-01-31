@@ -23,6 +23,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
 
 interface TimerFormData {
   title: string;
@@ -134,44 +135,46 @@ export default function Timers() {
             <DialogHeader>
               <DialogTitle>Create New Timer</DialogTitle>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Timer title"
-                  {...form.register("title", { required: true })}
-                />
-              </div>
-              <div>
-                <Textarea
-                  placeholder="Description (optional)"
-                  {...form.register("description")}
-                />
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <div>
                   <Input
-                    type="number"
-                    placeholder="Duration"
-                    {...form.register("duration", { 
-                      required: true,
-                      valueAsNumber: true,
-                      min: 1 
-                    })}
+                    placeholder="Timer title"
+                    {...form.register("title", { required: true })}
                   />
                 </div>
-                <div className="flex-1">
-                  <SelectField
-                    form={form}
-                    name="timeUnit"
-                    label=""
-                    options={["seconds", "minutes", "hours"]}
+                <div>
+                  <Textarea
+                    placeholder="Description (optional)"
+                    {...form.register("description")}
                   />
                 </div>
-              </div>
-              <Button type="submit" className="w-full">
-                Create Timer
-              </Button>
-            </form>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Input
+                      type="number"
+                      placeholder="Duration"
+                      {...form.register("duration", { 
+                        required: true,
+                        valueAsNumber: true,
+                        min: 1 
+                      })}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <SelectField
+                      form={form}
+                      name="timeUnit"
+                      label=""
+                      options={["seconds", "minutes", "hours"]}
+                    />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full">
+                  Create Timer
+                </Button>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
