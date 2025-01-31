@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
       .join("");
 
     const emailResponse = await resend.emails.send({
-      from: "Shopping List <onboarding@resend.dev>",
+      from: "Shopping List <andrea@andreaprando.com>",
       to: [recipientEmail],
       subject: `Shopping List: ${shoppingList.title}`,
       html: `
