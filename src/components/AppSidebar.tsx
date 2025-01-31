@@ -35,7 +35,7 @@ export function AppSidebar() {
                   className="w-full justify-start gap-2"
                 >
                   <User className="h-4 w-4" />
-                  Profilo
+                  Profile
                 </Button>
               </NavLink>
               <NavLink to="/my-books" className="block">
@@ -44,7 +44,7 @@ export function AppSidebar() {
                   className="w-full justify-start gap-2"
                 >
                   <Book className="h-4 w-4" />
-                  I miei libri
+                  My Books
                 </Button>
               </NavLink>
               <NavLink to="/my-coupons" className="block">
@@ -53,7 +53,7 @@ export function AppSidebar() {
                   className="w-full justify-start gap-2"
                 >
                   <Ticket className="h-4 w-4" />
-                  I miei coupon
+                  My Coupons
                 </Button>
               </NavLink>
               <NavLink to="/favorite-recipes" className="block">
@@ -62,7 +62,7 @@ export function AppSidebar() {
                   className="w-full justify-start gap-2"
                 >
                   <Heart className="h-4 w-4" />
-                  Ricette preferite
+                  Favorite Recipes
                 </Button>
               </NavLink>
               <NavLink to="/meal-plans" className="block">
@@ -71,7 +71,7 @@ export function AppSidebar() {
                   className="w-full justify-start gap-2"
                 >
                   <CalendarDays className="h-4 w-4" />
-                  Piani pasto
+                  Meal Plans
                 </Button>
               </NavLink>
               <NavLink to="/timers" className="block">
@@ -80,7 +80,7 @@ export function AppSidebar() {
                   className="w-full justify-start gap-2"
                 >
                   <Timer className="h-4 w-4" />
-                  Timer
+                  Timers
                 </Button>
               </NavLink>
               <NavLink to="/shopping-lists" className="block">
@@ -89,7 +89,7 @@ export function AppSidebar() {
                   className="w-full justify-start gap-2"
                 >
                   <ShoppingBag className="h-4 w-4" />
-                  Liste della spesa
+                  Shopping Lists
                 </Button>
               </NavLink>
             </div>
