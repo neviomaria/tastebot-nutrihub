@@ -1,28 +1,61 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+
+interface ShoppingListItem {
+  id: string;
+  ingredient: string;
+  checked: boolean;
+  quantity?: string;
+}
+
+interface ShoppingList {
+  id: string;
+  title: string;
+  created_at: string;
+  items?: ShoppingListItem[];
+}
 
 export default function ShoppingLists() {
   const [newListTitle, setNewListTitle] = useState("");
+  const [newItem, setNewItem] = useState("");
+  const [selectedList, setSelectedList] = useState<ShoppingList | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: shoppingLists, isLoading } = useQuery({
     queryKey: ['shopping-lists'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: lists, error: listsError } = await supabase
         .from('shopping_lists')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (listsError) throw listsError;
+
+      const listsWithItems = await Promise.all(lists.map(async (list) => {
+        const { data: items, error: itemsError } = await supabase
+          .from('shopping_list_items')
+          .select('*')
+          .eq('shopping_list_id', list.id)
+          .order('created_at', { ascending: true });
+
+        if (itemsError) throw itemsError;
+
+        return {
+          ...list,
+          items: items || []
+        };
+      }));
+
+      return listsWithItems;
     }
   });
 
@@ -47,37 +80,134 @@ export default function ShoppingLists() {
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
       setNewListTitle("");
       toast({
-        title: "Lista creata",
-        description: "La tua nuova lista della spesa è stata creata con successo.",
-      });
-    },
-    onError: (error) => {
-      console.error('Error creating list:', error);
-      toast({
-        variant: "destructive",
-        title: "Errore",
-        description: "Non è stato possibile creare la lista. Riprova più tardi.",
+        title: "Success",
+        description: "Shopping list created successfully.",
       });
     }
   });
 
-  const handleCreateList = async (e: React.FormEvent) => {
+  const addItem = useMutation({
+    mutationFn: async ({ listId, ingredient }: { listId: string; ingredient: string }) => {
+      const { data, error } = await supabase
+        .from('shopping_list_items')
+        .insert([{
+          shopping_list_id: listId,
+          ingredient
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+      setNewItem("");
+      toast({
+        title: "Success",
+        description: "Item added successfully.",
+      });
+    }
+  });
+
+  const toggleItem = useMutation({
+    mutationFn: async ({ itemId, checked }: { itemId: string; checked: boolean }) => {
+      const { error } = await supabase
+        .from('shopping_list_items')
+        .update({ checked })
+        .eq('id', itemId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+    }
+  });
+
+  const deleteItem = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('shopping_list_items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+      toast({
+        title: "Success",
+        description: "Item deleted successfully.",
+      });
+    }
+  });
+
+  const deleteList = useMutation({
+    mutationFn: async (listId: string) => {
+      // First delete all items in the list
+      const { error: itemsError } = await supabase
+        .from('shopping_list_items')
+        .delete()
+        .eq('shopping_list_id', listId);
+
+      if (itemsError) throw itemsError;
+
+      // Then delete the list itself
+      const { error: listError } = await supabase
+        .from('shopping_lists')
+        .delete()
+        .eq('id', listId);
+
+      if (listError) throw listError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+      setSelectedList(null);
+      toast({
+        title: "Success",
+        description: "Shopping list deleted successfully.",
+      });
+    }
+  });
+
+  const handleCreateList = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newListTitle.trim()) {
       toast({
         variant: "destructive",
-        title: "Errore",
-        description: "Inserisci un titolo per la lista.",
+        title: "Error",
+        description: "Please enter a title for the list.",
       });
       return;
     }
     createList.mutate(newListTitle);
   };
 
+  const handleAddItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedList) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a list first.",
+      });
+      return;
+    }
+    if (!newItem.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter an item.",
+      });
+      return;
+    }
+    addItem.mutate({ listId: selectedList.id, ingredient: newItem });
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
-        <h1 className="text-3xl font-bold">Liste della Spesa</h1>
+        <h1 className="text-3xl font-bold">Shopping Lists</h1>
         <div className="grid gap-4">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-24 w-full" />
@@ -89,49 +219,110 @@ export default function ShoppingLists() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Liste della Spesa</h1>
+      <h1 className="text-3xl font-bold">Shopping Lists</h1>
       
       <form onSubmit={handleCreateList} className="flex gap-4">
         <Input
-          placeholder="Nome della nuova lista..."
+          placeholder="New list name..."
           value={newListTitle}
           onChange={(e) => setNewListTitle(e.target.value)}
           className="max-w-md"
         />
         <Button type="submit" disabled={createList.isPending}>
           <Plus className="h-4 w-4 mr-2" />
-          Crea Lista
+          Create List
         </Button>
       </form>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {shoppingLists?.map((list) => (
-          <Card key={list.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex justify-between items-center">
-                <span className="text-lg">{list.title}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {/* TODO: Implement view list */}}
-                >
-                  Visualizza
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Creata il {new Date(list.created_at).toLocaleDateString()}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Your Lists</h2>
+          <div className="grid gap-4">
+            {shoppingLists?.map((list) => (
+              <Card 
+                key={list.id} 
+                className={`hover:shadow-lg transition-shadow cursor-pointer ${
+                  selectedList?.id === list.id ? 'ring-2 ring-primary' : ''
+                }`}
+                onClick={() => setSelectedList(list)}
+              >
+                <CardHeader className="p-4">
+                  <CardTitle className="flex justify-between items-center text-lg">
+                    <span>{list.title}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this list?')) {
+                          deleteList.mutate(list.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {list.items?.length || 0} items
+                  </p>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {selectedList && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">
+              {selectedList.title}
+            </h2>
+            
+            <form onSubmit={handleAddItem} className="flex gap-2">
+              <Input
+                placeholder="Add new item..."
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+              />
+              <Button type="submit" disabled={addItem.isPending}>
+                Add
+              </Button>
+            </form>
+
+            <div className="space-y-2">
+              {selectedList.items?.map((item) => (
+                <div key={item.id} className="flex items-center justify-between gap-2 p-2 bg-background rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={item.checked}
+                      onCheckedChange={(checked) => {
+                        toggleItem.mutate({ 
+                          itemId: item.id, 
+                          checked: checked as boolean 
+                        });
+                      }}
+                    />
+                    <span className={item.checked ? 'line-through text-muted-foreground' : ''}>
+                      {item.ingredient}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteItem.mutate(item.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {shoppingLists?.length === 0 && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
-            Non hai ancora creato nessuna lista della spesa.
+            You haven't created any shopping lists yet.
           </p>
         </div>
       )}
