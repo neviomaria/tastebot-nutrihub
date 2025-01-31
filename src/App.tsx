@@ -6,6 +6,7 @@ import AppRoutes from "./AppRoutes";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useAuthState } from "@/hooks/use-auth-state";
 import "./App.css";
 
 const queryClient = new QueryClient();
