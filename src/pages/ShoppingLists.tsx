@@ -134,13 +134,35 @@ export default function ShoppingLists() {
         .eq('id', itemId);
 
       if (error) throw error;
+      return itemId;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
-      toast({
-        title: "Success",
-        description: "Item deleted successfully.",
+    onMutate: async (itemId) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
+
+      const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
+
+      queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
+        if (!old) return [];
+        return old.map(list => ({
+          ...list,
+          items: list.items?.filter(item => item.id !== itemId)
+        }));
       });
+
+      return { previousLists };
+    },
+    onError: (err, itemId, context) => {
+      if (context?.previousLists) {
+        queryClient.setQueryData(['shopping-lists'], context.previousLists);
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete item. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
     }
   });
 
