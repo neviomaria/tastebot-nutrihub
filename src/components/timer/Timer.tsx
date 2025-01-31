@@ -15,14 +15,27 @@ export function Timer({ duration, isCountdown = true, onComplete, className }: T
   const [isRunning, setIsRunning] = useState(false);
 
   const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainingSeconds = seconds % 60;
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    } else if (seconds >= 60) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    } else {
+      return `0:${seconds.toString().padStart(2, '0')}`;
+    }
   };
 
   const reset = useCallback(() => {
     setTime(isCountdown ? duration : 0);
     setIsRunning(false);
+  }, [duration, isCountdown]);
+
+  useEffect(() => {
+    setTime(isCountdown ? duration : 0);
   }, [duration, isCountdown]);
 
   useEffect(() => {
