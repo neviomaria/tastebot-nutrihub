@@ -448,7 +448,10 @@ export default function ShoppingLists() {
   const handleShare = async (list: ShoppingList) => {
     if (navigator.share) {
       try {
-        const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('\n- ');
+        const items = list.items?.map(item => 
+          `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`
+        ).join('\n- ');
+        
         const text = `Shopping List: ${list.title}\n\n- ${items}`;
         
         await navigator.share({
@@ -461,17 +464,18 @@ export default function ShoppingLists() {
           description: "List shared successfully!",
         });
       } catch (error) {
+        // Don't show error for user cancellation
         if ((error as Error).name !== 'AbortError') {
           console.error('Error sharing:', error);
           toast({
             title: "Error",
-            description: "Failed to share the list.",
+            description: "Failed to share the list. Please try the alternative sharing methods below.",
             variant: "destructive",
           });
         }
       }
     } else {
-      // Show dialog to choose between WhatsApp and Email
+      // Show dialog with WhatsApp and Email options if native sharing is not available
       setSelectedList(list);
       setShareDialogOpen(true);
     }
