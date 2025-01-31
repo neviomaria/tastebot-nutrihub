@@ -69,7 +69,7 @@ const handler = async (req: Request): Promise<Response> => {
           </h1>
           
           <p style="color: #666; margin-bottom: 20px;">
-            Here's your shopping list!
+            Here's your shopping list from Pybher - your personal meal planning assistant!
           </p>
           
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -85,6 +85,16 @@ const handler = async (req: Request): Promise<Response> => {
             </tbody>
           </table>
           
+          <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; text-align: center;">
+            <h2 style="color: #333; margin-bottom: 15px;">Want to create your own shopping lists?</h2>
+            <p style="color: #666; margin-bottom: 20px;">
+              Join Pybher today and get access to personalized meal planning, shopping lists, and more!
+            </p>
+            <a href="https://pybher.com" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+              Get Started with Pybher
+            </a>
+          </div>
+          
           <p style="color: #666; margin-top: 30px; font-size: 14px; text-align: center;">
             List generated on ${new Date().toLocaleDateString('en-US', {
               weekday: 'long',
@@ -95,7 +105,8 @@ const handler = async (req: Request): Promise<Response> => {
           </p>
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 12px;">
-            <p>This email was automatically sent from your account.</p>
+            <p>This email was sent from Pybher - Your Personal Meal Planning Assistant</p>
+            <p><a href="https://pybher.com" style="color: #007bff; text-decoration: none;">Visit Pybher.com</a></p>
           </div>
         </div>
       `,
