@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash2, Plus } from "lucide-react";
 import { SelectField } from "@/components/form/SelectField";
-import { useForm } from "react-hook-form";
+import { useForm, Form } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { Form as ShadcnForm } from "@/components/ui/form";
 
 interface TimerFormData {
   title: string;
@@ -30,19 +31,6 @@ interface TimerFormData {
   duration: number;
   timeUnit: "seconds" | "minutes" | "hours";
 }
-
-const TIME_UNITS = ["seconds", "minutes", "hours"] as const;
-
-const convertToSeconds = (value: number, unit: "seconds" | "minutes" | "hours") => {
-  switch (unit) {
-    case "minutes":
-      return value * 60;
-    case "hours":
-      return value * 3600;
-    default:
-      return value;
-  }
-};
 
 export default function Timers() {
   const { toast } = useToast();
@@ -147,44 +135,48 @@ export default function Timers() {
             <DialogHeader>
               <DialogTitle>Create New Timer</DialogTitle>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Timer title"
-                  {...form.register("title", { required: true })}
-                />
-              </div>
-              <div>
-                <Textarea
-                  placeholder="Description (optional)"
-                  {...form.register("description")}
-                />
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <div>
                   <Input
-                    type="number"
-                    placeholder="Duration"
-                    {...form.register("duration", { 
-                      required: true,
-                      valueAsNumber: true,
-                      min: 1 
-                    })}
+                    placeholder="Timer title"
+                    {...form.register("title", { required: true })}
                   />
                 </div>
-                <div className="flex-1">
-                  <SelectField
-                    form={form}
-                    name="timeUnit"
-                    label=""
-                    options={TIME_UNITS}
+                <div>
+                  <Textarea
+                    placeholder="Description (optional)"
+                    {...form.register("description")}
                   />
                 </div>
-              </div>
-              <Button type="submit" className="w-full">
-                Create Timer
-              </Button>
-            </form>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Input
+                      type="number"
+                      placeholder="Duration"
+                      {...form.register("duration", { 
+                        required: true,
+                        valueAsNumber: true,
+                        min: 1 
+                      })}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <ShadcnForm>
+                      <SelectField
+                        form={form}
+                        name="timeUnit"
+                        label=""
+                        options={["seconds", "minutes", "hours"]}
+                      />
+                    </ShadcnForm>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full">
+                  Create Timer
+                </Button>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -218,3 +210,14 @@ export default function Timers() {
     </div>
   );
 }
+
+const convertToSeconds = (value: number, unit: "seconds" | "minutes" | "hours") => {
+  switch (unit) {
+    case "minutes":
+      return value * 60;
+    case "hours":
+      return value * 3600;
+    default:
+      return value;
+  }
+};
