@@ -103,6 +103,7 @@ export default function ShoppingLists() {
         .insert([{
           shopping_list_id: listId,
           ingredient,
+          checked: false
         }])
         .select()
         .single();
@@ -111,10 +112,16 @@ export default function ShoppingLists() {
       return data;
     },
     onMutate: async ({ listId, ingredient }) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
+      
+      // Snapshot the previous value
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
-      const tempId = generateUUID(); // Use UUID for temporary ID
-
+      
+      // Create a temporary ID for optimistic update
+      const tempId = generateUUID();
+      
+      // Optimistically update the cache
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
         if (!old) return [];
         return old.map(list => {
@@ -133,6 +140,7 @@ export default function ShoppingLists() {
         });
       });
 
+      // Also update the selected list if it matches
       if (selectedList?.id === listId) {
         setSelectedList(prev => {
           if (!prev) return null;
@@ -143,11 +151,15 @@ export default function ShoppingLists() {
         });
       }
 
+      // Return a context object with the snapshotted value
       return { previousLists, tempId };
     },
     onError: (err, variables, context) => {
       if (context?.previousLists) {
+        // Revert to the snapshot on error
         queryClient.setQueryData(['shopping-lists'], context.previousLists);
+        
+        // Also revert the selected list if needed
         if (selectedList?.id === variables.listId) {
           setSelectedList(prev => {
             if (!prev) return null;
@@ -164,62 +176,10 @@ export default function ShoppingLists() {
         variant: "destructive",
       });
     },
-    onSuccess: (newItem, variables) => {
+    onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
       setNewItem("");
-      toast({
-        title: "Success",
-        description: "Item added successfully.",
-      });
-    }
-  });
-
-  const toggleItem = useMutation({
-    mutationFn: async ({ itemId, checked }: { itemId: string; checked: boolean }) => {
-      const { error } = await supabase
-        .from('shopping_list_items')
-        .update({ checked })
-        .eq('id', itemId);
-
-      if (error) throw error;
-    },
-    onMutate: async ({ itemId, checked }) => {
-      await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
-      const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
-
-      queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
-        if (!old) return [];
-        return old.map(list => ({
-          ...list,
-          items: list.items?.map(item => 
-            item.id === itemId ? { ...item, checked } : item
-          )
-        }));
-      });
-
-      if (selectedList) {
-        setSelectedList(prev => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            items: prev.items?.map(item =>
-              item.id === itemId ? { ...item, checked } : item
-            )
-          };
-        });
-      }
-
-      return { previousLists };
-    },
-    onError: (err, variables, context) => {
-      if (context?.previousLists) {
-        queryClient.setQueryData(['shopping-lists'], context.previousLists);
-      }
-      toast({
-        title: "Error",
-        description: "Failed to update item. Please try again.",
-        variant: "destructive",
-      });
     }
   });
 
@@ -234,9 +194,13 @@ export default function ShoppingLists() {
       return itemId;
     },
     onMutate: async (itemId) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
+      
+      // Snapshot the previous value
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
-
+      
+      // Optimistically update the cache
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
         if (!old) return [];
         return old.map(list => ({
@@ -245,6 +209,7 @@ export default function ShoppingLists() {
         }));
       });
 
+      // Also update the selected list if needed
       if (selectedList) {
         setSelectedList(prev => {
           if (!prev) return null;
@@ -259,6 +224,7 @@ export default function ShoppingLists() {
     },
     onError: (err, itemId, context) => {
       if (context?.previousLists) {
+        // Revert to the snapshot on error
         queryClient.setQueryData(['shopping-lists'], context.previousLists);
       }
       toast({
@@ -267,37 +233,9 @@ export default function ShoppingLists() {
         variant: "destructive",
       });
     },
-    onSuccess: (itemId) => {
-      toast({
-        title: "Success",
-        description: "Item deleted successfully.",
-      });
-    }
-  });
-
-  const deleteList = useMutation({
-    mutationFn: async (listId: string) => {
-      const { error: itemsError } = await supabase
-        .from('shopping_list_items')
-        .delete()
-        .eq('shopping_list_id', listId);
-
-      if (itemsError) throw itemsError;
-
-      const { error: listError } = await supabase
-        .from('shopping_lists')
-        .delete()
-        .eq('id', listId);
-
-      if (listError) throw listError;
-    },
-    onSuccess: () => {
+    onSettled: () => {
+      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
-      setSelectedList(null);
-      toast({
-        title: "Success",
-        description: "Shopping list deleted successfully.",
-      });
     }
   });
 
