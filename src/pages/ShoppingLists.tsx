@@ -426,23 +426,14 @@ export default function ShoppingLists() {
   });
 
   const prepareWhatsAppShare = (list: ShoppingList) => {
-    const title = encodeURIComponent(`Shopping List: ${list.title}`);
+    const title = encodeURIComponent(`📝 Shopping List from Pybher: ${list.title}`);
     const items = list.items
       ?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`)
       .join('\n- ');
-    const encodedItems = encodeURIComponent(items || '');
+    const marketingMessage = "\n\n🌟 Create your own shopping lists and meal plans at https://pybher.com";
+    const encodedItems = encodeURIComponent(`${items}${marketingMessage}`);
     const text = `${title}\n\n- ${encodedItems}`;
     return `https://wa.me/?text=${text}`;
-  };
-
-  const shareViaWhatsApp = (list: ShoppingList) => {
-    const whatsappUrl = prepareWhatsAppShare(list);
-    window.open(whatsappUrl, '_blank');
-    setShareDialogOpen(false);
-    toast({
-      title: "Success",
-      description: "Opening WhatsApp to share the list!",
-    });
   };
 
   const handleShare = async (list: ShoppingList) => {
@@ -452,10 +443,11 @@ export default function ShoppingLists() {
           `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`
         ).join('\n- ');
         
-        const text = `Shopping List: ${list.title}\n\n- ${items}`;
+        const marketingMessage = "\n\n🌟 Create your own shopping lists and meal plans at https://pybher.com";
+        const text = `📝 Shopping List: ${list.title}\n\n- ${items}${marketingMessage}`;
         
         await navigator.share({
-          title: `Shopping List: ${list.title}`,
+          title: `Shopping List from Pybher: ${list.title}`,
           text: text,
         });
         
