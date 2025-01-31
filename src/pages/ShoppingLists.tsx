@@ -437,6 +437,14 @@ export default function ShoppingLists() {
   };
 
   const handleShare = async (list: ShoppingList) => {
+    // On mobile, directly open WhatsApp
+    if (window.innerWidth < 768) {
+      const whatsappUrl = prepareWhatsAppShare(list);
+      window.open(whatsappUrl, '_blank');
+      return;
+    }
+
+    // On desktop, try native sharing first
     if (navigator.share) {
       try {
         const items = list.items?.map(item => 
