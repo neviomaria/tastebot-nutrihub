@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
-export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
+export const ProtectedRoutes = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
@@ -138,5 +138,5 @@ export const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => 
     return null;
   }
 
-  return <>{children}</>;
+  return <Outlet />;
 };
