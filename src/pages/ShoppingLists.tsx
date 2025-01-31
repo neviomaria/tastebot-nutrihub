@@ -715,7 +715,13 @@ export default function ShoppingLists() {
               <Button
                 onClick={() => {
                   if (!selectedList) return;
-                  shareViaWhatsApp(selectedList);
+                  const whatsappUrl = prepareWhatsAppShare(selectedList);
+                  window.open(whatsappUrl, '_blank');
+                  setShareDialogOpen(false);
+                  toast({
+                    title: "Success",
+                    description: "Opening WhatsApp to share the list!",
+                  });
                 }}
                 className="w-full"
               >
