@@ -28,7 +28,7 @@ export default {
         background: "#F5F5F7",
         foreground: "#1A1A1A",
         primary: {
-          DEFAULT: "#8B5CF6",
+          DEFAULT: "#9b87f5",
           hover: "#7C3AED",
           foreground: "#FFFFFF",
         },
@@ -37,11 +37,11 @@ export default {
           foreground: "#1B2559",
         },
         sidebar: {
-          DEFAULT: "#FFFFFF",
-          hover: "#F5F5F7",
-          active: "#F0F0F2",
+          DEFAULT: "#9b87f5",
+          hover: "#8b77e5",
+          active: "#7a66d4",
           border: "#E5E7EB",
-          text: "#1A1A1A",
+          text: "#FFFFFF",
         },
         widget: {
           background: "#FFFFFF",

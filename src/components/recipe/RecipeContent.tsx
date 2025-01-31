@@ -249,99 +249,9 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
                 </Button>
               </div>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add to Shopping List
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Ingredients to Shopping List</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      {ingredients.map((ingredient, index) => {
-                        const scaledIngredient = scaleIngredient(
-                          ingredient.ingredient_item,
-                          servings / defaultServings
-                        );
-                        return (
-                          <div key={index} className="flex items-start space-x-3">
-                            <Checkbox
-                              id={`ingredient-${index}`}
-                              checked={selectedIngredients.includes(scaledIngredient)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedIngredients(prev => [...prev, scaledIngredient]);
-                                } else {
-                                  setSelectedIngredients(prev => 
-                                    prev.filter(item => item !== scaledIngredient)
-                                  );
-                                }
-                              }}
-                            />
-                            <label
-                              htmlFor={`ingredient-${index}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                            >
-                              {scaledIngredient}
-                            </label>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium">Select Shopping List</h4>
-                    {shoppingLists?.map((list) => (
-                      <div key={list.id} className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          id={list.id}
-                          name="shoppingList"
-                          value={list.id}
-                          checked={selectedListId === list.id}
-                          onChange={(e) => setSelectedListId(e.target.value)}
-                          className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <label htmlFor={list.id} className="text-sm">
-                          {list.title}
-                        </label>
-                      </div>
-                    ))}
-                    
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium">Or Create New List</h4>
-                      <form onSubmit={handleCreateList} className="flex gap-2">
-                        <Input
-                          placeholder="New list name..."
-                          value={newListTitle}
-                          onChange={(e) => setNewListTitle(e.target.value)}
-                        />
-                        <Button type="submit" disabled={createList.isPending}>
-                          Create
-                        </Button>
-                      </form>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleAddToList}
-                    disabled={addToShoppingList.isPending}
-                    className="w-full"
-                  >
-                    Add to List
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 mb-6">
           {ingredients.map((ingredient, index) => {
             const Icon = getIngredientIcon(ingredient.ingredient_item);
             const scaledIngredient = scaleIngredient(
@@ -356,6 +266,96 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
             );
           })}
         </ul>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full md:w-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Add to Shopping List
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Ingredients to Shopping List</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  {ingredients.map((ingredient, index) => {
+                    const scaledIngredient = scaleIngredient(
+                      ingredient.ingredient_item,
+                      servings / defaultServings
+                    );
+                    return (
+                      <div key={index} className="flex items-start space-x-3">
+                        <Checkbox
+                          id={`ingredient-${index}`}
+                          checked={selectedIngredients.includes(scaledIngredient)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedIngredients(prev => [...prev, scaledIngredient]);
+                            } else {
+                              setSelectedIngredients(prev => 
+                                prev.filter(item => item !== scaledIngredient)
+                              );
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={`ingredient-${index}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {scaledIngredient}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Select Shopping List</h4>
+                {shoppingLists?.map((list) => (
+                  <div key={list.id} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id={list.id}
+                      name="shoppingList"
+                      value={list.id}
+                      checked={selectedListId === list.id}
+                      onChange={(e) => setSelectedListId(e.target.value)}
+                      className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor={list.id} className="text-sm">
+                      {list.title}
+                    </label>
+                  </div>
+                ))}
+                
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Or Create New List</h4>
+                  <form onSubmit={handleCreateList} className="flex gap-2">
+                    <Input
+                      placeholder="New list name..."
+                      value={newListTitle}
+                      onChange={(e) => setNewListTitle(e.target.value)}
+                    />
+                    <Button type="submit" disabled={createList.isPending}>
+                      Create
+                    </Button>
+                  </form>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={handleAddToList}
+                disabled={addToShoppingList.isPending}
+                className="w-full"
+              >
+                Add to List
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div>
