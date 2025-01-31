@@ -90,11 +90,14 @@ export default function ShoppingLists() {
 
   const addItem = useMutation({
     mutationFn: async ({ listId, ingredient }: { listId: string; ingredient: string }) => {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
       const { data, error } = await supabase
         .from('shopping_list_items')
         .insert([{
           shopping_list_id: listId,
-          ingredient
+          ingredient,
         }])
         .select()
         .single();
@@ -104,31 +107,51 @@ export default function ShoppingLists() {
     },
     onMutate: async ({ listId, ingredient }) => {
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
-
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
+      const tempId = 'temp-' + Date.now();
 
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
         if (!old) return [];
         return old.map(list => {
           if (list.id === listId) {
+            const newItem = {
+              id: tempId,
+              ingredient,
+              checked: false,
+            };
             return {
               ...list,
-              items: [...(list.items || []), {
-                id: 'temp-' + Date.now(),
-                ingredient,
-                checked: false
-              }]
+              items: [...(list.items || []), newItem]
             };
           }
           return list;
         });
       });
 
-      return { previousLists };
+      if (selectedList?.id === listId) {
+        setSelectedList(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            items: [...(prev.items || []), { id: tempId, ingredient, checked: false }]
+          };
+        });
+      }
+
+      return { previousLists, tempId };
     },
     onError: (err, variables, context) => {
       if (context?.previousLists) {
         queryClient.setQueryData(['shopping-lists'], context.previousLists);
+        if (selectedList?.id === variables.listId) {
+          setSelectedList(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              items: prev.items?.filter(item => item.id !== context.tempId)
+            };
+          });
+        }
       }
       toast({
         title: "Error",
@@ -136,9 +159,13 @@ export default function ShoppingLists() {
         variant: "destructive",
       });
     },
-    onSettled: () => {
+    onSuccess: (newItem, variables) => {
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
       setNewItem("");
+      toast({
+        title: "Success",
+        description: "Item added successfully.",
+      });
     }
   });
 
@@ -153,7 +180,6 @@ export default function ShoppingLists() {
     },
     onMutate: async ({ itemId, checked }) => {
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
-
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
 
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
@@ -166,6 +192,18 @@ export default function ShoppingLists() {
         }));
       });
 
+      if (selectedList) {
+        setSelectedList(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            items: prev.items?.map(item =>
+              item.id === itemId ? { ...item, checked } : item
+            )
+          };
+        });
+      }
+
       return { previousLists };
     },
     onError: (err, variables, context) => {
@@ -177,9 +215,6 @@ export default function ShoppingLists() {
         description: "Failed to update item. Please try again.",
         variant: "destructive",
       });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
     }
   });
 
@@ -195,9 +230,9 @@ export default function ShoppingLists() {
     },
     onMutate: async (itemId) => {
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
-
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
 
+      // Update the cache optimistically
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
         if (!old) return [];
         return old.map(list => ({
@@ -205,6 +240,17 @@ export default function ShoppingLists() {
           items: list.items?.filter(item => item.id !== itemId)
         }));
       });
+
+      // Update the selected list state
+      if (selectedList) {
+        setSelectedList(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            items: prev.items?.filter(item => item.id !== itemId)
+          };
+        });
+      }
 
       return { previousLists };
     },
@@ -218,8 +264,11 @@ export default function ShoppingLists() {
         variant: "destructive",
       });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+    onSuccess: (itemId) => {
+      toast({
+        title: "Success",
+        description: "Item deleted successfully.",
+      });
     }
   });
 
@@ -316,7 +365,7 @@ export default function ShoppingLists() {
       });
       return;
     }
-    addItem.mutate({ listId: selectedList.id, ingredient: newItem });
+    addItem.mutate({ listId: selectedList.id, ingredient: newItem.trim() });
   };
 
   if (isLoading) {
