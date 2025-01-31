@@ -36,6 +36,7 @@ export default function ShoppingLists() {
   const [editingTitle, setEditingTitle] = useState("");
   const [selectedList, setSelectedList] = useState<ShoppingList | null>(null);
   const [newItem, setNewItem] = useState("");
+  const [newItemQuantity, setNewItemQuantity] = useState("");
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareEmail, setShareEmail] = useState("");
   const { toast } = useToast();
@@ -103,7 +104,7 @@ export default function ShoppingLists() {
   });
 
   const addItem = useMutation({
-    mutationFn: async ({ listId, ingredient }: { listId: string; ingredient: string }) => {
+    mutationFn: async ({ listId, ingredient, quantity }: { listId: string; ingredient: string; quantity?: string }) => {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
 
@@ -112,6 +113,7 @@ export default function ShoppingLists() {
         .insert([{
           shopping_list_id: listId,
           ingredient,
+          quantity,
           checked: false
         }])
         .select()
@@ -120,17 +122,13 @@ export default function ShoppingLists() {
       if (error) throw error;
       return data;
     },
-    onMutate: async ({ listId, ingredient }) => {
-      // Cancel any outgoing refetches
+    onMutate: async ({ listId, ingredient, quantity }) => {
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
       
-      // Snapshot the previous value
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
       
-      // Create a temporary ID for optimistic update
       const tempId = generateUUID();
       
-      // Optimistically update the cache
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
         if (!old) return [];
         return old.map(list => {
@@ -138,6 +136,7 @@ export default function ShoppingLists() {
             const newItem = {
               id: tempId,
               ingredient,
+              quantity,
               checked: false,
             };
             return {
@@ -149,26 +148,22 @@ export default function ShoppingLists() {
         });
       });
 
-      // Also update the selected list if it matches
       if (selectedList?.id === listId) {
         setSelectedList(prev => {
           if (!prev) return null;
           return {
             ...prev,
-            items: [...(prev.items || []), { id: tempId, ingredient, checked: false }]
+            items: [...(prev.items || []), { id: tempId, ingredient, quantity, checked: false }]
           };
         });
       }
 
-      // Return a context object with the snapshotted value
       return { previousLists, tempId };
     },
     onError: (err, variables, context) => {
       if (context?.previousLists) {
-        // Revert to the snapshot on error
         queryClient.setQueryData(['shopping-lists'], context.previousLists);
         
-        // Also revert the selected list if needed
         if (selectedList?.id === variables.listId) {
           setSelectedList(prev => {
             if (!prev) return null;
@@ -186,9 +181,9 @@ export default function ShoppingLists() {
       });
     },
     onSettled: () => {
-      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
       setNewItem("");
+      setNewItemQuantity("");
     }
   });
 
@@ -315,7 +310,11 @@ export default function ShoppingLists() {
       });
       return;
     }
-    addItem.mutate({ listId: selectedList.id, ingredient: newItem.trim() });
+    addItem.mutate({ 
+      listId: selectedList.id, 
+      ingredient: newItem.trim(),
+      quantity: newItemQuantity.trim() || undefined
+    });
   };
 
   // Add deleteList mutation
@@ -427,7 +426,6 @@ export default function ShoppingLists() {
   });
 
   const handleShare = async (list: ShoppingList) => {
-    // Check if the Web Share API is supported
     if (navigator.share) {
       try {
         const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('\n- ');
@@ -630,6 +628,13 @@ export default function ShoppingLists() {
                 placeholder="Add new item..."
                 value={newItem}
                 onChange={(e) => setNewItem(e.target.value)}
+                className="flex-1"
+              />
+              <Input
+                placeholder="Quantity (optional)"
+                value={newItemQuantity}
+                onChange={(e) => setNewItemQuantity(e.target.value)}
+                className="w-32"
               />
               <Button type="submit" disabled={addItem.isPending}>
                 Add
@@ -639,7 +644,7 @@ export default function ShoppingLists() {
             <div className="space-y-2">
               {selectedList.items?.map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-2 p-2 bg-background rounded-lg border">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-1">
                     <Checkbox
                       checked={item.checked}
                       onCheckedChange={(checked) => {
@@ -651,6 +656,11 @@ export default function ShoppingLists() {
                     />
                     <span className={item.checked ? 'line-through text-muted-foreground' : ''}>
                       {item.ingredient}
+                      {item.quantity && (
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          ({item.quantity})
+                        </span>
+                      )}
                     </span>
                   </div>
                   <Button
