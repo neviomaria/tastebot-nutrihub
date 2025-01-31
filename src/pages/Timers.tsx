@@ -23,7 +23,6 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Form as ShadcnForm } from "@/components/ui/form";
 
 interface TimerFormData {
   title: string;
@@ -161,14 +160,12 @@ export default function Timers() {
                   />
                 </div>
                 <div className="flex-1">
-                  <ShadcnForm>
-                    <SelectField
-                      form={form}
-                      name="timeUnit"
-                      label=""
-                      options={["seconds", "minutes", "hours"]}
-                    />
-                  </ShadcnForm>
+                  <SelectField
+                    form={form}
+                    name="timeUnit"
+                    label=""
+                    options={["seconds", "minutes", "hours"]}
+                  />
                 </div>
               </div>
               <Button type="submit" className="w-full">
