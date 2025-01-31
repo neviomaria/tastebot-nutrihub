@@ -40,13 +40,17 @@ export function AppSidebar() {
           <div className="space-y-1">
             {menuItems.map((item) => (
               <NavLink key={item.path} to={item.path} className="block" onClick={() => setIsOpen(false)}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Button>
+                {({ isActive }) => (
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover hover:text-sidebar-text ${
+                      isActive ? 'bg-sidebar-hover' : ''
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Button>
+                )}
               </NavLink>
             ))}
           </div>
