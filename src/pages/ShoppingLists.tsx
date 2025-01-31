@@ -451,18 +451,26 @@ export default function ShoppingLists() {
         }
       }
     } else {
-      // If native sharing is not available, show WhatsApp or email options
+      // Show dialog to choose between WhatsApp and Email
+      setSelectedList(list);
+      setShareDialogOpen(true);
+
+      // Prepare WhatsApp sharing
       const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('%0A- ');
       const text = `Shopping List: ${list.title}%0A%0A- ${items}`;
       const whatsappUrl = `https://wa.me/?text=${text}`;
       
-      // Open WhatsApp in a new window
-      window.open(whatsappUrl, '_blank');
-      
-      toast({
-        title: "Success",
-        description: "Opening WhatsApp to share the list!",
-      });
+      // Add WhatsApp button to share dialog
+      const shareViaWhatsApp = () => {
+        window.open(whatsappUrl, '_blank');
+        setShareDialogOpen(false);
+        toast({
+          title: "Success",
+          description: "Opening WhatsApp to share the list!",
+        });
+      };
+
+      return { whatsappUrl, shareViaWhatsApp };
     }
   };
 
@@ -700,29 +708,44 @@ export default function ShoppingLists() {
           <DialogHeader>
             <DialogTitle>Share Shopping List</DialogTitle>
             <DialogDescription>
-              Enter an email address to share this shopping list
+              Choose how you want to share this list
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleEmailShare} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Enter email address"
-              value={shareEmail}
-              onChange={(e) => setShareEmail(e.target.value)}
-            />
-            <div className="flex justify-end gap-2">
+          <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShareDialogOpen(false)}
+                onClick={() => {
+                  if (!selectedList) return;
+                  const { shareViaWhatsApp } = handleShare(selectedList);
+                  shareViaWhatsApp();
+                }}
+                className="w-full"
               >
-                Cancel
+                Share via WhatsApp
               </Button>
-              <Button type="submit" disabled={sendEmail.isPending}>
-                Send
-              </Button>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or
+                  </span>
+                </div>
+              </div>
+              <form onSubmit={handleEmailShare} className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={shareEmail}
+                  onChange={(e) => setShareEmail(e.target.value)}
+                />
+                <Button type="submit" disabled={sendEmail.isPending} className="w-full">
+                  Share via Email
+                </Button>
+              </form>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
