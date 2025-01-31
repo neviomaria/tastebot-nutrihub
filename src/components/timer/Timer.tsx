@@ -71,52 +71,52 @@ export function Timer({ duration, isCountdown = true, onComplete, className }: T
     : ((duration - time) / duration) * 100;
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex flex-col items-center gap-4", className)}>
       <div className="relative">
-        <svg className="w-16 h-16 transform -rotate-90">
+        <svg className="w-32 h-32 transform -rotate-90">
           <circle
-            cx="32"
-            cy="32"
-            r="28"
+            cx="64"
+            cy="64"
+            r="58"
             className="stroke-muted-foreground/20"
-            strokeWidth="4"
+            strokeWidth="6"
             fill="none"
           />
           <circle
-            cx="32"
-            cy="32"
-            r="28"
+            cx="64"
+            cy="64"
+            r="58"
             className="stroke-primary transition-all duration-300"
-            strokeWidth="4"
+            strokeWidth="6"
             fill="none"
-            strokeDasharray={175.93}
-            strokeDashoffset={175.93 * (progress / 100)}
+            strokeDasharray={364.425}
+            strokeDashoffset={364.425 * (progress / 100)}
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-mono">{formatTime(time)}</span>
+          <span className="text-2xl font-mono font-medium">{formatTime(time)}</span>
         </div>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex gap-3">
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-12 w-12"
           onClick={() => setIsRunning(!isRunning)}
         >
           {isRunning ? (
-            <Pause className="h-3 w-3" />
+            <Pause className="h-5 w-5" />
           ) : (
-            <Play className="h-3 w-3" />
+            <Play className="h-5 w-5" />
           )}
         </Button>
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8"
+          className="h-12 w-12"
           onClick={reset}
         >
-          <RotateCcw className="h-3 w-3" />
+          <RotateCcw className="h-5 w-5" />
         </Button>
       </div>
     </div>
