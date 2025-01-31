@@ -8,45 +8,136 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Timer } from "@/components/timer/Timer";
 import { MoreVertical } from "lucide-react";
-
-interface Timer {
-  id: number;
-  title: string;
-  description?: string;
-  duration: number;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import type { Timer as TimerType } from "@/types/timer";
 
 const Timers = () => {
-  const [timers, setTimers] = useState<Timer[]>([]);
+  const [timers, setTimers] = useState<TimerType[]>([]);
   const [showNewTimer, setShowNewTimer] = useState(false);
-  const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
+  const [editingTimer, setEditingTimer] = useState<TimerType | null>(null);
   const [formData, setFormData] = useState({ title: "", description: "", duration: 0 });
   const [timeUnit, setTimeUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
+  const { toast } = useToast();
+
+  const fetchTimers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("timers")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setTimers(data || []);
+    } catch (error) {
+      console.error("Error fetching timers:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load timers",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
-    // Fetch timers from an API or local storage
-    // setTimers(fetchedTimers);
+    fetchTimers();
   }, []);
 
-  const handleEdit = (timer: Timer) => {
+  const handleEdit = (timer: TimerType) => {
     setEditingTimer(timer);
     setFormData({ title: timer.title, description: timer.description || "", duration: timer.duration });
   };
 
-  const handleDelete = (id: number) => {
-    setTimers(timers.filter(timer => timer.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("timers")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setTimers(timers.filter(timer => timer.id !== id));
+      toast({
+        description: "Timer deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting timer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete timer",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add new timer logic
-    setShowNewTimer(false);
+    try {
+      const duration = convertToSeconds(formData.duration, timeUnit);
+      const { data, error } = await supabase
+        .from("timers")
+        .insert([
+          {
+            title: formData.title,
+            description: formData.description,
+            duration,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTimers([data, ...timers]);
+      setShowNewTimer(false);
+      setFormData({ title: "", description: "", duration: 0 });
+      toast({
+        description: "Timer created successfully",
+      });
+    } catch (error) {
+      console.error("Error creating timer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create timer",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Update timer logic
-    setEditingTimer(null);
+    if (!editingTimer) return;
+
+    try {
+      const duration = convertToSeconds(formData.duration, timeUnit);
+      const { data, error } = await supabase
+        .from("timers")
+        .update({
+          title: formData.title,
+          description: formData.description,
+          duration,
+        })
+        .eq("id", editingTimer.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTimers(timers.map(t => (t.id === editingTimer.id ? data : t)));
+      setEditingTimer(null);
+      setFormData({ title: "", description: "", duration: 0 });
+      toast({
+        description: "Timer updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating timer:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update timer",
+        variant: "destructive",
+      });
+    }
   };
 
   const convertToSeconds = (duration: number, unit: "seconds" | "minutes" | "hours") => {
@@ -59,6 +150,8 @@ const Timers = () => {
         return duration;
     }
   };
+
+  // ... keep existing code (JSX for the timer component)
 
   return (
     <div className="container py-6">
@@ -157,11 +250,6 @@ const Timers = () => {
                     value={timeUnit}
                     onValueChange={(value) => {
                       setTimeUnit(value as "seconds" | "minutes" | "hours");
-                      const newDuration = convertToSeconds(
-                        formData.duration,
-                        value as "seconds" | "minutes" | "hours"
-                      );
-                      setFormData({ ...formData, duration: newDuration });
                     }}
                   >
                     <SelectTrigger className="w-32">
@@ -227,11 +315,6 @@ const Timers = () => {
                     value={timeUnit}
                     onValueChange={(value) => {
                       setTimeUnit(value as "seconds" | "minutes" | "hours");
-                      const newDuration = convertToSeconds(
-                        formData.duration,
-                        value as "seconds" | "minutes" | "hours"
-                      );
-                      setFormData({ ...formData, duration: newDuration });
                     }}
                   >
                     <SelectTrigger className="w-32">
