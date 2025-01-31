@@ -293,6 +293,75 @@ export type Database = {
         }
         Relationships: []
       }
+      shopping_list_items: {
+        Row: {
+          checked: boolean | null
+          created_at: string | null
+          id: string
+          ingredient: string
+          quantity: string | null
+          recipe_id: number | null
+          shopping_list_id: string
+        }
+        Insert: {
+          checked?: boolean | null
+          created_at?: string | null
+          id?: string
+          ingredient: string
+          quantity?: string | null
+          recipe_id?: number | null
+          shopping_list_id: string
+        }
+        Update: {
+          checked?: boolean | null
+          created_at?: string | null
+          id?: string
+          ingredient?: string
+          quantity?: string | null
+          recipe_id?: number | null
+          shopping_list_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_list_items_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_list_items_shopping_list_id_fkey"
+            columns: ["shopping_list_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_lists: {
+        Row: {
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       timers: {
         Row: {
           created_at: string | null
