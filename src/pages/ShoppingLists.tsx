@@ -28,9 +28,15 @@ export default function ShoppingLists() {
 
   const createList = useMutation({
     mutationFn: async (title: string) => {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      
       const { data, error } = await supabase
         .from('shopping_lists')
-        .insert([{ title }])
+        .insert([{ 
+          title,
+          user_id: userData.user.id 
+        }])
         .select()
         .single();
 
