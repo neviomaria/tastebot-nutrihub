@@ -28,14 +28,15 @@ export const SelectField = ({ form, name, label, options }: SelectFieldProps) =>
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          {label && <FormLabel>{label}</FormLabel>}
           <Select 
             onValueChange={field.onChange} 
-            value={field.value || ""} // Ensure we always have a string value
+            value={field.value}
+            defaultValue={field.value}
           >
             <FormControl>
               <SelectTrigger className="bg-white">
-                <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+                <SelectValue placeholder={label ? `Select ${label.toLowerCase()}` : "Select option"} />
               </SelectTrigger>
             </FormControl>
             <SelectContent className="bg-white">
