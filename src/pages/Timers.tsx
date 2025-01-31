@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Pencil } from "lucide-react";
 import { SelectField } from "@/components/form/SelectField";
 import { useForm } from "react-hook-form";
 import {
@@ -36,6 +36,7 @@ export default function Timers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+  const [editingTimer, setEditingTimer] = useState<any>(null);
   const form = useForm<TimerFormData>({
     defaultValues: {
       title: "",
@@ -91,6 +92,40 @@ export default function Timers() {
     },
   });
 
+  const updateTimer = useMutation({
+    mutationFn: async (data: TimerFormData) => {
+      const durationInSeconds = convertToSeconds(data.duration, data.timeUnit);
+      
+      const { error } = await supabase
+        .from("timers")
+        .update({
+          title: data.title,
+          description: data.description,
+          duration: durationInSeconds,
+        })
+        .eq("id", editingTimer.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["timers"] });
+      setIsOpen(false);
+      setEditingTimer(null);
+      form.reset();
+      toast({
+        title: "Timer updated",
+        description: "Your timer has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update timer. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteTimer = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("timers").delete().eq("id", id);
@@ -113,7 +148,36 @@ export default function Timers() {
   });
 
   const handleSubmit = (data: TimerFormData) => {
-    createTimer.mutate(data);
+    if (editingTimer) {
+      updateTimer.mutate(data);
+    } else {
+      createTimer.mutate(data);
+    }
+  };
+
+  const handleEdit = (timer: any) => {
+    const timeUnit = "seconds";
+    form.reset({
+      title: timer.title,
+      description: timer.description || "",
+      duration: timer.duration,
+      timeUnit,
+    });
+    setEditingTimer(timer);
+    setIsOpen(true);
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      setEditingTimer(null);
+      form.reset({
+        title: "",
+        description: "",
+        duration: 60,
+        timeUnit: "seconds",
+      });
+    }
+    setIsOpen(open);
   };
 
   if (isLoading) {
@@ -124,7 +188,7 @@ export default function Timers() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">My Timers</h1>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -133,7 +197,9 @@ export default function Timers() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Timer</DialogTitle>
+              <DialogTitle>
+                {editingTimer ? "Edit Timer" : "Create New Timer"}
+              </DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -171,7 +237,7 @@ export default function Timers() {
                   </div>
                 </div>
                 <Button type="submit" className="w-full">
-                  Create Timer
+                  {editingTimer ? "Update Timer" : "Create Timer"}
                 </Button>
               </form>
             </Form>
@@ -190,13 +256,22 @@ export default function Timers() {
                     <CardDescription>{timer.description}</CardDescription>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => deleteTimer.mutate(timer.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEdit(timer)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteTimer.mutate(timer.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
