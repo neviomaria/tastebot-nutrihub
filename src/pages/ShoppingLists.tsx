@@ -451,8 +451,18 @@ export default function ShoppingLists() {
         }
       }
     } else {
-      setSelectedList(list);
-      setShareDialogOpen(true);
+      // If native sharing is not available, show WhatsApp or email options
+      const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('%0A- ');
+      const text = `Shopping List: ${list.title}%0A%0A- ${items}`;
+      const whatsappUrl = `https://wa.me/?text=${text}`;
+      
+      // Open WhatsApp in a new window
+      window.open(whatsappUrl, '_blank');
+      
+      toast({
+        title: "Success",
+        description: "Opening WhatsApp to share the list!",
+      });
     }
   };
 
