@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -303,27 +303,37 @@ export default function ShoppingLists() {
                         />
                       </form>
                     ) : (
-                      <span 
-                        onDoubleClick={() => {
-                          setEditingListId(list.id);
-                          setEditingTitle(list.title);
-                        }}
-                      >
-                        {list.title}
-                      </span>
+                      <div className="flex items-center justify-between flex-1">
+                        <span>{list.title}</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingListId(list.id);
+                              setEditingTitle(list.title);
+                            }}
+                            className="hover:bg-muted"
+                          >
+                            <Pencil className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('Are you sure you want to delete this list?')) {
+                                deleteList.mutate(list.id);
+                              }
+                            }}
+                            className="hover:bg-muted"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm('Are you sure you want to delete this list?')) {
-                          deleteList.mutate(list.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {list.items?.length || 0} items
