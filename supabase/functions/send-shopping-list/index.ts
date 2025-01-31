@@ -45,31 +45,39 @@ const handler = async (req: Request): Promise<Response> => {
     const itemsHtml = shoppingList.shopping_list_items
       .map((item: any) => `
         <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">
+          <td style="padding: 12px; border-bottom: 1px solid #eee;">
             ${item.ingredient}
           </td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">
+          <td style="padding: 12px; border-bottom: 1px solid #eee; color: #666;">
             ${item.quantity || '-'}
+          </td>
+          <td style="padding: 12px; border-bottom: 1px solid #eee;">
+            ${item.checked ? '✓' : ''}
           </td>
         </tr>
       `)
       .join("");
 
     const emailResponse = await resend.emails.send({
-      from: "Shopping List <onboarding@resend.dev>",
+      from: "Lista della Spesa <onboarding@resend.dev>",
       to: [recipientEmail],
-      subject: `Shopping List: ${shoppingList.title}`,
+      subject: `Lista della Spesa: ${shoppingList.title}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+          <h1 style="color: #333; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
             ${shoppingList.title}
           </h1>
           
-          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+          <p style="color: #666; margin-bottom: 20px;">
+            Ecco la tua lista della spesa!
+          </p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <thead>
               <tr style="background-color: #f8f9fa;">
-                <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #eee;">Item</th>
-                <th style="padding: 12px 8px; text-align: left; border-bottom: 2px solid #eee;">Quantity</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Articolo</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Quantità</th>
+                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #eee;">Completato</th>
               </tr>
             </thead>
             <tbody>
@@ -77,9 +85,18 @@ const handler = async (req: Request): Promise<Response> => {
             </tbody>
           </table>
           
-          <p style="color: #666; margin-top: 20px; font-size: 14px;">
-            Generated on ${new Date().toLocaleDateString()}
+          <p style="color: #666; margin-top: 30px; font-size: 14px; text-align: center;">
+            Lista generata il ${new Date().toLocaleDateString('it-IT', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 12px;">
+            <p>Questa email è stata inviata automaticamente dal tuo account.</p>
+          </div>
         </div>
       `,
     });
