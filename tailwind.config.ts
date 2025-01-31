@@ -38,8 +38,8 @@ export default {
         },
         sidebar: {
           DEFAULT: "#581C87",
-          hover: "#4C1D95",
-          active: "#3B0764",
+          hover: "#7E22CE",
+          active: "#7E22CE",
           border: "#E5E7EB",
           text: "#FFFFFF",
         },

@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sidebar } from "@/components/ui/sidebar";
+import { useAuthState } from "@/hooks/use-auth-state";
 import {
   Book,
   Heart,
@@ -10,13 +11,19 @@ import {
   User,
   Ticket,
   CalendarDays,
-  ShoppingBag
+  ShoppingBag,
+  LogOut
 } from "lucide-react";
 
 export function AppSidebar() {
+  const { handleSignOut } = useAuthState();
+
   return (
-    <Sidebar className="border-r bg-sidebar">
-      <ScrollArea className="h-full">
+    <Sidebar className="border-r bg-sidebar flex flex-col">
+      <div className="p-4 border-b border-sidebar-border">
+        <h1 className="text-xl font-semibold text-sidebar-text">Pybher</h1>
+      </div>
+      <ScrollArea className="flex-1">
         <div className="space-y-4 py-4">
           <div className="px-3 py-2">
             <div className="space-y-1">
@@ -96,6 +103,16 @@ export function AppSidebar() {
           </div>
         </div>
       </ScrollArea>
+      <div className="p-4 border-t border-sidebar-border mt-auto">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-sidebar-text hover:bg-sidebar-hover active:bg-sidebar-active"
+          onClick={handleSignOut}
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
+      </div>
     </Sidebar>
   );
 }
