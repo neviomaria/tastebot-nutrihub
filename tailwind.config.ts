@@ -37,9 +37,9 @@ export default {
           foreground: "#1B2559",
         },
         sidebar: {
-          DEFAULT: "#9b87f5",
-          hover: "#8b77e5",
-          active: "#7a66d4",
+          DEFAULT: "#581C87",
+          hover: "#4C1D95",
+          active: "#3B0764",
           border: "#E5E7EB",
           text: "#FFFFFF",
         },
