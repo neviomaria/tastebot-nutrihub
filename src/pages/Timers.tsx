@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash2, Plus } from "lucide-react";
+import { SelectField } from "@/components/form/SelectField";
+import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -26,16 +28,33 @@ interface TimerFormData {
   title: string;
   description?: string;
   duration: number;
+  timeUnit: "seconds" | "minutes" | "hours";
 }
+
+const TIME_UNITS = ["seconds", "minutes", "hours"] as const;
+
+const convertToSeconds = (value: number, unit: "seconds" | "minutes" | "hours") => {
+  switch (unit) {
+    case "minutes":
+      return value * 60;
+    case "hours":
+      return value * 3600;
+    default:
+      return value;
+  }
+};
 
 export default function Timers() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState<TimerFormData>({
-    title: "",
-    description: "",
-    duration: 60,
+  const form = useForm<TimerFormData>({
+    defaultValues: {
+      title: "",
+      description: "",
+      duration: 60,
+      timeUnit: "seconds",
+    },
   });
 
   const { data: timers, isLoading } = useQuery({
@@ -56,8 +75,12 @@ export default function Timers() {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       
+      const durationInSeconds = convertToSeconds(data.duration, data.timeUnit);
+      
       const { error } = await supabase.from("timers").insert([{
-        ...data,
+        title: data.title,
+        description: data.description,
+        duration: durationInSeconds,
         user_id: userData.user.id
       }]);
       if (error) throw error;
@@ -65,7 +88,7 @@ export default function Timers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["timers"] });
       setIsOpen(false);
-      setFormData({ title: "", description: "", duration: 60 });
+      form.reset();
       toast({
         title: "Timer created",
         description: "Your timer has been created successfully.",
@@ -101,9 +124,8 @@ export default function Timers() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createTimer.mutate(formData);
+  const handleSubmit = (data: TimerFormData) => {
+    createTimer.mutate(data);
   };
 
   if (isLoading) {
@@ -125,40 +147,39 @@ export default function Timers() {
             <DialogHeader>
               <DialogTitle>Create New Timer</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <div>
                 <Input
                   placeholder="Timer title"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  required
+                  {...form.register("title", { required: true })}
                 />
               </div>
               <div>
                 <Textarea
                   placeholder="Description (optional)"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                  {...form.register("description")}
                 />
               </div>
-              <div>
-                <Input
-                  type="number"
-                  placeholder="Duration (seconds)"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      duration: parseInt(e.target.value) || 60,
-                    })
-                  }
-                  min="1"
-                  required
-                />
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Input
+                    type="number"
+                    placeholder="Duration"
+                    {...form.register("duration", { 
+                      required: true,
+                      valueAsNumber: true,
+                      min: 1 
+                    })}
+                  />
+                </div>
+                <div className="flex-1">
+                  <SelectField
+                    form={form}
+                    name="timeUnit"
+                    label=""
+                    options={TIME_UNITS}
+                  />
+                </div>
               </div>
               <Button type="submit" className="w-full">
                 Create Timer
