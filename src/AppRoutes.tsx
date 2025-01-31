@@ -16,7 +16,7 @@ import BookRecipes from "@/pages/BookRecipes";
 import RecipeDetail from "@/pages/RecipeDetail";
 import Timers from "@/pages/Timers";
 
-export default function AppRoutes() { // Changed to default export
+export default function AppRoutes() {
   console.log("[AppRoutes] Rendering routes");
   
   return (
