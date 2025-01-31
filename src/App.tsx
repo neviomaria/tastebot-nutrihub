@@ -6,19 +6,22 @@ import AppRoutes from "./AppRoutes";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useAuthState } from "@/hooks/use-auth-state";
 import "./App.css";
 
 const queryClient = new QueryClient();
 
 function App() {
+  const { isAuthenticated } = useAuthState();
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <SidebarProvider>
           <div className="flex h-screen w-full">
-            <AppSidebar />
+            {isAuthenticated && <AppSidebar />}
             <div className="flex-1 flex flex-col overflow-hidden">
-              <AppHeader />
+              {isAuthenticated && <AppHeader />}
               <main className="flex-1 overflow-auto">
                 <AppRoutes />
               </main>
