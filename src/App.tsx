@@ -6,6 +6,7 @@ import AppRoutes from "./AppRoutes"; // Changed to default import
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import { OnboardingDialog } from "./components/onboarding/OnboardingDialog";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -14,18 +15,20 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="flex h-screen">
-          <AppSidebar />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <AppHeader />
-            <main className="flex-1 overflow-auto">
-              <AppRoutes />
-            </main>
+        <SidebarProvider>
+          <div className="flex h-screen w-full">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <AppHeader />
+              <main className="flex-1 overflow-auto">
+                <AppRoutes />
+              </main>
+            </div>
           </div>
-        </div>
-        <OnboardingDialog />
-        <Toaster />
-        <SonnerToaster />
+          <OnboardingDialog />
+          <Toaster />
+          <SonnerToaster />
+        </SidebarProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
