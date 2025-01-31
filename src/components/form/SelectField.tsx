@@ -32,8 +32,7 @@ export const SelectField = ({ form, name, label, options }: SelectFieldProps) =>
           <FormControl>
             <Select 
               onValueChange={field.onChange} 
-              defaultValue={field.value}
-              value={field.value}
+              value={field.value || ""}
             >
               <SelectTrigger className="bg-white">
                 <SelectValue placeholder={label ? `Select ${label.toLowerCase()}` : "Select option"} />
