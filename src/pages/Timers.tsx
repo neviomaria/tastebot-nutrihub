@@ -192,12 +192,15 @@ const Timers = () => {
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEdit(timer)}>
+                  <DropdownMenuContent align="end" className="bg-[#F1F0FB] border border-gray-200">
+                    <DropdownMenuItem 
+                      onClick={() => handleEdit(timer)}
+                      className="hover:bg-gray-200"
+                    >
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      className="text-red-600"
+                      className="text-red-600 hover:bg-gray-200 hover:text-red-700"
                       onClick={() => handleDelete(timer.id)}
                     >
                       Delete
