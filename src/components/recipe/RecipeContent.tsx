@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface RecipeContentProps {
   ingredients: Array<{ ingredient_item: string }>;
@@ -94,7 +94,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [newListTitle, setNewListTitle] = useState("");
   const [selectedListId, setSelectedListId] = useState<string>("");
-  const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: shoppingLists } = useQuery({
@@ -131,10 +131,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
       setSelectedListId(data.id);
       setNewListTitle("");
-      toast({
-        title: "Success",
-        description: "Shopping list created successfully.",
-      });
+      toast.success("Shopping list created successfully");
     }
   });
 
@@ -153,22 +150,18 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
-      toast({
-        title: "Success",
-        description: "Ingredients added to shopping list.",
+      toast.success("Ingredients added to shopping list", {
+        position: "top-center"
       });
       setSelectedIngredients([]);
+      setDialogOpen(false); // Close dialog on success
     }
   });
 
   const handleCreateList = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newListTitle.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please enter a title for the list.",
-      });
+      toast.error("Please enter a title for the list");
       return;
     }
     createList.mutate(newListTitle);
@@ -176,20 +169,12 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
 
   const handleAddToList = () => {
     if (!selectedListId) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please select or create a shopping list.",
-      });
+      toast.error("Please select or create a shopping list");
       return;
     }
 
     if (selectedIngredients.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please select at least one ingredient.",
-      });
+      toast.error("Please select at least one ingredient");
       return;
     }
 
@@ -266,7 +251,7 @@ export function RecipeContent({ ingredients, instructions, nutritionFacts, defau
             );
           })}
         </ul>
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button 
               variant="outline" 
