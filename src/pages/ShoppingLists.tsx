@@ -309,6 +309,114 @@ export default function ShoppingLists() {
     addItem.mutate({ listId: selectedList.id, ingredient: newItem.trim() });
   };
 
+  // Add deleteList mutation
+  const deleteList = useMutation({
+    mutationFn: async (listId: string) => {
+      // First delete all items in the list
+      const { error: itemsError } = await supabase
+        .from('shopping_list_items')
+        .delete()
+        .eq('shopping_list_id', listId);
+
+      if (itemsError) throw itemsError;
+
+      // Then delete the list itself
+      const { error: listError } = await supabase
+        .from('shopping_lists')
+        .delete()
+        .eq('id', listId);
+
+      if (listError) throw listError;
+      return listId;
+    },
+    onMutate: async (listId) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
+      
+      const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
+      
+      queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
+        if (!old) return [];
+        return old.filter(list => list.id !== listId);
+      });
+
+      if (selectedList?.id === listId) {
+        setSelectedList(null);
+      }
+
+      return { previousLists };
+    },
+    onError: (err, listId, context) => {
+      if (context?.previousLists) {
+        queryClient.setQueryData(['shopping-lists'], context.previousLists);
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete list. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+    }
+  });
+
+  // Add toggleItem mutation
+  const toggleItem = useMutation({
+    mutationFn: async ({ itemId, checked }: { itemId: string; checked: boolean }) => {
+      const { data, error } = await supabase
+        .from('shopping_list_items')
+        .update({ checked })
+        .eq('id', itemId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onMutate: async ({ itemId, checked }) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
+      
+      const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
+      
+      queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
+        if (!old) return [];
+        return old.map(list => ({
+          ...list,
+          items: list.items?.map(item => 
+            item.id === itemId ? { ...item, checked } : item
+          )
+        }));
+      });
+
+      if (selectedList) {
+        setSelectedList(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            items: prev.items?.map(item =>
+              item.id === itemId ? { ...item, checked } : item
+            )
+          };
+        });
+      }
+
+      return { previousLists };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousLists) {
+        queryClient.setQueryData(['shopping-lists'], context.previousLists);
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update item. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
