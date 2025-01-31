@@ -156,11 +156,22 @@ export default function Timers() {
   };
 
   const handleEdit = (timer: any) => {
-    const timeUnit = "seconds";
+    // Convert seconds to the most appropriate unit
+    let timeUnit: "seconds" | "minutes" | "hours" = "seconds";
+    let duration = timer.duration;
+
+    if (timer.duration >= 3600) {
+      timeUnit = "hours";
+      duration = Math.floor(timer.duration / 3600);
+    } else if (timer.duration >= 60) {
+      timeUnit = "minutes";
+      duration = Math.floor(timer.duration / 60);
+    }
+
     form.reset({
       title: timer.title,
       description: timer.description || "",
-      duration: timer.duration,
+      duration: duration,
       timeUnit,
     });
     setEditingTimer(timer);
