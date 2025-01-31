@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash2, Plus } from "lucide-react";
 import { SelectField } from "@/components/form/SelectField";
-import { useForm, Form } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   Dialog,
   DialogContent,
@@ -135,48 +135,46 @@ export default function Timers() {
             <DialogHeader>
               <DialogTitle>Create New Timer</DialogTitle>
             </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                <div>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <div>
+                <Input
+                  placeholder="Timer title"
+                  {...form.register("title", { required: true })}
+                />
+              </div>
+              <div>
+                <Textarea
+                  placeholder="Description (optional)"
+                  {...form.register("description")}
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
                   <Input
-                    placeholder="Timer title"
-                    {...form.register("title", { required: true })}
+                    type="number"
+                    placeholder="Duration"
+                    {...form.register("duration", { 
+                      required: true,
+                      valueAsNumber: true,
+                      min: 1 
+                    })}
                   />
                 </div>
-                <div>
-                  <Textarea
-                    placeholder="Description (optional)"
-                    {...form.register("description")}
-                  />
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <Input
-                      type="number"
-                      placeholder="Duration"
-                      {...form.register("duration", { 
-                        required: true,
-                        valueAsNumber: true,
-                        min: 1 
-                      })}
+                <div className="flex-1">
+                  <ShadcnForm>
+                    <SelectField
+                      form={form}
+                      name="timeUnit"
+                      label=""
+                      options={["seconds", "minutes", "hours"]}
                     />
-                  </div>
-                  <div className="flex-1">
-                    <ShadcnForm>
-                      <SelectField
-                        form={form}
-                        name="timeUnit"
-                        label=""
-                        options={["seconds", "minutes", "hours"]}
-                      />
-                    </ShadcnForm>
-                  </div>
+                  </ShadcnForm>
                 </div>
-                <Button type="submit" className="w-full">
-                  Create Timer
-                </Button>
-              </form>
-            </Form>
+              </div>
+              <Button type="submit" className="w-full">
+                Create Timer
+              </Button>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
