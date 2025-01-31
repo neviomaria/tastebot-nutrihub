@@ -102,13 +102,43 @@ export default function ShoppingLists() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onMutate: async ({ listId, ingredient }) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
+
+      const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
+
+      queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
+        if (!old) return [];
+        return old.map(list => {
+          if (list.id === listId) {
+            return {
+              ...list,
+              items: [...(list.items || []), {
+                id: 'temp-' + Date.now(),
+                ingredient,
+                checked: false
+              }]
+            };
+          }
+          return list;
+        });
+      });
+
+      return { previousLists };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousLists) {
+        queryClient.setQueryData(['shopping-lists'], context.previousLists);
+      }
+      toast({
+        title: "Error",
+        description: "Failed to add item. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
       setNewItem("");
-      toast({
-        title: "Success",
-        description: "Item added successfully.",
-      });
     }
   });
 
@@ -121,7 +151,34 @@ export default function ShoppingLists() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async ({ itemId, checked }) => {
+      await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
+
+      const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
+
+      queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
+        if (!old) return [];
+        return old.map(list => ({
+          ...list,
+          items: list.items?.map(item => 
+            item.id === itemId ? { ...item, checked } : item
+          )
+        }));
+      });
+
+      return { previousLists };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousLists) {
+        queryClient.setQueryData(['shopping-lists'], context.previousLists);
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update item. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-lists'] });
     }
   });
