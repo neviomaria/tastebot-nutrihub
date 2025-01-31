@@ -32,6 +32,11 @@ export default function ShoppingLists() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Helper function to generate a UUID
+  const generateUUID = () => {
+    return crypto.randomUUID();
+  };
+
   const { data: shoppingLists, isLoading } = useQuery({
     queryKey: ['shopping-lists'],
     queryFn: async () => {
@@ -108,7 +113,7 @@ export default function ShoppingLists() {
     onMutate: async ({ listId, ingredient }) => {
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
-      const tempId = 'temp-' + Date.now();
+      const tempId = generateUUID(); // Use UUID for temporary ID
 
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
         if (!old) return [];
@@ -232,7 +237,6 @@ export default function ShoppingLists() {
       await queryClient.cancelQueries({ queryKey: ['shopping-lists'] });
       const previousLists = queryClient.getQueryData<ShoppingList[]>(['shopping-lists']);
 
-      // Update the cache optimistically
       queryClient.setQueryData<ShoppingList[]>(['shopping-lists'], (old) => {
         if (!old) return [];
         return old.map(list => ({
@@ -241,7 +245,6 @@ export default function ShoppingLists() {
         }));
       });
 
-      // Update the selected list state
       if (selectedList) {
         setSelectedList(prev => {
           if (!prev) return null;
