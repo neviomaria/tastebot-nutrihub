@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface ShoppingListItem {
   id: string;
@@ -29,6 +36,8 @@ export default function ShoppingLists() {
   const [editingTitle, setEditingTitle] = useState("");
   const [selectedList, setSelectedList] = useState<ShoppingList | null>(null);
   const [newItem, setNewItem] = useState("");
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -417,6 +426,84 @@ export default function ShoppingLists() {
     }
   });
 
+  const handleShare = async (list: ShoppingList) => {
+    // Check if the Web Share API is supported
+    if (navigator.share) {
+      try {
+        const items = list.items?.map(item => `${item.ingredient}${item.quantity ? ` (${item.quantity})` : ''}`).join('\n- ');
+        const text = `Shopping List: ${list.title}\n\n- ${items}`;
+        
+        await navigator.share({
+          title: `Shopping List: ${list.title}`,
+          text: text,
+        });
+        
+        toast({
+          title: "Success",
+          description: "List shared successfully!",
+        });
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error sharing:', error);
+          toast({
+            title: "Error",
+            description: "Failed to share the list.",
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      setSelectedList(list);
+      setShareDialogOpen(true);
+    }
+  };
+
+  const sendEmail = useMutation({
+    mutationFn: async ({ listId, email }: { listId: string; email: string }) => {
+      const { data, error } = await supabase.functions.invoke('send-shopping-list', {
+        body: { listId, recipientEmail: email },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Shopping list sent successfully!",
+      });
+      setShareDialogOpen(false);
+      setShareEmail("");
+    },
+    onError: (error) => {
+      console.error('Error sending email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send the shopping list. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEmailShare = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedList) return;
+    
+    if (!shareEmail.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    sendEmail.mutate({ 
+      listId: selectedList.id, 
+      email: shareEmail 
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
@@ -488,10 +575,21 @@ export default function ShoppingLists() {
                             size="icon"
                             onClick={(e) => {
                               e.stopPropagation();
+                              handleShare(list);
+                            }}
+                            className="hover:bg-[#F1F0FB]"
+                          >
+                            <Share2 className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setEditingListId(list.id);
                               setEditingTitle(list.title);
                             }}
-                            className="hover:bg-muted"
+                            className="hover:bg-[#F1F0FB]"
                           >
                             <Pencil className="h-4 w-4 text-muted-foreground" />
                           </Button>
@@ -504,7 +602,7 @@ export default function ShoppingLists() {
                                 deleteList.mutate(list.id);
                               }
                             }}
-                            className="hover:bg-muted"
+                            className="hover:bg-[#F1F0FB]"
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -576,6 +674,37 @@ export default function ShoppingLists() {
           </p>
         </div>
       )}
+
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Shopping List</DialogTitle>
+            <DialogDescription>
+              Enter an email address to share this shopping list
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEmailShare} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Enter email address"
+              value={shareEmail}
+              onChange={(e) => setShareEmail(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShareDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={sendEmail.isPending}>
+                Send
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -2,3 +2,6 @@ project_id = "xcpnxblpmecdzwatreid"
 
 [functions.generate-with-ai]
 verify_jwt = true
+
+[functions.send-shopping-list]
+verify_jwt = true
