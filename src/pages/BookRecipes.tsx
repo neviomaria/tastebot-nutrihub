@@ -73,7 +73,6 @@ const BookRecipes = () => {
   });
 
   const cleanIngredientName = (ingredient: string): string => {
-    // Check for nutritional values first
     const nutritionKeywords = [
       'calories', 'protein', 'carbohydrates', 'sugars', 'dietary fiber', 'fat',
       'sodium', 'potassium', 'phosphorus', 'calcium', 'iron', 'vitamin',
@@ -90,20 +89,19 @@ const BookRecipes = () => {
     
     if (nutritionKeywords.some(keyword => 
       ingredient.toLowerCase().includes(keyword) ||
-      ingredient.toLowerCase().match(/\d+\s*mg/) ||  // Matches patterns like "10mg"
-      ingredient.toLowerCase().match(/\d+\s*g/)      // Matches patterns like "10g"
+      ingredient.toLowerCase().match(/\d+\s*mg/) ||  
+      ingredient.toLowerCase().match(/\d+\s*g/)      
     )) {
       return '';
     }
     
-    // Remove quantities, measurements, and descriptive terms
     let cleanedName = ingredient
-      .replace(/^[\d\/\s]+/, '') // Remove numbers at start
-      .replace(new RegExp(`^\\d*\\s*(?:${measurementUnits})\\s+of\\s+`, 'gi'), '') // Remove "X units of"
-      .replace(new RegExp(`^\\d*\\s*(?:${measurementUnits})\\s*`, 'gi'), '') // Remove measurements
-      .replace(/\([^)]*\)/g, '') // Remove parentheses and their contents
-      .replace(/,.*$/, '') // Remove everything after comma
-      .replace(/^(fresh|dried|mini|large|small|medium|dark|light|chopped|diced|minced|sliced|grated|whole|raw|cooked)\s+/gi, '') // Remove common descriptive terms
+      .replace(/^[\d\/\s]+/, '') 
+      .replace(new RegExp(`^\\d*\\s*(?:${measurementUnits})\\s+of\\s+`, 'gi'), '') 
+      .replace(new RegExp(`^\\d*\\s*(?:${measurementUnits})\\s*`, 'gi'), '') 
+      .replace(/\([^)]*\)/g, '') 
+      .replace(/,.*$/, '') 
+      .replace(/^(fresh|dried|mini|large|small|medium|dark|light|chopped|diced|minced|sliced|grated|whole|raw|cooked)\s+/gi, '') 
       .trim();
     
     return cleanedName;
@@ -186,8 +184,12 @@ const BookRecipes = () => {
 
   const handleResetAll = () => {
     handleClearSearch();
-    const sortedKeys = Object.keys(groupedRecipes).sort(sortMealTypes);
-    setActiveTab(sortedKeys[0]);
+    const sortedKeys = Object.keys(groupedRecipes)
+      .filter(key => key !== "Search Results")
+      .sort(sortMealTypes);
+    if (sortedKeys.length > 0) {
+      setActiveTab(sortedKeys[0]);
+    }
   };
 
   if (!session) {
