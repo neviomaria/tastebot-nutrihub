@@ -177,13 +177,9 @@ const BookRecipes = () => {
     setSearchParams(query);
   };
 
-  const handleClearSearch = () => {
+  const handleResetAll = () => {
     setSearchParams({ keywords: "", ingredients: [] });
     setIsSearching(false);
-  };
-
-  const handleResetAll = () => {
-    handleClearSearch();
     setActiveTab("");
   };
 
@@ -231,24 +227,17 @@ const BookRecipes = () => {
 
         <div className="mb-6">
           <SearchBar onSearch={handleSearch} ingredients={allIngredients} />
-          <div className="flex gap-2 mt-2">
-            {isSearching && (
+          {isSearching && (
+            <div className="mt-2">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={handleClearSearch}
+                onClick={handleResetAll}
               >
-                Clear Search
+                Reset Search
               </Button>
-            )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleResetAll}
-            >
-              Reset All
-            </Button>
-          </div>
+            </div>
+          )}
         </div>
 
         {Object.keys(groupedRecipes).length === 0 ? (
