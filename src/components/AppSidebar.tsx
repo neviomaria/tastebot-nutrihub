@@ -14,7 +14,8 @@ import {
   CalendarDays,
   ShoppingBag,
   LogOut,
-  Menu
+  Menu,
+  Utensils
 } from "lucide-react";
 import { useState } from "react";
 
@@ -28,6 +29,7 @@ export function AppSidebar() {
     { icon: Book, label: "My Books", path: "/my-books" },
     { icon: Ticket, label: "My Coupons", path: "/my-coupons" },
     { icon: Heart, label: "Favorite Recipes", path: "/favorite-recipes" },
+    { icon: Utensils, label: "Cook with Ingredients", path: "/cook-with-ingredients" },
     { icon: CalendarDays, label: "Meal Plans", path: "/meal-plans" },
     { icon: Timer, label: "Timers", path: "/timers" },
     { icon: ShoppingBag, label: "Shopping Lists", path: "/shopping-lists" },
