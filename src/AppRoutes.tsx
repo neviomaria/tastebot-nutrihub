@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthState } from "@/hooks/use-auth-state";
 import Home from "@/pages/Index";
 import BookRecipes from "@/pages/BookRecipes";
+import BookDetail from "@/pages/BookDetail";
 import RecipeDetail from "@/pages/RecipeDetail";
 import CookWithIngredients from "@/pages/CookWithIngredients";
 import Profile from "@/pages/Profile";
@@ -35,7 +36,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/book/:id" element={<BookRecipes />} />
+      <Route path="/book/:id" element={<BookDetail />} />
+      <Route path="/book/:id/recipes" element={<BookRecipes />} />
       <Route path="/recipe/:id" element={<RecipeDetail />} />
       <Route path="/cook-with-ingredients" element={<CookWithIngredients />} />
       <Route path="/profile" element={<Profile />} />
