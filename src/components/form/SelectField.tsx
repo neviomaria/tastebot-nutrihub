@@ -62,6 +62,9 @@ export const SelectField = ({
     );
   };
 
+  // Filter out empty strings and undefined values
+  const validOptions = options.filter(option => option && option.trim() !== "");
+
   return (
     <FormField
       control={form.control}
@@ -90,7 +93,7 @@ export const SelectField = ({
                     />
                   </div>
                 )}
-                {options.map((option) => (
+                {validOptions.map((option) => (
                   <SelectItem key={option} value={option}>
                     {option}
                   </SelectItem>
