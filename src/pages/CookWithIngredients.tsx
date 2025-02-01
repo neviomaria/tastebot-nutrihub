@@ -82,7 +82,7 @@ export default function CookWithIngredients() {
 
       if (!matchesSearch) return false;
 
-      const recipeIngredients = recipe.acf.ingredients.map(i => 
+      const recipeIngredients = (recipe.acf?.ingredients || []).map(i => 
         i.ingredient_item.toLowerCase()
       );
 
@@ -94,7 +94,7 @@ export default function CookWithIngredients() {
     });
 
     return matchingRecipes.reduce((acc: { perfect: Recipe[], close: Recipe[] }, recipe: Recipe) => {
-      const recipeIngredients = recipe.acf.ingredients.map(i => 
+      const recipeIngredients = (recipe.acf?.ingredients || []).map(i => 
         i.ingredient_item.toLowerCase()
       );
 
@@ -122,14 +122,15 @@ export default function CookWithIngredients() {
     }, { perfect: [], close: [] });
   };
 
+  // Create a flat array of all ingredients across all recipes
   const allIngredients = recipes
-    ? (Array.from(
+    ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
-            recipe.acf.ingredients.map((i: { ingredient_item: string }) => i.ingredient_item.trim())
+            (recipe.acf?.ingredients || []).map(i => i.ingredient_item.trim())
           )
         )
-      ).sort() as readonly string[])
+      ).sort() as readonly string[]
     : ([] as readonly string[]);
 
   const { perfect: perfectMatches, close: closeMatches } = getMatchingRecipes();
