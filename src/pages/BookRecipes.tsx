@@ -184,12 +184,7 @@ const BookRecipes = () => {
 
   const handleResetAll = () => {
     handleClearSearch();
-    const sortedKeys = Object.keys(groupedRecipes)
-      .filter(key => key !== "Search Results")
-      .sort(sortMealTypes);
-    if (sortedKeys.length > 0) {
-      setActiveTab(sortedKeys[0]);
-    }
+    setActiveTab("");
   };
 
   if (!session) {
