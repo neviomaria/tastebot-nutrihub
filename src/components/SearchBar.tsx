@@ -29,8 +29,8 @@ export function SearchBar({ onSearch, ingredients = [] }: SearchBarProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
-        <div className="relative">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex gap-3 items-start">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             type="text"
@@ -40,16 +40,23 @@ export function SearchBar({ onSearch, ingredients = [] }: SearchBarProps) {
           />
         </div>
         
-        <SelectField
-          form={form}
-          name="ingredients"
-          label="Filter by ingredients"
-          options={ingredients}
-          multiple={true}
-          className="text-sm"
-        />
+        <div className="w-64">
+          <SelectField
+            form={form}
+            name="ingredients"
+            label=""
+            options={ingredients}
+            multiple={true}
+            className="text-sm"
+          />
+        </div>
         
-        <Button type="submit" variant="outline" size="sm" className="w-full">
+        <Button 
+          type="submit" 
+          variant="outline" 
+          size="default"
+          className="bg-[#581C87] text-white hover:bg-[#4c1675] border-0"
+        >
           Search
         </Button>
       </form>
