@@ -5,16 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/form/SelectField";
 import { useForm } from "react-hook-form";
+import { supabase } from "@/integrations/supabase/client";
+import { RecipeCard } from "@/components/RecipeCard";
+import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 interface Recipe {
   id: number;
   title: string;
-  ingredients: string[];
   acf: {
     prep_time: string;
     cook_time: string;
-    ingredients: string[];
-    instructions: string[];
+    ingredients: Array<{ ingredient_item: string }>;
     recipe_image: {
       url: string;
       sizes: {
@@ -28,62 +32,139 @@ interface Recipe {
 export default function CookWithIngredients() {
   const [searchQuery, setSearchQuery] = useState("");
   const form = useForm();
-  
-  const { data: recipes, isLoading } = useQuery({
-    queryKey: ["recipes"],
+  const navigate = useNavigate();
+
+  // Fetch user's books
+  const { data: userBooks } = useQuery({
+    queryKey: ['userBooks'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('book_id')
+        .eq('id', user.id)
+        .single();
+
+      const { data: coupons } = await supabase
+        .from('user_coupons')
+        .select('book_id')
+        .eq('user_id', user.id);
+
+      const bookIds = new Set([
+        profile?.book_id,
+        ...(coupons?.map(c => c.book_id) || [])
+      ].filter(Boolean));
+
+      return Array.from(bookIds);
+    }
+  });
+  
+  // Fetch recipes from user's books
+  const { data: recipes = [], isLoading } = useQuery({
+    queryKey: ['recipes', userBooks],
+    queryFn: async () => {
+      if (!userBooks?.length) return [];
+      
       const response = await fetch(
         "https://brainscapebooks.com/wp-json/custom/v1/recipes"
       );
       if (!response.ok) {
         throw new Error("Failed to fetch recipes");
       }
-      return response.json() as Promise<Recipe[]>;
+      const allRecipes = await response.json();
+      
+      // Filter recipes by user's books
+      return allRecipes.filter((recipe: any) => 
+        recipe.acf.libro_associato?.some((book: any) => 
+          userBooks.includes(book.ID.toString())
+        )
+      );
     },
+    enabled: !!userBooks?.length
   });
 
-  const allIngredients: string[] = recipes
+  const selectedIngredients = form.watch("ingredients") || [];
+
+  const getMatchingRecipes = () => {
+    if (!recipes) return { perfect: [], close: [] };
+
+    const matchingRecipes = recipes.filter((recipe: Recipe) => {
+      const matchesSearch = recipe.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      const recipeIngredients = recipe.acf.ingredients.map(i => 
+        i.ingredient_item.toLowerCase()
+      );
+
+      return recipeIngredients.some(ingredient =>
+        selectedIngredients.some(selected =>
+          ingredient.includes(selected.toLowerCase())
+        )
+      );
+    });
+
+    // Split into perfect matches (all ingredients available) and close matches
+    return matchingRecipes.reduce((acc: { perfect: Recipe[], close: Recipe[] }, recipe: Recipe) => {
+      const recipeIngredients = recipe.acf.ingredients.map(i => 
+        i.ingredient_item.toLowerCase()
+      );
+
+      const hasAllIngredients = recipeIngredients.every(ingredient =>
+        selectedIngredients.some(selected =>
+          ingredient.includes(selected.toLowerCase())
+        )
+      );
+
+      if (hasAllIngredients) {
+        acc.perfect.push(recipe);
+      } else {
+        const missingCount = recipeIngredients.filter(ingredient =>
+          !selectedIngredients.some(selected =>
+            ingredient.includes(selected.toLowerCase())
+          )
+        ).length;
+
+        // Only include recipes missing 3 or fewer ingredients
+        if (missingCount <= 3) {
+          acc.close.push(recipe);
+        }
+      }
+
+      return acc;
+    }, { perfect: [], close: [] });
+  };
+
+  const allIngredients = recipes
     ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
-            recipe.acf.ingredients.map((ingredient) => ingredient.trim())
+            recipe.acf.ingredients.map(i => i.ingredient_item.trim())
           )
         )
       ).sort()
     : [];
 
-  const selectedIngredients = form.watch("ingredients") || [];
-
-  const filteredRecipes = recipes?.filter((recipe: Recipe) => {
-    const matchesSearch = recipe.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-
-    const hasSelectedIngredients =
-      selectedIngredients.length === 0 ||
-      selectedIngredients.every((ingredient) =>
-        recipe.acf.ingredients.some((recipeIngredient) =>
-          recipeIngredient.toLowerCase().includes(ingredient.toLowerCase())
-        )
-      );
-
-    return matchesSearch && hasSelectedIngredients;
-  });
+  const { perfect: perfectMatches, close: closeMatches } = getMatchingRecipes();
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold">Cook with Your Ingredients</h1>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-[300px,1fr]">
         {/* Search and Filters */}
         <Card>
           <CardHeader>
-            <CardTitle>Search & Filter</CardTitle>
+            <CardTitle>Available Ingredients</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Input
-                placeholder="Search recipes..."
+                placeholder="Search ingredients..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -92,7 +173,7 @@ export default function CookWithIngredients() {
               <SelectField
                 form={form}
                 name="ingredients"
-                label="Select Ingredients"
+                label="Select or type ingredients"
                 options={allIngredients}
                 multiple={true}
               />
@@ -104,34 +185,93 @@ export default function CookWithIngredients() {
                 form.reset();
               }}
             >
-              Clear Filters
+              Clear All
             </Button>
           </CardContent>
         </Card>
 
         {/* Results */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Found Recipes ({filteredRecipes?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div>Loading recipes...</div>
-            ) : filteredRecipes?.length ? (
-              <ul className="space-y-2">
-                {filteredRecipes.map((recipe: Recipe) => (
-                  <li key={recipe.id} className="p-2 hover:bg-gray-50 rounded">
-                    {recipe.title}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div>No recipes found matching your criteria</div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-6">
+                Loading recipes...
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Perfect Matches */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    Ready to Cook
+                    <Badge variant="default" className="ml-2">
+                      {perfectMatches.length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {perfectMatches.length > 0 ? (
+                    <ScrollArea className="h-[300px] pr-4">
+                      <div className="grid gap-4">
+                        {perfectMatches.map((recipe: Recipe) => (
+                          <RecipeCard
+                            key={recipe.id}
+                            title={recipe.title}
+                            image={recipe.acf.recipe_image?.sizes?.['recipe-app'] || recipe.acf.recipe_image?.url}
+                            cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
+                            difficulty="Easy"
+                            recipeId={recipe.id}
+                            onClick={() => navigate(`/recipe/${recipe.id}`)}
+                          />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      No recipes found that match all your ingredients
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Close Matches */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    Almost There
+                    <Badge variant="secondary" className="ml-2">
+                      {closeMatches.length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {closeMatches.length > 0 ? (
+                    <ScrollArea className="h-[300px] pr-4">
+                      <div className="grid gap-4">
+                        {closeMatches.map((recipe: Recipe) => (
+                          <RecipeCard
+                            key={recipe.id}
+                            title={recipe.title}
+                            image={recipe.acf.recipe_image?.sizes?.['recipe-app'] || recipe.acf.recipe_image?.url}
+                            cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
+                            difficulty="Easy"
+                            recipeId={recipe.id}
+                            onClick={() => navigate(`/recipe/${recipe.id}`)}
+                          />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      No recipes found that are close to your ingredients
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
