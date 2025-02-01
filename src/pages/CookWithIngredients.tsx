@@ -117,15 +117,15 @@ export default function CookWithIngredients() {
     }, { perfect: [], close: [] });
   };
 
-  const allIngredients: readonly string[] = recipes
-    ? Array.from(
+  const allIngredients = recipes
+    ? (Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
             recipe.acf.ingredients.map((i: { ingredient_item: string }) => i.ingredient_item.trim())
           )
         )
-      ).sort()
-    : [];
+      ).sort() as readonly string[])
+    : ([] as readonly string[]);
 
   const { perfect: perfectMatches, close: closeMatches } = getMatchingRecipes();
 
