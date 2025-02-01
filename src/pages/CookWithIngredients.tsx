@@ -17,7 +17,6 @@ export default function CookWithIngredients() {
   const form = useForm();
   const navigate = useNavigate();
 
-  // Fetch user's books
   const { data: userBooks } = useQuery({
     queryKey: ['userBooks'],
     queryFn: async () => {
@@ -43,8 +42,7 @@ export default function CookWithIngredients() {
       return Array.from(bookIds);
     }
   });
-  
-  // Fetch recipes from user's books
+
   const { data: recipes = [], isLoading } = useQuery({
     queryKey: ['recipes', userBooks],
     queryFn: async () => {
@@ -58,9 +56,8 @@ export default function CookWithIngredients() {
       }
       const allRecipes = await response.json();
       
-      // Filter recipes by user's books
       return allRecipes.filter((recipe: Recipe) => 
-        recipe.acf.libro_associato?.some((book: any) => 
+        recipe.acf.libro_associato?.some((book) => 
           userBooks.includes(book.ID.toString())
         )
       );
@@ -96,7 +93,7 @@ export default function CookWithIngredients() {
         i.ingredient_item.toLowerCase()
       );
 
-      const hasAllIngredients = recipeIngredients.every(ingredient =>
+      const hasAllIngredients = selectedIngredients.length > 0 && recipeIngredients.every(ingredient =>
         selectedIngredients.some(selected =>
           ingredient.includes(selected.toLowerCase())
         )
@@ -120,7 +117,6 @@ export default function CookWithIngredients() {
     }, { perfect: [], close: [] });
   };
 
-  // Transform ingredients into a readonly string array
   const allIngredients: readonly string[] = recipes
     ? Array.from(
         new Set(
@@ -200,7 +196,7 @@ export default function CookWithIngredients() {
                           <RecipeCard
                             key={recipe.id}
                             title={recipe.title}
-                            image={recipe.acf.recipe_image?.sizes?.['recipe-app'] || recipe.acf.recipe_image?.url}
+                            image={recipe.acf.recipe_image?.url}
                             cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                             difficulty="Easy"
                             recipeId={recipe.id}
@@ -235,7 +231,7 @@ export default function CookWithIngredients() {
                           <RecipeCard
                             key={recipe.id}
                             title={recipe.title}
-                            image={recipe.acf.recipe_image?.sizes?.['recipe-app'] || recipe.acf.recipe_image?.url}
+                            image={recipe.acf.recipe_image?.url}
                             cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
                             difficulty="Easy"
                             recipeId={recipe.id}
