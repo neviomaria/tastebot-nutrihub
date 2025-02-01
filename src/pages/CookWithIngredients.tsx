@@ -97,13 +97,22 @@ export default function CookWithIngredients() {
   const getMatchingRecipes = () => {
     if (!recipes) return { perfect: [], close: [] };
 
-    const matchingRecipes = recipes.filter((recipe: Recipe) => {
-      const matchesSearch = recipe.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+    const selectedIngredients = form.watch("ingredients") || [];
 
-      if (!matchesSearch) return false;
+    // First filter by search query if present
+    const searchFiltered = searchQuery
+      ? recipes.filter((recipe: Recipe) =>
+          recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : recipes;
 
+    // If no ingredients selected, return all search-filtered recipes as "perfect" matches
+    if (!selectedIngredients.length) {
+      return { perfect: searchFiltered, close: [] };
+    }
+
+    // Then filter by ingredients
+    const matchingRecipes = searchFiltered.filter((recipe: Recipe) => {
       const recipeIngredients = (recipe.acf?.ingredients || []).map(i => 
         cleanIngredientString(i.ingredient_item)
       );
@@ -120,8 +129,8 @@ export default function CookWithIngredients() {
         cleanIngredientString(i.ingredient_item)
       );
 
-      const hasAllIngredients = selectedIngredients.length > 0 && recipeIngredients.every(ingredient =>
-        selectedIngredients.some(selected =>
+      const hasAllIngredients = selectedIngredients.every(selected =>
+        recipeIngredients.some(ingredient =>
           ingredient.includes(selected.toLowerCase())
         )
       );
@@ -129,13 +138,13 @@ export default function CookWithIngredients() {
       if (hasAllIngredients) {
         acc.perfect.push(recipe);
       } else {
-        const missingCount = recipeIngredients.filter(ingredient =>
-          !selectedIngredients.some(selected =>
+        const matchingIngredientsCount = selectedIngredients.filter(selected =>
+          recipeIngredients.some(ingredient =>
             ingredient.includes(selected.toLowerCase())
           )
         ).length;
 
-        if (missingCount <= 3) {
+        if (matchingIngredientsCount > 0) {
           acc.close.push(recipe);
         }
       }
@@ -160,7 +169,6 @@ export default function CookWithIngredients() {
   const handleSearch = () => {
     const currentIngredients = form.getValues("ingredients");
     console.log('Searching with ingredients:', currentIngredients);
-    setSearchQuery(searchQuery);
   };
 
   const clearFilters = () => {
@@ -185,7 +193,7 @@ export default function CookWithIngredients() {
           <CardContent className="space-y-4">
             <div>
               <Input
-                placeholder="Search ingredients..."
+                placeholder="Search recipes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -195,7 +203,7 @@ export default function CookWithIngredients() {
                 <SelectField
                   form={form}
                   name="ingredients"
-                  label="Select or type ingredients"
+                  label="Select ingredients"
                   options={filteredIngredients}
                   multiple={true}
                   searchValue={ingredientFilter}
