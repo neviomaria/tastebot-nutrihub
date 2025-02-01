@@ -121,7 +121,7 @@ export default function CookWithIngredients() {
     ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
-            recipe.acf.ingredients.map(i => i.ingredient_item.trim())
+            recipe.acf.ingredients.map((i: { ingredient_item: string }) => i.ingredient_item.trim())
           )
         )
       ).sort()
@@ -134,7 +134,6 @@ export default function CookWithIngredients() {
       <h1 className="text-3xl font-bold">Cook with Your Ingredients</h1>
 
       <div className="grid gap-6 md:grid-cols-[300px,1fr]">
-        {/* Search and Filters */}
         <Card>
           <CardHeader>
             <CardTitle>Available Ingredients</CardTitle>
@@ -168,7 +167,6 @@ export default function CookWithIngredients() {
           </CardContent>
         </Card>
 
-        {/* Results */}
         <div className="space-y-6">
           {isLoading ? (
             <Card>
@@ -178,7 +176,6 @@ export default function CookWithIngredients() {
             </Card>
           ) : (
             <>
-              {/* Perfect Matches */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -213,7 +210,6 @@ export default function CookWithIngredients() {
                 </CardContent>
               </Card>
 
-              {/* Close Matches */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
