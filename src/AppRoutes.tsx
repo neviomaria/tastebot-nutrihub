@@ -16,6 +16,11 @@ import Auth from "@/pages/Auth";
 export function AppRoutes() {
   const { isAuthenticated } = useAuthState();
 
+  // If authentication is still loading, show nothing
+  if (isAuthenticated === null) {
+    return null;
+  }
+
   // If not authenticated, redirect to auth page
   if (isAuthenticated === false) {
     return (
@@ -24,11 +29,6 @@ export function AppRoutes() {
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     );
-  }
-
-  // If authentication is still loading, show nothing
-  if (isAuthenticated === null) {
-    return null;
   }
 
   // Protected routes for authenticated users
