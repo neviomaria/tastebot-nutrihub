@@ -11,10 +11,15 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Recipe } from "@/types/recipe";
+import { Form } from "@/components/ui/form";
 
 export default function CookWithIngredients() {
   const [searchQuery, setSearchQuery] = useState("");
-  const form = useForm();
+  const form = useForm({
+    defaultValues: {
+      ingredients: []
+    }
+  });
   const navigate = useNavigate();
 
   const { data: userBooks } = useQuery({
@@ -146,15 +151,17 @@ export default function CookWithIngredients() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div>
-              <SelectField
-                form={form}
-                name="ingredients"
-                label="Select or type ingredients"
-                options={allIngredients}
-                multiple={true}
-              />
-            </div>
+            <Form {...form}>
+              <div>
+                <SelectField
+                  form={form}
+                  name="ingredients"
+                  label="Select or type ingredients"
+                  options={allIngredients}
+                  multiple={true}
+                />
+              </div>
+            </Form>
             <Button
               variant="outline"
               onClick={() => {
