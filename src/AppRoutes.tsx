@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuthState } from "@/hooks/use-auth-state";
 import Home from "@/pages/Index";
 import BookRecipes from "@/pages/BookRecipes";
 import RecipeDetail from "@/pages/RecipeDetail";
@@ -10,8 +11,27 @@ import FavoriteRecipes from "@/pages/FavoriteRecipes";
 import MealPlans from "@/pages/MealPlans";
 import Timers from "@/pages/Timers";
 import ShoppingLists from "@/pages/ShoppingLists";
+import Auth from "@/pages/Auth";
 
 export function AppRoutes() {
+  const { isAuthenticated } = useAuthState();
+
+  // If not authenticated, redirect to auth page
+  if (isAuthenticated === false) {
+    return (
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    );
+  }
+
+  // If authentication is still loading, show nothing
+  if (isAuthenticated === null) {
+    return null;
+  }
+
+  // Protected routes for authenticated users
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -25,6 +45,7 @@ export function AppRoutes() {
       <Route path="/meal-plans" element={<MealPlans />} />
       <Route path="/timers" element={<Timers />} />
       <Route path="/shopping-lists" element={<ShoppingLists />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

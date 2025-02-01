@@ -11,30 +11,22 @@ import "./App.css";
 
 const queryClient = new QueryClient();
 
-// Create a wrapper component to handle authenticated layout
-const AuthenticatedLayout = () => {
-  // Move the auth state check inside the Router context
+function App() {
   const { isAuthenticated } = useAuthState();
 
-  return (
-    <div className="flex h-screen w-full">
-      {isAuthenticated && <AppSidebar />}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {isAuthenticated && <AppHeader />}
-        <main className="flex-1 overflow-auto">
-          <AppRoutes />
-        </main>
-      </div>
-    </div>
-  );
-};
-
-function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <SidebarProvider>
-          <AuthenticatedLayout />
+          <div className="flex h-screen w-full">
+            {isAuthenticated && <AppSidebar />}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {isAuthenticated && <AppHeader />}
+              <main className="flex-1 overflow-auto">
+                <AppRoutes />
+              </main>
+            </div>
+          </div>
           <Toaster />
           <SonnerToaster />
         </SidebarProvider>
