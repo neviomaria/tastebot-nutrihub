@@ -121,7 +121,7 @@ export default function CookWithIngredients() {
     ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
-            recipe.acf.ingredients.map((i: { ingredient_item: string }) => i.ingredient_item.trim())
+            recipe.acf.ingredients.map((i) => i.ingredient_item.trim())
           )
         )
       ).sort()
