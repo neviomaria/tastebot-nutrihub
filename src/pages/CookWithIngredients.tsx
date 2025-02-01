@@ -37,7 +37,7 @@ export default function CookWithIngredients() {
     },
   });
 
-  const allIngredients = recipes
+  const allIngredients: string[] = recipes
     ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
