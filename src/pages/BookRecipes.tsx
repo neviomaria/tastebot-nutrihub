@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/components/SearchBar";
 import { Recipe } from "@/types/recipe";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const mealTypeOrder: { [key: string]: number } = {
   'Breakfast': 1,
@@ -163,12 +164,11 @@ const BookRecipes = () => {
               recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
             )
             .flatMap((recipe: Recipe) => {
-              console.log('Recipe ingredients:', recipe.acf.ingredients);
               return Array.isArray(recipe.acf.ingredients) 
                 ? recipe.acf.ingredients
                     .filter(ing => ing && ing.ingredient_item)
                     .map(ing => cleanIngredientName(ing.ingredient_item))
-                    .filter(ingredient => ingredient !== '') // Remove empty strings (nutritional values)
+                    .filter(ingredient => ingredient !== '')
                 : [];
             })
         )
@@ -182,6 +182,12 @@ const BookRecipes = () => {
   const handleClearSearch = () => {
     setSearchParams({ keywords: "", ingredients: [] });
     setIsSearching(false);
+  };
+
+  const handleResetAll = () => {
+    handleClearSearch();
+    const sortedKeys = Object.keys(groupedRecipes).sort(sortMealTypes);
+    setActiveTab(sortedKeys[0]);
   };
 
   if (!session) {
@@ -228,51 +234,95 @@ const BookRecipes = () => {
 
         <div className="mb-6">
           <SearchBar onSearch={handleSearch} ingredients={allIngredients} />
-          {isSearching && (
+          <div className="flex gap-2 mt-2">
+            {isSearching && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleClearSearch}
+              >
+                Clear Search
+              </Button>
+            )}
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={handleClearSearch}
-              className="mt-2"
+              onClick={handleResetAll}
             >
-              Clear Search
+              Reset All
             </Button>
-          )}
+          </div>
         </div>
 
         {Object.keys(groupedRecipes).length === 0 ? (
           <p className="text-gray-500">No recipes available for this book.</p>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-6 bg-card border">
-              {sortedMealTypes.map((mealType) => (
-                <TabsTrigger
-                  key={mealType}
-                  value={mealType}
-                  className="capitalize"
-                >
-                  {mealType}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {sortedMealTypes.map((mealType) => (
-              <TabsContent key={mealType} value={mealType}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {groupedRecipes[mealType].map((recipe) => (
-                    <RecipeCard
-                      key={recipe.id}
-                      title={recipe.title}
-                      image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
-                      cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
-                      difficulty="Easy"
-                      recipeId={recipe.id}
-                      onClick={() => navigate(`/recipe/${recipe.id}`)}
-                    />
+          <div className="w-full">
+            {isMobile ? (
+              <>
+                <Select value={activeTab} onValueChange={setActiveTab}>
+                  <SelectTrigger className="mb-6 bg-card border">
+                    <SelectValue placeholder="Select meal type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sortedMealTypes.map((mealType) => (
+                      <SelectItem key={mealType} value={mealType}>
+                        {mealType}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {sortedMealTypes.map((mealType) => (
+                  <div key={mealType} className={mealType === activeTab ? 'block' : 'hidden'}>
+                    <div className="grid grid-cols-1 gap-6">
+                      {groupedRecipes[mealType].map((recipe) => (
+                        <RecipeCard
+                          key={recipe.id}
+                          title={recipe.title}
+                          image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
+                          cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
+                          difficulty="Easy"
+                          recipeId={recipe.id}
+                          onClick={() => navigate(`/recipe/${recipe.id}`)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="mb-6 bg-card border">
+                  {sortedMealTypes.map((mealType) => (
+                    <TabsTrigger
+                      key={mealType}
+                      value={mealType}
+                      className="capitalize"
+                    >
+                      {mealType}
+                    </TabsTrigger>
                   ))}
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
+                </TabsList>
+                {sortedMealTypes.map((mealType) => (
+                  <TabsContent key={mealType} value={mealType}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {groupedRecipes[mealType].map((recipe) => (
+                        <RecipeCard
+                          key={recipe.id}
+                          title={recipe.title}
+                          image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
+                          cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
+                          difficulty="Easy"
+                          recipeId={recipe.id}
+                          onClick={() => navigate(`/recipe/${recipe.id}`)}
+                        />
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            )}
+          </div>
         )}
       </div>
     </div>
