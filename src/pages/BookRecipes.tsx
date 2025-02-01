@@ -181,6 +181,10 @@ const BookRecipes = () => {
     setSearchParams({ keywords: "", ingredients: [] });
     setIsSearching(false);
     setActiveTab("");
+    // Reset the select value to empty string to show placeholder
+    if (isMobile) {
+      setActiveTab("");
+    }
   };
 
   if (!session) {
@@ -246,7 +250,10 @@ const BookRecipes = () => {
           <div className="w-full">
             {isMobile ? (
               <>
-                <Select value={activeTab} onValueChange={setActiveTab}>
+                <Select 
+                  value={activeTab} 
+                  onValueChange={setActiveTab}
+                >
                   <SelectTrigger className="mb-6 bg-card border">
                     <SelectValue placeholder="Select meal type" />
                   </SelectTrigger>
