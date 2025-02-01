@@ -55,17 +55,28 @@ const BookRecipes = () => {
   });
 
   const cleanIngredientName = (ingredient: string): string => {
-    // Remove quantities and measurements
-    const cleanedName = ingredient
-      .replace(/^\d+\/?\d*\s*(tablespoon|tbsp|teaspoon|tsp|cup|g|gram|ml|pound|lb|oz|ounce|piece|slice|can|package|to taste|optional|\(.*?\))/gi, '')
-      .replace(/,.*$/, '') // Remove everything after comma
-      .trim();
+    // Check for nutritional values first
+    const nutritionKeywords = [
+      'calories', 'protein', 'carbohydrates', 'sugars', 'dietary fiber', 'fat',
+      'sodium', 'potassium', 'phosphorus', 'calcium', 'iron', 'vitamin',
+      'cholesterol', 'saturated', 'trans', 'sugar', 'fiber', 'protein'
+    ];
     
-    // Return null for nutritional values
-    const nutritionKeywords = ['calories', 'protein', 'carbohydrates', 'sugars', 'dietary fiber', 'fat'];
-    if (nutritionKeywords.some(keyword => ingredient.toLowerCase().includes(keyword))) {
+    if (nutritionKeywords.some(keyword => 
+      ingredient.toLowerCase().includes(keyword) ||
+      ingredient.toLowerCase().match(/\d+\s*mg/) ||  // Matches patterns like "10mg"
+      ingredient.toLowerCase().match(/\d+\s*g/)      // Matches patterns like "10g"
+    )) {
       return '';
     }
+    
+    // Remove quantities, measurements, and descriptive terms
+    let cleanedName = ingredient
+      .replace(/^[\d\/\s]+/, '') // Remove numbers at start
+      .replace(/^\d+\/?\d*\s*(tablespoon|tbsp|teaspoon|tsp|cup|g|gram|ml|pound|lb|oz|ounce|piece|slice|can|package|to taste|optional|\(.*?\))/gi, '')
+      .replace(/,.*$/, '') // Remove everything after comma
+      .replace(/^(fresh|dried|mini|large|small|medium|dark|light)\s+/gi, '') // Remove common descriptive terms
+      .trim();
     
     return cleanedName;
   };
