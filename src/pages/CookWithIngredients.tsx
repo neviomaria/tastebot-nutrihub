@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Recipe } from "@/types/recipe";
 import { Form } from "@/components/ui/form";
+import { Search } from "lucide-react";
 
 export default function CookWithIngredients() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,7 +71,16 @@ export default function CookWithIngredients() {
     enabled: !!userBooks?.length
   });
 
-  const selectedIngredients = form.watch("ingredients") || [];
+  const cleanIngredientString = (ingredient: string) => {
+    // Remove quantities (numbers and fractions) and common units
+    return ingredient
+      .replace(/^\d+\/?\d*\s*/, '') // Remove fractions and numbers at start
+      .replace(/\b(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices)\b\s*/gi, '')
+      .replace(/,/g, '') // Remove commas
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim()
+      .toLowerCase();
+  };
 
   const getMatchingRecipes = () => {
     if (!recipes) return { perfect: [], close: [] };
@@ -83,7 +93,7 @@ export default function CookWithIngredients() {
       if (!matchesSearch) return false;
 
       const recipeIngredients = (recipe.acf?.ingredients || []).map(i => 
-        i.ingredient_item.toLowerCase()
+        cleanIngredientString(i.ingredient_item)
       );
 
       return recipeIngredients.some(ingredient =>
@@ -95,7 +105,7 @@ export default function CookWithIngredients() {
 
     return matchingRecipes.reduce((acc: { perfect: Recipe[], close: Recipe[] }, recipe: Recipe) => {
       const recipeIngredients = (recipe.acf?.ingredients || []).map(i => 
-        i.ingredient_item.toLowerCase()
+        cleanIngredientString(i.ingredient_item)
       );
 
       const hasAllIngredients = selectedIngredients.length > 0 && recipeIngredients.every(ingredient =>
@@ -127,13 +137,20 @@ export default function CookWithIngredients() {
     ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
-            (recipe.acf?.ingredients || []).map(i => i.ingredient_item.trim())
+            (recipe.acf?.ingredients || []).map(i => cleanIngredientString(i.ingredient_item))
           )
         )
       ).sort() as readonly string[]
     : ([] as readonly string[]);
 
+  const selectedIngredients = form.watch("ingredients") || [];
   const { perfect: perfectMatches, close: closeMatches } = getMatchingRecipes();
+
+  const handleSearch = () => {
+    // The search is already reactive through the form state and getMatchingRecipes
+    // This is just to provide feedback that the search was triggered
+    console.log('Searching with ingredients:', selectedIngredients);
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -153,7 +170,7 @@ export default function CookWithIngredients() {
               />
             </div>
             <Form {...form}>
-              <div>
+              <div className="space-y-4">
                 <SelectField
                   form={form}
                   name="ingredients"
@@ -161,17 +178,15 @@ export default function CookWithIngredients() {
                   options={allIngredients}
                   multiple={true}
                 />
+                <Button 
+                  className="w-full"
+                  onClick={handleSearch}
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  Search Recipes
+                </Button>
               </div>
             </Form>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery("");
-                form.reset();
-              }}
-            >
-              Clear All
-            </Button>
           </CardContent>
         </Card>
 
