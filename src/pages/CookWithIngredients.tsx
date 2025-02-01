@@ -72,12 +72,15 @@ export default function CookWithIngredients() {
   });
 
   const cleanIngredientString = (ingredient: string) => {
-    // Remove quantities (numbers and fractions) and common units
+    // Remove quantities, fractions, and units more thoroughly
     return ingredient
-      .replace(/^\d+\/?\d*\s*/, '') // Remove fractions and numbers at start
-      .replace(/\b(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices)\b\s*/gi, '')
+      .replace(/^[\d./\s-]+/, '') // Remove numbers, fractions, and dashes at start
+      .replace(/\b\d+\/?\d*\s*(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|lbs|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices)\b\s*/gi, '')
+      .replace(/\b(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|lbs|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices)\b\s*/gi, '')
       .replace(/,/g, '') // Remove commas
       .replace(/\s+/g, ' ') // Normalize spaces
+      .replace(/^(of|the)\s+/i, '') // Remove leading "of" or "the"
+      .replace(/\s+(of|the)\s+/gi, ' ') // Remove "of" or "the" in the middle
       .trim()
       .toLowerCase();
   };
@@ -147,9 +150,10 @@ export default function CookWithIngredients() {
   const { perfect: perfectMatches, close: closeMatches } = getMatchingRecipes();
 
   const handleSearch = () => {
-    // The search is already reactive through the form state and getMatchingRecipes
-    // This is just to provide feedback that the search was triggered
-    console.log('Searching with ingredients:', selectedIngredients);
+    const currentIngredients = form.getValues("ingredients");
+    console.log('Searching with ingredients:', currentIngredients);
+    // Force a re-render to update the matches
+    setSearchQuery(searchQuery);
   };
 
   return (
@@ -181,6 +185,7 @@ export default function CookWithIngredients() {
                 <Button 
                   className="w-full"
                   onClick={handleSearch}
+                  type="button"
                 >
                   <Search className="mr-2 h-4 w-4" />
                   Search Recipes
