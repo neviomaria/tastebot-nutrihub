@@ -146,6 +146,7 @@ const BookRecipes = () => {
         }, {});
 
         setGroupedRecipes(grouped);
+        // Only set activeTab if it's empty and there are groups
         if (Object.keys(grouped).length > 0 && !activeTab) {
           const sortedKeys = Object.keys(grouped).sort(sortMealTypes);
           setActiveTab(sortedKeys[0]);
@@ -180,11 +181,7 @@ const BookRecipes = () => {
   const handleResetAll = () => {
     setSearchParams({ keywords: "", ingredients: [] });
     setIsSearching(false);
-    setActiveTab("");
-    // Reset the select value to empty string to show placeholder
-    if (isMobile) {
-      setActiveTab("");
-    }
+    setActiveTab(""); // This will reset the select in both mobile and desktop
   };
 
   if (!session) {
