@@ -1,37 +1,41 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { SearchBar } from "@/components/SearchBar";
-import { RecipeCard } from "@/components/RecipeCard";
-import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { SelectField } from "@/components/form/SelectField";
 
 interface Recipe {
   id: number;
   title: string;
+  ingredients: string[];
   acf: {
     prep_time: string;
     cook_time: string;
+    ingredients: string[];
+    instructions: string[];
     recipe_image: {
       url: string;
+      sizes: {
+        'recipe-app': string;
+        medium: string;
+      };
     };
-    ingredients: Array<{
-      ingredient_item: string;
-    }>;
   };
 }
 
 export default function CookWithIngredients() {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useState<{ keywords: string; ingredients: string[] }>({
-    keywords: "",
-    ingredients: [],
-  });
+  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: recipes, isLoading } = useQuery({
-    queryKey: ['recipes'],
+    queryKey: ["recipes"],
     queryFn: async () => {
-      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      const response = await fetch(
+        "https://brainscapebooks.com/wp-json/custom/v1/recipes"
+      );
       if (!response.ok) {
-        throw new Error('Failed to fetch recipes');
+        throw new Error("Failed to fetch recipes");
       }
       return response.json();
     },
@@ -41,79 +45,93 @@ export default function CookWithIngredients() {
     ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
-            recipe.acf.ingredients.map((ing) => ing.ingredient_item)
+            recipe.acf.ingredients.map((ingredient) => ingredient.trim())
           )
         )
-      )
+      ).sort()
     : [];
 
   const filteredRecipes = recipes?.filter((recipe: Recipe) => {
-    const matchesKeywords = searchParams.keywords
-      ? recipe.title.toLowerCase().includes(searchParams.keywords.toLowerCase())
-      : true;
+    const matchesSearch = recipe.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
-    const matchesIngredients = searchParams.ingredients.length
-      ? searchParams.ingredients.every((ingredient) =>
-          recipe.acf.ingredients.some((ing) =>
-            ing.ingredient_item.toLowerCase().includes(ingredient.toLowerCase())
-          )
+    const hasSelectedIngredients =
+      selectedIngredients.length === 0 ||
+      selectedIngredients.every((ingredient) =>
+        recipe.acf.ingredients.some((recipeIngredient) =>
+          recipeIngredient.toLowerCase().includes(ingredient.toLowerCase())
         )
-      : true;
+      );
 
-    return matchesKeywords && matchesIngredients;
+    return matchesSearch && hasSelectedIngredients;
   });
 
-  const handleSearch = (query: { keywords: string; ingredients: string[] }) => {
-    setSearchParams(query);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4" />
-          <div className="h-32 bg-gray-200 rounded" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-64 bg-gray-200 rounded" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold">Cook with What You Have</h1>
-        <p className="text-muted-foreground">
-          Select the ingredients you have, and we'll show you recipes you can make!
-        </p>
+    <div className="container mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold">Cook with Your Ingredients</h1>
 
-        <SearchBar onSearch={handleSearch} ingredients={allIngredients} />
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Search and Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Search & Filter</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Input
+                placeholder="Search recipes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div>
+              <SelectField
+                label="Select Ingredients"
+                options={allIngredients.map((ingredient) => ({
+                  label: ingredient,
+                  value: ingredient,
+                }))}
+                value={selectedIngredients}
+                onChange={setSelectedIngredients}
+                isMulti
+              />
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedIngredients([]);
+              }}
+            >
+              Clear Filters
+            </Button>
+          </CardContent>
+        </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredRecipes?.map((recipe: Recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              title={recipe.title}
-              image={recipe.acf.recipe_image?.url || '/placeholder.svg'}
-              cookTime={`Prep: ${recipe.acf.prep_time} | Cook: ${recipe.acf.cook_time}`}
-              difficulty="Easy"
-              recipeId={recipe.id}
-              onClick={() => navigate(`/recipe/${recipe.id}`)}
-            />
-          ))}
-        </div>
-
-        {filteredRecipes?.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              No recipes found matching your criteria.
-            </p>
-          </div>
-        )}
+        {/* Results */}
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Found Recipes ({filteredRecipes?.length || 0})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div>Loading recipes...</div>
+            ) : filteredRecipes?.length ? (
+              <ul className="space-y-2">
+                {filteredRecipes.map((recipe: Recipe) => (
+                  <li key={recipe.id} className="p-2 hover:bg-gray-50 rounded">
+                    {recipe.title}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div>No recipes found matching your criteria</div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
