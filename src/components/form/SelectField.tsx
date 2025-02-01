@@ -23,9 +23,10 @@ interface SelectFieldProps {
   label: string;
   options: readonly string[];
   multiple?: boolean;
+  className?: string;
 }
 
-export const SelectField = ({ form, name, label, options, multiple = false }: SelectFieldProps) => {
+export const SelectField = ({ form, name, label, options, multiple = false, className }: SelectFieldProps) => {
   const values = form.watch(name) || [];
 
   const handleValueChange = (value: string) => {
@@ -54,7 +55,7 @@ export const SelectField = ({ form, name, label, options, multiple = false }: Se
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className={className}>
           {label && <FormLabel>{label}</FormLabel>}
           <div className="space-y-2">
             <Select
