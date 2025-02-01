@@ -73,8 +73,11 @@ export default function CookWithIngredients() {
   });
 
   const cleanIngredientString = (ingredient: string) => {
-    // Remove quantities, fractions, and units more thoroughly
-    return ingredient
+    // First remove colons and everything before them
+    let cleaned = ingredient.replace(/^[^:]*:\s*/, '');
+    
+    // Then apply other cleaning steps
+    return cleaned
       .replace(/^[\d./\s-]+/, '') // Remove numbers, fractions, and dashes at start
       .replace(/\([^)]*\)/g, '') // Remove anything in parentheses
       .replace(/\b\d+\/?\d*\s*(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|lbs|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices)\b\s*/gi, '')
@@ -85,6 +88,8 @@ export default function CookWithIngredients() {
       .replace(/\s+(of|the|a|an)\s+/gi, ' ') // Remove articles in the middle
       .replace(/^(small|medium|large)\s+/i, '') // Remove size indicators
       .replace(/\s+(small|medium|large)\s+/gi, ' ') // Remove size indicators in the middle
+      .replace(/for garnish/gi, '') // Remove "for garnish"
+      .replace(/to taste/gi, '') // Remove "to taste"
       .trim()
       .toLowerCase();
   };
@@ -139,7 +144,6 @@ export default function CookWithIngredients() {
     }, { perfect: [], close: [] });
   };
 
-  // Create a flat array of all ingredients across all recipes
   const allIngredients = recipes
     ? Array.from(
         new Set(
