@@ -10,24 +10,7 @@ import { RecipeCard } from "@/components/RecipeCard";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-
-interface Recipe {
-  id: number;
-  title: string;
-  acf: {
-    prep_time: string;
-    cook_time: string;
-    ingredients: Array<{ ingredient_item: string }>;
-    recipe_image: {
-      url: string;
-      sizes: {
-        'recipe-app': string;
-        medium: string;
-      };
-    };
-  };
-}
+import { Recipe } from "@/types/recipe";
 
 export default function CookWithIngredients() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,7 +59,7 @@ export default function CookWithIngredients() {
       const allRecipes = await response.json();
       
       // Filter recipes by user's books
-      return allRecipes.filter((recipe: any) => 
+      return allRecipes.filter((recipe: Recipe) => 
         recipe.acf.libro_associato?.some((book: any) => 
           userBooks.includes(book.ID.toString())
         )
@@ -108,7 +91,6 @@ export default function CookWithIngredients() {
       );
     });
 
-    // Split into perfect matches (all ingredients available) and close matches
     return matchingRecipes.reduce((acc: { perfect: Recipe[], close: Recipe[] }, recipe: Recipe) => {
       const recipeIngredients = recipe.acf.ingredients.map(i => 
         i.ingredient_item.toLowerCase()
@@ -129,7 +111,6 @@ export default function CookWithIngredients() {
           )
         ).length;
 
-        // Only include recipes missing 3 or fewer ingredients
         if (missingCount <= 3) {
           acc.close.push(recipe);
         }
@@ -139,7 +120,8 @@ export default function CookWithIngredients() {
     }, { perfect: [], close: [] });
   };
 
-  const allIngredients = recipes
+  // Transform ingredients into a readonly string array
+  const allIngredients: readonly string[] = recipes
     ? Array.from(
         new Set(
           recipes.flatMap((recipe: Recipe) =>
