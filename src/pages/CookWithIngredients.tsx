@@ -17,6 +17,7 @@ import { Search, X } from "lucide-react";
 export default function CookWithIngredients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [ingredientFilter, setIngredientFilter] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
   const form = useForm({
     defaultValues: {
       ingredients: []
@@ -95,7 +96,7 @@ export default function CookWithIngredients() {
   };
 
   const getMatchingRecipes = () => {
-    if (!recipes) return { perfect: [], close: [] };
+    if (!recipes || !hasSearched) return { perfect: [], close: [] };
 
     const selectedIngredients = form.watch("ingredients") || [];
 
@@ -169,12 +170,14 @@ export default function CookWithIngredients() {
   const handleSearch = () => {
     const currentIngredients = form.getValues("ingredients");
     console.log('Searching with ingredients:', currentIngredients);
+    setHasSearched(true);
   };
 
   const clearFilters = () => {
     form.reset({ ingredients: [] });
     setSearchQuery("");
     setIngredientFilter("");
+    setHasSearched(false);
   };
 
   const filteredIngredients = allIngredients.filter(ingredient => 
@@ -251,7 +254,11 @@ export default function CookWithIngredients() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {perfectMatches.length > 0 ? (
+                  {!hasSearched ? (
+                    <p className="text-muted-foreground">
+                      Search for recipes or select ingredients to get started
+                    </p>
+                  ) : perfectMatches.length > 0 ? (
                     <ScrollArea className="h-[300px] pr-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {perfectMatches.map((recipe: Recipe) => (
@@ -285,7 +292,11 @@ export default function CookWithIngredients() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {closeMatches.length > 0 ? (
+                  {!hasSearched ? (
+                    <p className="text-muted-foreground">
+                      Search for recipes or select ingredients to get started
+                    </p>
+                  ) : closeMatches.length > 0 ? (
                     <ScrollArea className="h-[300px] pr-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {closeMatches.map((recipe: Recipe) => (
