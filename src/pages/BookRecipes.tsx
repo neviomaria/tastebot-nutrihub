@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { RecipeCard } from "@/components/RecipeCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +20,7 @@ const BookRecipes = () => {
     keywords: "",
     ingredients: [],
   });
+  const [isSearching, setIsSearching] = useState(false);
   const { toast } = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -114,21 +115,30 @@ const BookRecipes = () => {
           return matchesKeywords && matchesIngredients;
         });
       
-      const grouped = bookRecipes.reduce((acc: { [key: string]: Recipe[] }, recipe: Recipe) => {
-        const mealType = recipe.acf.pasto || 'Other';
-        if (!acc[mealType]) {
-          acc[mealType] = [];
-        }
-        acc[mealType].push(recipe);
-        return acc;
-      }, {});
+      // If we're searching, show all matching recipes in a single "Search Results" group
+      if (searchParams.keywords || searchParams.ingredients.length > 0) {
+        setIsSearching(true);
+        setGroupedRecipes({ "Search Results": bookRecipes });
+        setActiveTab("Search Results");
+      } else {
+        setIsSearching(false);
+        // Group recipes by meal type when not searching
+        const grouped = bookRecipes.reduce((acc: { [key: string]: Recipe[] }, recipe: Recipe) => {
+          const mealType = recipe.acf.pasto || 'Other';
+          if (!acc[mealType]) {
+            acc[mealType] = [];
+          }
+          acc[mealType].push(recipe);
+          return acc;
+        }, {});
 
-      setGroupedRecipes(grouped);
-      if (Object.keys(grouped).length > 0 && !activeTab) {
-        setActiveTab(Object.keys(grouped)[0]);
+        setGroupedRecipes(grouped);
+        if (Object.keys(grouped).length > 0 && !activeTab) {
+          setActiveTab(Object.keys(grouped)[0]);
+        }
       }
     }
-  }, [recipes, id, activeTab, searchParams]);
+  }, [recipes, id, searchParams]);
 
   const allIngredients = recipes
     ? Array.from(
@@ -152,6 +162,11 @@ const BookRecipes = () => {
 
   const handleSearch = (query: { keywords: string; ingredients: string[] }) => {
     setSearchParams(query);
+  };
+
+  const handleClearSearch = () => {
+    setSearchParams({ keywords: "", ingredients: [] });
+    setIsSearching(false);
   };
 
   if (!session) {
@@ -192,6 +207,16 @@ const BookRecipes = () => {
 
         <div className="mb-6">
           <SearchBar onSearch={handleSearch} ingredients={allIngredients} />
+          {isSearching && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClearSearch}
+              className="mt-2"
+            >
+              Clear Search
+            </Button>
+          )}
         </div>
 
         {Object.keys(groupedRecipes).length === 0 ? (
