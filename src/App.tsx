@@ -6,12 +6,21 @@ import { AppRoutes } from "./AppRoutes";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useAuthState } from "@/hooks/use-auth-state";
 import "./App.css";
 
 const queryClient = new QueryClient();
 
 // Create a wrapper component to handle authenticated layout
 const AuthenticatedLayout = () => {
+  const { isAuthenticated } = useAuthState();
+
+  // If not authenticated or still loading, only show routes
+  if (!isAuthenticated) {
+    return <AppRoutes />;
+  }
+
+  // Show full layout for authenticated users
   return (
     <div className="flex h-screen w-full">
       <AppSidebar />
