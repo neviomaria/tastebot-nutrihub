@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/form/SelectField";
+import { useForm } from "react-hook-form";
 
 interface Recipe {
   id: number;
@@ -25,9 +26,9 @@ interface Recipe {
 }
 
 export default function CookWithIngredients() {
-  const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const form = useForm();
+  
   const { data: recipes, isLoading } = useQuery({
     queryKey: ["recipes"],
     queryFn: async () => {
@@ -37,7 +38,7 @@ export default function CookWithIngredients() {
       if (!response.ok) {
         throw new Error("Failed to fetch recipes");
       }
-      return response.json();
+      return response.json() as Promise<Recipe[]>;
     },
   });
 
@@ -50,6 +51,8 @@ export default function CookWithIngredients() {
         )
       ).sort()
     : [];
+
+  const selectedIngredients = form.watch("ingredients") || [];
 
   const filteredRecipes = recipes?.filter((recipe: Recipe) => {
     const matchesSearch = recipe.title
@@ -87,21 +90,18 @@ export default function CookWithIngredients() {
             </div>
             <div>
               <SelectField
+                form={form}
+                name="ingredients"
                 label="Select Ingredients"
-                options={allIngredients.map((ingredient) => ({
-                  label: ingredient,
-                  value: ingredient,
-                }))}
-                value={selectedIngredients}
-                onChange={setSelectedIngredients}
-                isMulti
+                options={allIngredients}
+                multiple={true}
               />
             </div>
             <Button
               variant="outline"
               onClick={() => {
                 setSearchQuery("");
-                setSelectedIngredients([]);
+                form.reset();
               }}
             >
               Clear Filters
