@@ -12,10 +12,11 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Recipe } from "@/types/recipe";
 import { Form } from "@/components/ui/form";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 export default function CookWithIngredients() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [ingredientFilter, setIngredientFilter] = useState("");
   const form = useForm({
     defaultValues: {
       ingredients: []
@@ -75,12 +76,15 @@ export default function CookWithIngredients() {
     // Remove quantities, fractions, and units more thoroughly
     return ingredient
       .replace(/^[\d./\s-]+/, '') // Remove numbers, fractions, and dashes at start
+      .replace(/\([^)]*\)/g, '') // Remove anything in parentheses
       .replace(/\b\d+\/?\d*\s*(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|lbs|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices)\b\s*/gi, '')
-      .replace(/\b(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|lbs|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices)\b\s*/gi, '')
+      .replace(/\b(cup|cups|tablespoon|tablespoons|tbsp|teaspoon|teaspoons|tsp|pound|pounds|lb|lbs|ounce|ounces|oz|gram|grams|g|ml|l|can|cans|piece|pieces|slice|slices|drained|rinsed|mashed|flaked|crushed|optional)\b\s*/gi, '')
       .replace(/,/g, '') // Remove commas
       .replace(/\s+/g, ' ') // Normalize spaces
-      .replace(/^(of|the)\s+/i, '') // Remove leading "of" or "the"
-      .replace(/\s+(of|the)\s+/gi, ' ') // Remove "of" or "the" in the middle
+      .replace(/^(of|the|a|an)\s+/i, '') // Remove leading articles
+      .replace(/\s+(of|the|a|an)\s+/gi, ' ') // Remove articles in the middle
+      .replace(/^(small|medium|large)\s+/i, '') // Remove size indicators
+      .replace(/\s+(small|medium|large)\s+/gi, ' ') // Remove size indicators in the middle
       .trim()
       .toLowerCase();
   };
@@ -152,9 +156,18 @@ export default function CookWithIngredients() {
   const handleSearch = () => {
     const currentIngredients = form.getValues("ingredients");
     console.log('Searching with ingredients:', currentIngredients);
-    // Force a re-render to update the matches
     setSearchQuery(searchQuery);
   };
+
+  const clearFilters = () => {
+    form.reset({ ingredients: [] });
+    setSearchQuery("");
+    setIngredientFilter("");
+  };
+
+  const filteredIngredients = allIngredients.filter(ingredient => 
+    ingredient.toLowerCase().includes(ingredientFilter.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -179,17 +192,29 @@ export default function CookWithIngredients() {
                   form={form}
                   name="ingredients"
                   label="Select or type ingredients"
-                  options={allIngredients}
+                  options={filteredIngredients}
                   multiple={true}
+                  searchValue={ingredientFilter}
+                  onSearchChange={setIngredientFilter}
                 />
-                <Button 
-                  className="w-full"
-                  onClick={handleSearch}
-                  type="button"
-                >
-                  <Search className="mr-2 h-4 w-4" />
-                  Search Recipes
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    className="flex-1"
+                    onClick={handleSearch}
+                    type="button"
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    Search
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={clearFilters}
+                    type="button"
+                    className="px-3"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </Form>
           </CardContent>
@@ -216,7 +241,7 @@ export default function CookWithIngredients() {
                 <CardContent>
                   {perfectMatches.length > 0 ? (
                     <ScrollArea className="h-[300px] pr-4">
-                      <div className="grid gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {perfectMatches.map((recipe: Recipe) => (
                           <RecipeCard
                             key={recipe.id}
@@ -250,7 +275,7 @@ export default function CookWithIngredients() {
                 <CardContent>
                   {closeMatches.length > 0 ? (
                     <ScrollArea className="h-[300px] pr-4">
-                      <div className="grid gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {closeMatches.map((recipe: Recipe) => (
                           <RecipeCard
                             key={recipe.id}

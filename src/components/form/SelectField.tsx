@@ -16,6 +16,7 @@ import { UseFormReturn } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface SelectFieldProps {
   form: UseFormReturn<any>;
@@ -24,9 +25,20 @@ interface SelectFieldProps {
   options: readonly string[];
   multiple?: boolean;
   className?: string;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
 }
 
-export const SelectField = ({ form, name, label, options, multiple = false, className }: SelectFieldProps) => {
+export const SelectField = ({ 
+  form, 
+  name, 
+  label, 
+  options, 
+  multiple = false, 
+  className,
+  searchValue = "",
+  onSearchChange
+}: SelectFieldProps) => {
   const values = form.watch(name) || [];
 
   const handleValueChange = (value: string) => {
@@ -68,6 +80,16 @@ export const SelectField = ({ form, name, label, options, multiple = false, clas
                 />
               </SelectTrigger>
               <SelectContent className="bg-white">
+                {onSearchChange && (
+                  <div className="p-2 pb-0">
+                    <Input
+                      placeholder="Search..."
+                      value={searchValue}
+                      onChange={(e) => onSearchChange(e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                )}
                 {options.map((option) => (
                   <SelectItem key={option} value={option}>
                     {option}
