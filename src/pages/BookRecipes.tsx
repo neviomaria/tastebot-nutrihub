@@ -54,6 +54,22 @@ const BookRecipes = () => {
     enabled: !!session
   });
 
+  const cleanIngredientName = (ingredient: string): string => {
+    // Remove quantities and measurements
+    const cleanedName = ingredient
+      .replace(/^\d+\/?\d*\s*(tablespoon|tbsp|teaspoon|tsp|cup|g|gram|ml|pound|lb|oz|ounce|piece|slice|can|package|to taste|optional|\(.*?\))/gi, '')
+      .replace(/,.*$/, '') // Remove everything after comma
+      .trim();
+    
+    // Return null for nutritional values
+    const nutritionKeywords = ['calories', 'protein', 'carbohydrates', 'sugars', 'dietary fiber', 'fat'];
+    if (nutritionKeywords.some(keyword => ingredient.toLowerCase().includes(keyword))) {
+      return '';
+    }
+    
+    return cleanedName;
+  };
+
   useEffect(() => {
     if (recipes) {
       const bookRecipes = recipes
@@ -67,9 +83,10 @@ const BookRecipes = () => {
 
           const matchesIngredients = searchParams.ingredients.length
             ? searchParams.ingredients.every((ingredient) =>
-                Array.isArray(recipe.acf.ingredients) && recipe.acf.ingredients.some((ing) =>
-                  ing?.ingredient_item?.toLowerCase().includes(ingredient.toLowerCase())
-                )
+                Array.isArray(recipe.acf.ingredients) && recipe.acf.ingredients.some((ing) => {
+                  const cleanedIngredient = cleanIngredientName(ing?.ingredient_item || '');
+                  return cleanedIngredient.toLowerCase().includes(ingredient.toLowerCase());
+                })
               )
             : true;
 
@@ -104,7 +121,8 @@ const BookRecipes = () => {
               return Array.isArray(recipe.acf.ingredients) 
                 ? recipe.acf.ingredients
                     .filter(ing => ing && ing.ingredient_item)
-                    .map(ing => ing.ingredient_item)
+                    .map(ing => cleanIngredientName(ing.ingredient_item))
+                    .filter(ingredient => ingredient !== '') // Remove empty strings (nutritional values)
                 : [];
             })
         )
