@@ -12,6 +12,22 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/components/SearchBar";
 import { Recipe } from "@/types/recipe";
 
+const mealTypeOrder: { [key: string]: number } = {
+  'Breakfast': 1,
+  'Brunch': 2,
+  'Lunch': 3,
+  'Dinner': 4,
+  'Snack': 5,
+  'Dessert': 6,
+  'Other': 7
+};
+
+const sortMealTypes = (a: string, b: string): number => {
+  const orderA = mealTypeOrder[a] || mealTypeOrder['Other'];
+  const orderB = mealTypeOrder[b] || mealTypeOrder['Other'];
+  return orderA - orderB;
+};
+
 const BookRecipes = () => {
   const [groupedRecipes, setGroupedRecipes] = useState<{ [key: string]: Recipe[] }>({});
   const [activeTab, setActiveTab] = useState<string>("");
@@ -115,14 +131,12 @@ const BookRecipes = () => {
           return matchesKeywords && matchesIngredients;
         });
       
-      // If we're searching, show all matching recipes in a single "Search Results" group
       if (searchParams.keywords || searchParams.ingredients.length > 0) {
         setIsSearching(true);
         setGroupedRecipes({ "Search Results": bookRecipes });
         setActiveTab("Search Results");
       } else {
         setIsSearching(false);
-        // Group recipes by meal type when not searching
         const grouped = bookRecipes.reduce((acc: { [key: string]: Recipe[] }, recipe: Recipe) => {
           const mealType = recipe.acf.pasto || 'Other';
           if (!acc[mealType]) {
@@ -134,7 +148,8 @@ const BookRecipes = () => {
 
         setGroupedRecipes(grouped);
         if (Object.keys(grouped).length > 0 && !activeTab) {
-          setActiveTab(Object.keys(grouped)[0]);
+          const sortedKeys = Object.keys(grouped).sort(sortMealTypes);
+          setActiveTab(sortedKeys[0]);
         }
       }
     }
@@ -193,6 +208,12 @@ const BookRecipes = () => {
     );
   }
 
+  const sortedMealTypes = Object.keys(groupedRecipes).sort((a, b) => {
+    if (a === "Search Results") return -1;
+    if (b === "Search Results") return 1;
+    return sortMealTypes(a, b);
+  });
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
@@ -224,7 +245,7 @@ const BookRecipes = () => {
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6 bg-card border">
-              {Object.keys(groupedRecipes).map((mealType) => (
+              {sortedMealTypes.map((mealType) => (
                 <TabsTrigger
                   key={mealType}
                   value={mealType}
@@ -234,10 +255,10 @@ const BookRecipes = () => {
                 </TabsTrigger>
               ))}
             </TabsList>
-            {Object.entries(groupedRecipes).map(([mealType, mealRecipes]) => (
+            {sortedMealTypes.map((mealType) => (
               <TabsContent key={mealType} value={mealType}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {mealRecipes.map((recipe) => (
+                  {groupedRecipes[mealType].map((recipe) => (
                     <RecipeCard
                       key={recipe.id}
                       title={recipe.title}
