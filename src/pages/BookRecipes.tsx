@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SearchBar } from "@/components/SearchBar";
 
 interface Recipe {
   id: number;
@@ -25,6 +26,9 @@ interface Recipe {
     recipe_image: {
       url: string;
     };
+    ingredients: Array<{
+      ingredient_item: string;
+    }>;
   };
 }
 
@@ -32,32 +36,19 @@ type GroupedRecipes = {
   [key: string]: Recipe[];
 };
 
-const fetchRecipes = async () => {
-  const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes', {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch recipes: ${response.status} ${response.statusText}`);
-  }
-  
-  return response.json();
-};
-
 const BookRecipes = () => {
   const [groupedRecipes, setGroupedRecipes] = useState<GroupedRecipes>({});
   const [activeTab, setActiveTab] = useState<string>("");
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
+  const [searchParams, setSearchParams] = useState<{ keywords: string; ingredients: string[] }>({
+    keywords: "",
+    ingredients: [],
+  });
   const { toast } = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Check authentication status
   const { data: session } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
@@ -75,34 +66,39 @@ const BookRecipes = () => {
     }
   });
 
-  // Fetch recipes with caching
   const { data: recipes, isLoading, error } = useQuery({
     queryKey: ['recipes'],
-    queryFn: fetchRecipes,
-    enabled: !!session,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-    meta: {
-      errorHandler: (error: Error) => {
-        const errorMessage = error instanceof Error && error.message.includes("NetworkError")
-          ? "Unable to connect to the recipe service. Please check your internet connection and try again."
-          : "Failed to load recipes. Please try again later.";
-        
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
+    queryFn: async () => {
+      const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipes');
       }
-    }
+      return await response.json() as Recipe[];
+    },
+    enabled: !!session
   });
 
-  // Group recipes by meal type when recipes data changes
   useEffect(() => {
     if (recipes) {
-      const bookRecipes = recipes.filter((recipe: Recipe) => 
-        recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
-      );
+      const bookRecipes = recipes
+        .filter((recipe: Recipe) => 
+          recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
+        )
+        .filter((recipe: Recipe) => {
+          const matchesKeywords = searchParams.keywords
+            ? recipe.title.toLowerCase().includes(searchParams.keywords.toLowerCase())
+            : true;
+
+          const matchesIngredients = searchParams.ingredients.length
+            ? searchParams.ingredients.every((ingredient) =>
+                recipe.acf.ingredients.some((ing) =>
+                  ing.ingredient_item.toLowerCase().includes(ingredient.toLowerCase())
+                )
+              )
+            : true;
+
+          return matchesKeywords && matchesIngredients;
+        });
       
       const grouped = bookRecipes.reduce((acc: GroupedRecipes, recipe: Recipe) => {
         const mealType = recipe.acf.pasto || 'Other';
@@ -114,36 +110,28 @@ const BookRecipes = () => {
       }, {});
 
       setGroupedRecipes(grouped);
-      // Set the first meal type as active tab
       if (Object.keys(grouped).length > 0 && !activeTab) {
         setActiveTab(Object.keys(grouped)[0]);
       }
     }
-  }, [recipes, id, activeTab]);
+  }, [recipes, id, activeTab, searchParams]);
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const tabs = Object.keys(groupedRecipes);
-    if (currentTabIndex < tabs.length - 1) {
-      setCurrentTabIndex(currentTabIndex + 1);
-      setActiveTab(tabs[currentTabIndex + 1]);
-    }
-  };
+  const allIngredients = recipes
+    ? Array.from(
+        new Set(
+          recipes
+            .filter((recipe: Recipe) => 
+              recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
+            )
+            .flatMap((recipe: Recipe) =>
+              recipe.acf.ingredients.map((ing) => ing.ingredient_item)
+            )
+        )
+      )
+    : [];
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const tabs = Object.keys(groupedRecipes);
-    if (currentTabIndex > 0) {
-      setCurrentTabIndex(currentTabIndex - 1);
-      setActiveTab(tabs[currentTabIndex - 1]);
-    }
-  };
-
-  const handleTabClick = (value: string) => {
-    const tabs = Object.keys(groupedRecipes);
-    const index = tabs.indexOf(value);
-    setCurrentTabIndex(index);
-    setActiveTab(value);
+  const handleSearch = (query: { keywords: string; ingredients: string[] }) => {
+    setSearchParams(query);
   };
 
   if (!session) {
@@ -184,52 +172,25 @@ const BookRecipes = () => {
 
         <h1 className="text-3xl font-bold mb-6">Book Recipes</h1>
 
+        <div className="mb-6">
+          <SearchBar onSearch={handleSearch} ingredients={allIngredients} />
+        </div>
+
         {Object.keys(groupedRecipes).length === 0 ? (
           <p className="text-gray-500">No recipes available for this book.</p>
         ) : (
-          <Tabs value={activeTab} onValueChange={handleTabClick} className="w-full">
-            {/* Desktop Tabs */}
-            <div className="hidden md:block">
-              <TabsList className="mb-6 bg-card border">
-                {tabs.map((mealType) => (
-                  <TabsTrigger
-                    key={mealType}
-                    value={mealType}
-                    className="capitalize"
-                  >
-                    {mealType}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-
-            {/* Mobile Tabs */}
-            <div className="md:hidden">
-              <div className="flex items-center justify-between mb-4 bg-white rounded-lg p-2 shadow-sm">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handlePrev}
-                  disabled={currentTabIndex === 0}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-6 bg-card border">
+              {tabs.map((mealType) => (
+                <TabsTrigger
+                  key={mealType}
+                  value={mealType}
+                  className="capitalize"
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                
-                <span className="font-medium capitalize">
-                  {tabs[currentTabIndex]}
-                </span>
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleNext}
-                  disabled={currentTabIndex === tabs.length - 1}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
+                  {mealType}
+                </TabsTrigger>
+              ))}
+            </TabsList>
             {Object.entries(groupedRecipes).map(([mealType, mealRecipes]) => (
               <TabsContent key={mealType} value={mealType}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
