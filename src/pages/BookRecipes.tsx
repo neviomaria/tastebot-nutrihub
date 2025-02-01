@@ -10,34 +10,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SearchBar } from "@/components/SearchBar";
-
-interface Recipe {
-  id: number;
-  title: string;
-  content: string;
-  acf: {
-    prep_time: string;
-    cook_time: string;
-    pasto: string;
-    libro_associato: Array<{
-      ID: number;
-      post_title: string;
-    }>;
-    recipe_image: {
-      url: string;
-    };
-    ingredients: Array<{
-      ingredient_item: string;
-    }>;
-  };
-}
-
-type GroupedRecipes = {
-  [key: string]: Recipe[];
-};
+import { Recipe } from "@/types/recipe";
 
 const BookRecipes = () => {
-  const [groupedRecipes, setGroupedRecipes] = useState<GroupedRecipes>({});
+  const [groupedRecipes, setGroupedRecipes] = useState<{ [key: string]: Recipe[] }>({});
   const [activeTab, setActiveTab] = useState<string>("");
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [searchParams, setSearchParams] = useState<{ keywords: string; ingredients: string[] }>({
@@ -91,8 +67,8 @@ const BookRecipes = () => {
 
           const matchesIngredients = searchParams.ingredients.length
             ? searchParams.ingredients.every((ingredient) =>
-                recipe.acf.ingredients.some((ing) =>
-                  ing.ingredient_item.toLowerCase().includes(ingredient.toLowerCase())
+                recipe.ingredients.some((recipeIngredient) =>
+                  recipeIngredient.toLowerCase().includes(ingredient.toLowerCase())
                 )
               )
             : true;
@@ -100,7 +76,7 @@ const BookRecipes = () => {
           return matchesKeywords && matchesIngredients;
         });
       
-      const grouped = bookRecipes.reduce((acc: GroupedRecipes, recipe: Recipe) => {
+      const grouped = bookRecipes.reduce((acc: { [key: string]: Recipe[] }, recipe: Recipe) => {
         const mealType = recipe.acf.pasto || 'Other';
         if (!acc[mealType]) {
           acc[mealType] = [];
@@ -123,9 +99,7 @@ const BookRecipes = () => {
             .filter((recipe: Recipe) => 
               recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
             )
-            .flatMap((recipe: Recipe) =>
-              recipe.acf.ingredients.map((ing) => ing.ingredient_item)
-            )
+            .flatMap((recipe: Recipe) => recipe.ingredients)
         )
       )
     : [];
@@ -158,8 +132,6 @@ const BookRecipes = () => {
     );
   }
 
-  const tabs = Object.keys(groupedRecipes);
-
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
@@ -181,7 +153,7 @@ const BookRecipes = () => {
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6 bg-card border">
-              {tabs.map((mealType) => (
+              {Object.keys(groupedRecipes).map((mealType) => (
                 <TabsTrigger
                   key={mealType}
                   value={mealType}
