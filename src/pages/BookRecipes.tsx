@@ -62,6 +62,14 @@ const BookRecipes = () => {
       'cholesterol', 'saturated', 'trans', 'sugar', 'fiber', 'protein'
     ];
     
+    const measurementUnits = [
+      'tablespoon', 'tbsp', 'teaspoon', 'tsp', 'cup', 'cups', 'g', 'gram', 'grams',
+      'ml', 'pound', 'lb', 'oz', 'ounce', 'piece', 'pieces', 'slice', 'slices',
+      'can', 'cans', 'package', 'pkg', 'pinch', 'dash', 'handful', 'bunch',
+      'quart', 'qt', 'pint', 'pt', 'gallon', 'gal', 'liter', 'l', 'milliliter',
+      'to taste', 'optional', 'about', 'approximately'
+    ].join('|');
+    
     if (nutritionKeywords.some(keyword => 
       ingredient.toLowerCase().includes(keyword) ||
       ingredient.toLowerCase().match(/\d+\s*mg/) ||  // Matches patterns like "10mg"
@@ -73,9 +81,11 @@ const BookRecipes = () => {
     // Remove quantities, measurements, and descriptive terms
     let cleanedName = ingredient
       .replace(/^[\d\/\s]+/, '') // Remove numbers at start
-      .replace(/^\d+\/?\d*\s*(tablespoon|tbsp|teaspoon|tsp|cup|g|gram|ml|pound|lb|oz|ounce|piece|slice|can|package|to taste|optional|\(.*?\))/gi, '')
+      .replace(new RegExp(`^\\d*\\s*(?:${measurementUnits})\\s+of\\s+`, 'gi'), '') // Remove "X units of"
+      .replace(new RegExp(`^\\d*\\s*(?:${measurementUnits})\\s*`, 'gi'), '') // Remove measurements
+      .replace(/\([^)]*\)/g, '') // Remove parentheses and their contents
       .replace(/,.*$/, '') // Remove everything after comma
-      .replace(/^(fresh|dried|mini|large|small|medium|dark|light)\s+/gi, '') // Remove common descriptive terms
+      .replace(/^(fresh|dried|mini|large|small|medium|dark|light|chopped|diced|minced|sliced|grated|whole|raw|cooked)\s+/gi, '') // Remove common descriptive terms
       .trim();
     
     return cleanedName;
