@@ -67,8 +67,8 @@ const BookRecipes = () => {
 
           const matchesIngredients = searchParams.ingredients.length
             ? searchParams.ingredients.every((ingredient) =>
-                recipe.acf.ingredients.some((ing) =>
-                  ing.ingredient_item.toLowerCase().includes(ingredient.toLowerCase())
+                Array.isArray(recipe.acf.ingredients) && recipe.acf.ingredients.some((ing) =>
+                  ing?.ingredient_item?.toLowerCase().includes(ingredient.toLowerCase())
                 )
               )
             : true;
@@ -99,9 +99,14 @@ const BookRecipes = () => {
             .filter((recipe: Recipe) => 
               recipe.acf.libro_associato?.some((book) => book.ID.toString() === id)
             )
-            .flatMap((recipe: Recipe) =>
-              recipe.acf.ingredients.map(ing => ing.ingredient_item)
-            )
+            .flatMap((recipe: Recipe) => {
+              console.log('Recipe ingredients:', recipe.acf.ingredients);
+              return Array.isArray(recipe.acf.ingredients) 
+                ? recipe.acf.ingredients
+                    .filter(ing => ing && ing.ingredient_item)
+                    .map(ing => ing.ingredient_item)
+                : [];
+            })
         )
       )
     : [];
