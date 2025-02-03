@@ -7,6 +7,7 @@ export const ProtectedRoutes = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
   const { toast } = useToast();
 
   const handleAuthError = () => {
@@ -17,6 +18,21 @@ export const ProtectedRoutes = () => {
     } catch (error) {
       console.error('Error handling auth error:', error);
     }
+  };
+
+  const checkProfileCompletion = async (userId: string) => {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error("Profile check error:", error);
+      return false;
+    }
+
+    return Boolean(profile?.first_name?.trim() && profile?.last_name?.trim());
   };
 
   useEffect(() => {
@@ -64,47 +80,25 @@ export const ProtectedRoutes = () => {
           return;
         }
 
-        // Check if user has completed their profile
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('first_name, last_name')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error("Profile check error:", profileError);
-          if (mounted) {
-            handleAuthError();
-          }
-          return;
-        }
-
-        // Check if first name or last name is missing or empty (after trimming whitespace)
-        const isProfileIncomplete = !profile?.first_name?.trim() || !profile?.last_name?.trim();
-        const isOnCompleteProfilePage = location.pathname === '/complete-profile';
+        // Check if profile is complete
+        const isComplete = await checkProfileCompletion(user.id);
         
-        if (isProfileIncomplete && !isOnCompleteProfilePage) {
-          console.log("Name fields incomplete, redirecting to complete-profile");
-          if (mounted) {
+        if (mounted) {
+          setIsProfileComplete(isComplete);
+          
+          // If profile is incomplete and not on complete-profile page, redirect
+          if (!isComplete && location.pathname !== '/complete-profile') {
+            console.log("Profile incomplete, redirecting to complete-profile");
             toast({
               title: "Complete Your Profile",
               description: "Please provide your first and last name to continue.",
               duration: 5000,
             });
             navigate('/complete-profile', { replace: true });
-            setIsChecking(false);
-            return null; // Return null to prevent rendering the protected route
           }
-          return;
+          
+          setIsChecking(false);
         }
-
-        // If on complete-profile page but profile is complete, redirect to home
-        if (!isProfileIncomplete && isOnCompleteProfilePage) {
-          navigate('/', { replace: true });
-          return;
-        }
-
-        console.log("Auth check completed successfully");
 
       } catch (error) {
         console.error("Auth check error:", error);
@@ -115,10 +109,6 @@ export const ProtectedRoutes = () => {
             description: "Please try logging in again.",
           });
           handleAuthError();
-        }
-      } finally {
-        if (mounted) {
-          setIsChecking(false);
         }
       }
     };
@@ -143,34 +133,17 @@ export const ProtectedRoutes = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, location, toast]);
+  }, [navigate, location.pathname, toast]);
 
+  // Show nothing while checking auth state
   if (isChecking) {
     return null;
   }
 
-  // Only render the Outlet if we're on the complete-profile page or if the profile is complete
-  const { pathname } = location;
-  if (pathname !== '/complete-profile') {
-    const checkProfileCompletion = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name, last_name')
-        .eq('id', user.id)
-        .single();
-
-      return profile?.first_name?.trim() && profile?.last_name?.trim();
-    };
-
-    // Check profile completion before rendering any protected route
-    checkProfileCompletion().then(isComplete => {
-      if (!isComplete) {
-        navigate('/complete-profile', { replace: true });
-      }
-    });
+  // Only render the route if we're on complete-profile page OR if profile is complete
+  if (!isProfileComplete && location.pathname !== '/complete-profile') {
+    navigate('/complete-profile', { replace: true });
+    return null;
   }
 
   return <Outlet />;
