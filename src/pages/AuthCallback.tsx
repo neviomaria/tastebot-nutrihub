@@ -10,7 +10,44 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Get the session to check if the user is authenticated
+        console.log("Starting auth callback handling...");
+        
+        // Get the URL hash
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        console.log("Hash params:", { accessToken: !!accessToken, refreshToken: !!refreshToken });
+
+        if (accessToken && refreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+
+          if (error) {
+            console.error('Error setting session:', error);
+            toast({
+              variant: "destructive",
+              title: "Authentication Error",
+              description: "There was a problem confirming your email. Please try again.",
+            });
+            navigate('/auth');
+            return;
+          }
+
+          if (data.session) {
+            console.log('Session confirmed:', data.session);
+            toast({
+              title: "Email Confirmed",
+              description: "Your email has been confirmed successfully. Welcome!",
+            });
+            navigate('/');
+            return;
+          }
+        }
+
+        // Fallback: check current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -25,10 +62,10 @@ const AuthCallback = () => {
         }
 
         if (session) {
-          console.log('Session confirmed:', session);
+          console.log('Session found:', session);
           toast({
-            title: "Email Confirmed",
-            description: "Your email has been confirmed successfully.",
+            title: "Welcome Back",
+            description: "You are now signed in.",
           });
           navigate('/');
         } else {
