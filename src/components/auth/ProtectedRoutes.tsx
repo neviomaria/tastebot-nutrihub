@@ -67,7 +67,7 @@ export const ProtectedRoutes = () => {
         // Check if user has completed their profile
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('first_name, last_name, country')
+          .select('first_name, last_name')
           .eq('id', user.id)
           .single();
 
@@ -79,14 +79,16 @@ export const ProtectedRoutes = () => {
           return;
         }
 
-        // If profile is incomplete and user is not already on the complete-profile page
-        if ((!profile?.first_name || !profile?.last_name || !profile?.country) && 
-            location.pathname !== '/complete-profile') {
-          console.log("Profile incomplete, redirecting to complete-profile");
+        // If first name or last name is missing and user is not already on the complete-profile page
+        const isProfileIncomplete = !profile?.first_name?.trim() || !profile?.last_name?.trim();
+        const isOnCompleteProfilePage = location.pathname === '/complete-profile';
+        
+        if (isProfileIncomplete && !isOnCompleteProfilePage) {
+          console.log("Name fields incomplete, redirecting to complete-profile");
           if (mounted) {
             toast({
               title: "Complete Your Profile",
-              description: "Please complete your profile information to continue.",
+              description: "Please provide your first and last name to continue.",
               duration: 5000,
             });
             navigate('/complete-profile', { replace: true });
