@@ -79,7 +79,7 @@ export const ProtectedRoutes = () => {
           return;
         }
 
-        // If first name or last name is missing and user is not already on the complete-profile page
+        // Check if first name or last name is missing or empty (after trimming whitespace)
         const isProfileIncomplete = !profile?.first_name?.trim() || !profile?.last_name?.trim();
         const isOnCompleteProfilePage = location.pathname === '/complete-profile';
         
@@ -93,6 +93,12 @@ export const ProtectedRoutes = () => {
             });
             navigate('/complete-profile', { replace: true });
           }
+          return;
+        }
+
+        // If on complete-profile page but profile is complete, redirect to home
+        if (!isProfileIncomplete && isOnCompleteProfilePage) {
+          navigate('/', { replace: true });
           return;
         }
 
