@@ -82,10 +82,11 @@ export const ProtectedRoutes = () => {
         // If profile is incomplete and user is not already on the complete-profile page
         if ((!profile?.first_name || !profile?.last_name || !profile?.country) && 
             location.pathname !== '/complete-profile') {
+          console.log("Profile incomplete, redirecting to complete-profile");
           if (mounted) {
             toast({
-              title: "Profile Incomplete",
-              description: "Please complete your profile information.",
+              title: "Complete Your Profile",
+              description: "Please complete your profile information to continue.",
               duration: 5000,
             });
             navigate('/complete-profile', { replace: true });

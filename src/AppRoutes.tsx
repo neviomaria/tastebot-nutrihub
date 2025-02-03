@@ -6,6 +6,7 @@ import BookDetail from "@/pages/BookDetail";
 import RecipeDetail from "@/pages/RecipeDetail";
 import CookWithIngredients from "@/pages/CookWithIngredients";
 import Profile from "@/pages/Profile";
+import CompleteProfile from "@/pages/CompleteProfile";
 import MyBooks from "@/pages/MyBooks";
 import MyCoupons from "@/pages/MyCoupons";
 import FavoriteRecipes from "@/pages/FavoriteRecipes";
@@ -41,6 +42,7 @@ export function AppRoutes() {
       <Route path="/recipe/:id" element={<RecipeDetail />} />
       <Route path="/cook-with-ingredients" element={<CookWithIngredients />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/complete-profile" element={<CompleteProfile />} />
       <Route path="/my-books" element={<MyBooks />} />
       <Route path="/my-coupons" element={<MyCoupons />} />
       <Route path="/favorite-recipes" element={<FavoriteRecipes />} />
