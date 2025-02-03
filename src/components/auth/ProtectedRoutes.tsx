@@ -92,6 +92,8 @@ export const ProtectedRoutes = () => {
               duration: 5000,
             });
             navigate('/complete-profile', { replace: true });
+            setIsChecking(false);
+            return null; // Return null to prevent rendering the protected route
           }
           return;
         }
@@ -145,6 +147,30 @@ export const ProtectedRoutes = () => {
 
   if (isChecking) {
     return null;
+  }
+
+  // Only render the Outlet if we're on the complete-profile page or if the profile is complete
+  const { pathname } = location;
+  if (pathname !== '/complete-profile') {
+    const checkProfileCompletion = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
+
+      return profile?.first_name?.trim() && profile?.last_name?.trim();
+    };
+
+    // Check profile completion before rendering any protected route
+    checkProfileCompletion().then(isComplete => {
+      if (!isComplete) {
+        navigate('/complete-profile', { replace: true });
+      }
+    });
   }
 
   return <Outlet />;
