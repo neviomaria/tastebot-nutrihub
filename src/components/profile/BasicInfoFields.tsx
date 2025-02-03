@@ -53,7 +53,10 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
           name="first_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>First Name</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                First Name
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
                 <Input placeholder="Enter your first name" {...field} />
               </FormControl>
@@ -67,7 +70,10 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
           name="last_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Last Name</FormLabel>
+              <FormLabel className="flex items-center gap-1">
+                Last Name
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <FormControl>
                 <Input placeholder="Enter your last name" {...field} />
               </FormControl>

@@ -9,8 +9,9 @@ const CompleteProfile = () => {
             Complete Your Profile
           </h1>
           <p className="text-gray-600">
-            Help us personalize your nutrition journey
+            Please provide your first and last name to continue using the app
           </p>
+          <p className="text-sm text-red-500">* Required fields</p>
         </div>
 
         <ProfileForm />
