@@ -106,12 +106,16 @@ export const SignUpCouponForm = () => {
       const redirectTo = `${origin}/auth/callback`;
       console.log('Redirect URL:', redirectTo);
 
+      // Create user with metadata including coupon information
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
           data: {
             access_level: "freemium",
+            coupon_code: values.coupon_code || null,
+            book_id: bookData?.book_id || null,
+            book_title: bookData?.book_title || null
           },
           emailRedirectTo: redirectTo,
         },
@@ -137,6 +141,7 @@ export const SignUpCouponForm = () => {
       }
 
       if (bookData && authData.user) {
+        // Insert into user_coupons table
         const { error: couponError } = await supabase
           .from('user_coupons')
           .insert({
@@ -148,6 +153,26 @@ export const SignUpCouponForm = () => {
 
         if (couponError) {
           console.error("Error saving coupon:", couponError);
+          // Even if there's an error saving the coupon, we continue since the user is created
+          toast({
+            variant: "destructive",
+            title: "Warning",
+            description: "Account created but there was an error saving your coupon. Please contact support.",
+          });
+        }
+
+        // Update the profile with coupon information
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            coupon_code: values.coupon_code,
+            book_id: bookData.book_id,
+            book_title: bookData.book_title
+          })
+          .eq('id', authData.user.id);
+
+        if (profileError) {
+          console.error("Error updating profile:", profileError);
         }
       }
 
