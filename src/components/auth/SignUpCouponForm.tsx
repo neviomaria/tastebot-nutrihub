@@ -140,42 +140,6 @@ export const SignUpCouponForm = () => {
         return;
       }
 
-      if (bookData && authData.user) {
-        // Insert into user_coupons table
-        const { error: couponError } = await supabase
-          .from('user_coupons')
-          .insert({
-            user_id: authData.user.id,
-            coupon_code: values.coupon_code,
-            book_id: bookData.book_id,
-            book_title: bookData.book_title
-          });
-
-        if (couponError) {
-          console.error("Error saving coupon:", couponError);
-          // Even if there's an error saving the coupon, we continue since the user is created
-          toast({
-            variant: "destructive",
-            title: "Warning",
-            description: "Account created but there was an error saving your coupon. Please contact support.",
-          });
-        }
-
-        // Update the profile with coupon information
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            coupon_code: values.coupon_code,
-            book_id: bookData.book_id,
-            book_title: bookData.book_title
-          })
-          .eq('id', authData.user.id);
-
-        if (profileError) {
-          console.error("Error updating profile:", profileError);
-        }
-      }
-
       console.log("Signup successful:", authData);
       toast({
         title: "Success",
