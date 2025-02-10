@@ -12,7 +12,7 @@ const AuthPage = () => {
   const { toast } = useToast();
   const [view, setView] = useState<ViewType>("sign_in");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState(""); 
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
