@@ -10,7 +10,7 @@ import { Timer } from "@/components/timer/Timer";
 import { MoreVertical } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import type { Timer as TimerType } from "@/types/timer";
+import type { Timer as TimerType } from "@/types/timer"; 
 
 const Timers = () => {
   const [timers, setTimers] = useState<TimerType[]>([]);
