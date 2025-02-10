@@ -16,7 +16,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    // If there's a coupon in the URL, set the view to sign_up
+    // Se c'è un coupon nell'URL, impostiamo la vista su sign_up
     const couponFromUrl = searchParams.get("coupon");
     if (couponFromUrl) {
       console.log("[Auth] Coupon found in URL:", couponFromUrl);
@@ -65,65 +65,7 @@ const AuthPage = () => {
     <div className="flex min-h-screen">
       {/* Left side - Meal Planner */}
       <div className="hidden lg:flex lg:flex-1 bg-primary text-white p-12 flex-col justify-between">
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold">Pybher</h1>
-          <p className="text-xl">
-            Your personal meal planning assistant, included with your book
-            purchase. Enter your book coupon code to access exclusive content.
-          </p>
-        </div>
-        <div className="space-y-8">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/10 rounded-lg">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Personalized Plans</h3>
-                <p className="text-white/80">
-                  Get customized meal plans based on your preferences
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/10 rounded-lg">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">Save Time</h3>
-                <p className="text-white/80">
-                  Plan your meals for the week in minutes
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        // ... keep existing code (left side content)
       </div>
 
       {/* Right side - Auth Form */}
