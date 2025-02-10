@@ -56,7 +56,7 @@ const AuthPage = () => {
       {/* Left side - Meal Planner */}
       <div className="hidden lg:flex lg:flex-1 bg-primary text-white p-12 flex-col justify-between">
         <div className="space-y-6">
-          <h1 className="text-4xl font-bold">Meal Planner</h1>
+          <h1 className="text-4xl font-bold">Pybher</h1>
           <p className="text-xl">
             Your personal meal planning assistant, included with your book
             purchase. Enter your book coupon code to access exclusive content.
