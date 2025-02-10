@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ViewType } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +10,19 @@ import { useToast } from "@/hooks/use-toast";
 const AuthPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [view, setView] = useState<ViewType>("sign_in");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); 
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    // If there's a coupon in the URL, set the view to sign_up
+    const couponFromUrl = searchParams.get("coupon");
+    if (couponFromUrl) {
+      console.log("[Auth] Coupon found in URL:", couponFromUrl);
+      setView("sign_up");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -144,7 +154,7 @@ const AuthPage = () => {
           </div>
 
           {view === "sign_up" ? (
-            <SignUpCouponForm />
+            <SignUpCouponForm defaultCoupon={searchParams.get("coupon") || ""} />
           ) : (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
