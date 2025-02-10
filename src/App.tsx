@@ -9,7 +9,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuthState } from "@/hooks/use-auth-state";
 import "./App.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient(); 
 
 // Create a wrapper component to handle authenticated layout
 const AuthenticatedLayout = () => {
