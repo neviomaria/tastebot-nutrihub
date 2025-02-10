@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ViewType } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,19 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 const AuthPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
   const [view, setView] = useState<ViewType>("sign_in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    // Se c'è un coupon nell'URL, impostiamo la vista su sign_up
-    const couponFromUrl = searchParams.get("coupon");
-    if (couponFromUrl) {
-      console.log("[Auth] Coupon found in URL:", couponFromUrl);
-      setView("sign_up");
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -65,14 +55,72 @@ const AuthPage = () => {
     <div className="flex min-h-screen">
       {/* Left side - Meal Planner */}
       <div className="hidden lg:flex lg:flex-1 bg-primary text-white p-12 flex-col justify-between">
-        // ... keep existing code (left side content)
+        <div className="space-y-6">
+          <h1 className="text-4xl font-bold">Meal Planner</h1>
+          <p className="text-xl">
+            Your personal meal planning assistant, included with your book
+            purchase. Enter your book coupon code to access exclusive content.
+          </p>
+        </div>
+        <div className="space-y-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Personalized Plans</h3>
+                <p className="text-white/80">
+                  Get customized meal plans based on your preferences
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/10 rounded-lg">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Save Time</h3>
+                <p className="text-white/80">
+                  Plan your meals for the week in minutes
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Right side - Auth Form */}
       <div className="flex-1 p-8 lg:p-12 flex items-center justify-center">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold">Welcome to Pybher!</h2>
+            <h2 className="text-3xl font-bold">Welcome to Pybher</h2>
             <p className="text-gray-600 mt-2">
               {view === "sign_in" ? "Sign in to your account" : "Create your account"}
             </p>
@@ -96,7 +144,7 @@ const AuthPage = () => {
           </div>
 
           {view === "sign_up" ? (
-            <SignUpCouponForm defaultCoupon={searchParams.get("coupon") || ""} />
+            <SignUpCouponForm />
           ) : (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
