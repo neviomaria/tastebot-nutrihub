@@ -72,7 +72,7 @@ const AuthPage = () => {
       <div className="flex-1 p-8 lg:p-12 flex items-center justify-center">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold">Welcome to Pybher</h2>
+            <h2 className="text-3xl font-bold">Welcome to Pybher!</h2>
             <p className="text-gray-600 mt-2">
               {view === "sign_in" ? "Sign in to your account" : "Create your account"}
             </p>
