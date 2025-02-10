@@ -17,7 +17,7 @@ const Timers = () => {
   const [showNewTimer, setShowNewTimer] = useState(false);
   const [editingTimer, setEditingTimer] = useState<TimerType | null>(null);
   const [formData, setFormData] = useState({ title: "", description: "", duration: 0 });
-  const [timeUnit, setTimeUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
+  const [timeUnit, setTimeUnit] = useState<"seconds" | "minutes" | "hours">("seconds"); 
   const { toast } = useToast();
 
   const fetchTimers = async () => {
