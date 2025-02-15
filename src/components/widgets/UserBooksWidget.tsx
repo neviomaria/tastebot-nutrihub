@@ -8,7 +8,7 @@ import { EmptyBooksList } from "../books/EmptyBooksList";
 
 interface BookAccess {
   book_id: string;
-  book_title: string;
+  book_title: string; 
 }
 
 export function UserBooksWidget() {
