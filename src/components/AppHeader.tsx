@@ -8,7 +8,7 @@ export const AppHeader = () => {
     queryKey: ["profile"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      if (!user) throw new Error("No user found"); 
 
       const { data, error } = await supabase
         .from("profiles")
