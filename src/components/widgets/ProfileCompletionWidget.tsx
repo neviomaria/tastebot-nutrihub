@@ -8,7 +8,7 @@ import { getProfileCompletion } from "@/hooks/profile/use-profile-validation";
 import { ArrowRight } from "lucide-react";
 
 export const ProfileCompletionWidget = () => {
-  console.log("[ProfileCompletionWidget] Starting render");
+  console.log("[ProfileCompletionWidget] Starting render"); 
   const navigate = useNavigate();
   const form = useForm<ProfileFormValues>();
   
