@@ -5,7 +5,7 @@ import { Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { MealPlanDay } from "@/components/meal-plan/MealPlanDay";
 import { Button } from "@/components/ui/button";
 
-const MealPlanDetail = () => {
+const MealPlanDetail = () => { 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
