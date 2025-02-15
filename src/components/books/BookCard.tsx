@@ -7,7 +7,7 @@ interface BookCardProps {
   id: string;
   title: string;
   coverUrl: string;
-}
+} 
 
 export const BookCard = ({ id, title, coverUrl }: BookCardProps) => {
   const navigate = useNavigate();
