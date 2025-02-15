@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileForm } from "@/components/profile/ProfileForm";
-
+ 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
