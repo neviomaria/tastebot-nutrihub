@@ -11,7 +11,7 @@ export const mealPlanObjectives = [
   "Seasonal Eating"
 ] as const;
 
-export const mealPlanDurations = [
+export const mealPlanDurations = [ 
   "1 Day",
   "3 Days",
   "7 Days",
