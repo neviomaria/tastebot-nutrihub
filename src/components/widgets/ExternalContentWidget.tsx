@@ -9,7 +9,7 @@ export const ExternalContentWidget = () => {
     queryKey: ["external-content"],
     queryFn: async () => {
       console.log("[ExternalContentWidget] Fetching external content");
-      const { data: functionData, error } = await supabase.functions.invoke('fetch-external-content')
+      const { data: functionData, error } = await supabase.functions.invoke('fetch-external-content') 
       if (error) throw error;
       console.log("[ExternalContentWidget] External content fetched:", functionData);
       return functionData;
