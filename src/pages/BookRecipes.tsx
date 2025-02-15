@@ -13,7 +13,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { Recipe } from "@/types/recipe";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const mealTypeOrder: { [key: string]: number } = {
+const mealTypeOrder: { [key: string]: number } = { 
   'Breakfast': 1,
   'Brunch': 2,
   'Lunch': 3,
