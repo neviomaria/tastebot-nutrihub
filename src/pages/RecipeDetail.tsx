@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { RecipeHeader } from "@/components/recipe/RecipeHeader";
 import { RecipeImage } from "@/components/recipe/RecipeImage";
 import { RecipeDetails } from "@/components/recipe/RecipeDetails";
-
+ 
 const RecipeDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
