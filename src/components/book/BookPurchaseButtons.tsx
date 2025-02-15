@@ -7,7 +7,7 @@ interface BookPurchaseButtonsProps {
   hardcoverLink?: string;
 }
 
-export const BookPurchaseButtons = ({
+export const BookPurchaseButtons = ({ 
   kindleLink,
   paperbackLink,
   hardcoverLink,
