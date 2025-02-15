@@ -11,7 +11,7 @@ const FavoriteRecipes = () => {
   const { favorites, isLoadingFavorites } = useFavorites();
 
   const { data: wpRecipes, isLoading: isLoadingRecipes } = useQuery({
-    queryKey: ['wordpress-recipes', favorites], // Add favorites to queryKey to refetch when they change
+    queryKey: ['wordpress-recipes', favorites], // Add favorites to queryKey to refetch when they change 
     queryFn: async () => {
       const response = await fetch('https://brainscapebooks.com/wp-json/custom/v1/recipes');
       if (!response.ok) {
