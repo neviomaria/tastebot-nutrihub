@@ -9,7 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { RecipeCard } from "@/components/RecipeCard";
+import { RecipeCard } from "@/components/RecipeCard"; 
 
 interface Recipe {
   id: number;
