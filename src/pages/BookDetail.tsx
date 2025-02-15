@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BookPurchaseButtons } from "@/components/book/BookPurchaseButtons";
 
 interface Book {
-  title: string;
+  title: string; 
   subtitle: string;
   coverUrl: string;
   description?: string;
