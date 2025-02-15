@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const steps = [
+const steps = [ 
   {
     title: "Welcome to Your Recipe Assistant!",
     description: "Let's take a quick tour of the key features to help you get started.",
