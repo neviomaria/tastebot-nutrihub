@@ -13,7 +13,7 @@ export const AiTest = () => {
     e.preventDefault();
     const response = await generateContent(prompt);
     if (response) {
-      setResult(response);
+      setResult(response); 
     }
   };
 
