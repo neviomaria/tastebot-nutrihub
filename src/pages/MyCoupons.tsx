@@ -9,7 +9,7 @@ import { CouponList } from "@/components/coupons/CouponList";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface BookAccess {
-  book_id: string;
+  book_id: string; 
   book_title: string;
   coupon_code: string;
 }
