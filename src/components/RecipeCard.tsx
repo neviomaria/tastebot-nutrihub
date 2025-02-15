@@ -10,7 +10,7 @@ interface RecipeCardProps {
   cookTime: string;
   difficulty: string;
   recipeId: number;
-  onClick: () => void;
+  onClick: () => void; 
   audio_recipe?: string;
 }
 
