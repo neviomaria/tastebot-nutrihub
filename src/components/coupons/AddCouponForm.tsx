@@ -16,7 +16,7 @@ interface AddCouponFormProps {
 }
 
 export const AddCouponForm = ({ form, onSubmit }: AddCouponFormProps) => {
-  return (
+  return ( 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <CouponField form={form} />
