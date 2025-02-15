@@ -10,7 +10,7 @@ import { UserBook, Book } from "@/types/book";
 
 const fetchUserBooks = async (): Promise<UserBook[]> => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession(); 
     
     if (!session) {
       throw new Error('No active session');
