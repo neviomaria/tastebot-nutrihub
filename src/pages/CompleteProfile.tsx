@@ -11,7 +11,7 @@ const CompleteProfile = () => {
           <p className="text-gray-600">
             Please provide your first and last name to continue using the app
           </p>
-          <p className="text-sm text-red-500">* Required fields</p>
+          <p className="text-sm text-red-500">* Required fields</p> 
         </div>
 
         <ProfileForm />
