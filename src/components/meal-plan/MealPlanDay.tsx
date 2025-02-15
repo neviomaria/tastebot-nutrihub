@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { RecipeContent } from "@/components/recipe/RecipeContent";
 import { RecipeMetadata } from "@/components/recipe/RecipeMetadata";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
+import { Loader2, ArrowLeftCircle, ArrowRightCircle } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 
 interface MealPlanDayProps {
