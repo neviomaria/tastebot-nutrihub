@@ -11,7 +11,7 @@ const Index = () => {
   const { toast } = useToast();
   
   useEffect(() => {
-    if (isAuthenticated === false) {
+    if (isAuthenticated === false) { 
       toast({
         variant: "destructive",
         title: "Authentication Required",
