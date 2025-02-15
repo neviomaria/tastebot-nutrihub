@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 
 interface MealPlanFormProps {
   form: UseFormReturn<CreateMealPlanFormValues>;
-  onSubmit: (values: CreateMealPlanFormValues) => void;
+  onSubmit: (values: CreateMealPlanFormValues) => void; 
   userBooks: { book_id: string; book_title: string; }[];
   isGenerating?: boolean;
 }
