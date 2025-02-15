@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const dietaryPreferences = [
+export const dietaryPreferences = [ 
   "None",
   "Vegetarian",
   "Vegan",
