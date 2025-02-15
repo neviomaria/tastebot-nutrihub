@@ -12,7 +12,7 @@ export const CookieBanner = () => {
         fontSize: "16px",
         padding: "16px",
       }}
-      buttonStyle={{
+      buttonStyle={{ 
         background: "#8B5CF6",
         color: "white",
         fontSize: "16px",
