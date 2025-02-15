@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 const AuthCallback = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
+ 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
