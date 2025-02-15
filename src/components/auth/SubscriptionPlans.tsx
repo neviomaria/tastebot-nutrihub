@@ -8,7 +8,7 @@ const premiumFeatures = [
   "Accesso a tutte le ricette",
   "Piano alimentare personalizzato",
   "Supporto via email",
-];
+]; 
 
 const diamondFeatures = [
   ...premiumFeatures,
