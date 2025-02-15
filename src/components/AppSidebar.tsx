@@ -18,7 +18,7 @@ import {
   Utensils
 } from "lucide-react";
 import { useState } from "react";
-
+ 
 export function AppSidebar() {
   const { handleSignOut } = useAuthState();
   const [isOpen, setIsOpen] = useState(false);
