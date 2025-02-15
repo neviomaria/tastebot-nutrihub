@@ -5,7 +5,7 @@ import { CreateMealPlanDialog } from "@/components/meal-plan/CreateMealPlanDialo
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Trash2, Pencil } from "lucide-react";
-import {
+import { 
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
