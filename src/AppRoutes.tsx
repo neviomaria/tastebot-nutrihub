@@ -10,7 +10,7 @@ import CompleteProfile from "@/pages/CompleteProfile";
 import MyBooks from "@/pages/MyBooks";
 import MyCoupons from "@/pages/MyCoupons";
 import FavoriteRecipes from "@/pages/FavoriteRecipes";
-import MealPlans from "@/pages/MealPlans";
+import MealPlans from "@/pages/MealPlans"; 
 import Timers from "@/pages/Timers";
 import ShoppingLists from "@/pages/ShoppingLists";
 import Auth from "@/pages/Auth";
