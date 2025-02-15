@@ -9,7 +9,7 @@ interface BookAccess {
 
 interface CouponListProps {
   bookAccess: BookAccess[];
-  onRemoveCoupon: (couponCode: string) => void;
+  onRemoveCoupon: (couponCode: string) => void; 
 }
 
 export const CouponList = ({ bookAccess, onRemoveCoupon }: CouponListProps) => {
