@@ -8,7 +8,7 @@ interface TimerProps {
   isCountdown?: boolean;
   onComplete?: () => void;
   className?: string;
-  size?: 'small' | 'large';
+  size?: 'small' | 'large'; 
 }
 
 export function Timer({ 
