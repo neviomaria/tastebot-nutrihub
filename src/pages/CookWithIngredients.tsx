@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Recipe } from "@/types/recipe";
 import { Form } from "@/components/ui/form";
-import { Search, X } from "lucide-react";
+import { Search, X } from "lucide-react"; 
 
 export default function CookWithIngredients() {
   const [searchQuery, setSearchQuery] = useState("");
