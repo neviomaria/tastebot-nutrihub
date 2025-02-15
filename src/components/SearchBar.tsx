@@ -10,7 +10,7 @@ interface SearchBarProps {
   onSearch: (query: { keywords: string; ingredients: string[] }) => void;
   ingredients?: string[];
 }
-
+ 
 interface SearchForm {
   keywords: string;
   ingredients: string[];
