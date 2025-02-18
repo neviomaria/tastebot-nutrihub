@@ -15,7 +15,8 @@ import {
   ShoppingBag,
   LogOut,
   Menu,
-  Utensils
+  Utensils,
+  Mail
 } from "lucide-react";
 import { useState } from "react";
  
@@ -33,6 +34,7 @@ export function AppSidebar() {
     { icon: CalendarDays, label: "Meal Plans", path: "/meal-plans" },
     { icon: Timer, label: "Timers", path: "/timers" },
     { icon: ShoppingBag, label: "Shopping Lists", path: "/shopping-lists" },
+    { icon: Mail, label: "Contact", path: "/contact" },
   ];
 
   const SidebarContent = () => (
