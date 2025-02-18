@@ -13,6 +13,7 @@ import FavoriteRecipes from "@/pages/FavoriteRecipes";
 import MealPlans from "@/pages/MealPlans"; 
 import Timers from "@/pages/Timers";
 import ShoppingLists from "@/pages/ShoppingLists";
+import Contact from "@/pages/Contact";
 import Auth from "@/pages/Auth";
 
 export function AppRoutes() {
@@ -49,6 +50,7 @@ export function AppRoutes() {
       <Route path="/meal-plans" element={<MealPlans />} />
       <Route path="/timers" element={<Timers />} />
       <Route path="/shopping-lists" element={<ShoppingLists />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
