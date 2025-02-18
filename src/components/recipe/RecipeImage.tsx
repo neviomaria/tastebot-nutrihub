@@ -8,7 +8,9 @@ export function RecipeImage({ imageUrl, title }: RecipeImageProps) {
     if (!url) return "/placeholder.svg";
     const urlParts = url.split('.');
     const extension = urlParts.pop();
-    return `${urlParts.join('.')}-768x768.${extension}`;
+    const processedUrl = `${urlParts.join('.')}-768x768.${extension}`;
+    console.log('Trying to load image from URL:', processedUrl);
+    return processedUrl;
   };
 
   return (
@@ -21,6 +23,7 @@ export function RecipeImage({ imageUrl, title }: RecipeImageProps) {
             className="w-full h-full object-cover"
             loading="lazy"
             onError={(e) => {
+              console.log('Image load failed, falling back to placeholder');
               e.currentTarget.src = "/placeholder.svg";
             }}
           />
